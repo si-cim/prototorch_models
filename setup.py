@@ -20,7 +20,10 @@ DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-INSTALL_REQUIRES = ["prototorch"]
+INSTALL_REQUIRES = ["prototorch", "pytorch_lightning"]
+EXAMPLES = ["matplotlib", "scikit-learn"]
+TESTS = ["pytest"]
+ALL = EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
@@ -34,7 +37,11 @@ setup(
     license="MIT",
     install_requires=INSTALL_REQUIRES,
     setup_requires=["setuptools_scm"],
-    extras_require={},
+    extras_require={
+        "examples": EXAMPLES,
+        "tests": TESTS,
+        "all": ALL,
+    },
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Environment :: Plugins",
@@ -46,12 +53,15 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    entry_points={"prototorch.plugins": f"{PLUGIN_NAME} = prototorch.{PLUGIN_NAME}"},
+    entry_points={
+        "prototorch.plugins": f"{PLUGIN_NAME} = prototorch.{PLUGIN_NAME}"
+    },
     packages=find_namespace_packages(include=["prototorch.*"]),
     zip_safe=False,
 )
