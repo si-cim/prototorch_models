@@ -60,12 +60,15 @@ class VisualizationCallback(pl.Callback):
 
 
 if __name__ == "__main__":
+    # Dataset
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
-
     train_ds = NumpyDataset(x_train, y_train)
+
+    # Dataloaders
     train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
 
+    # Initialize the model
     model = GLVQ(
         input_dim=x_train.shape[1],
         nclasses=3,
@@ -74,13 +77,20 @@ if __name__ == "__main__":
         data=[x_train, y_train],
         lr=0.1,
     )
+
+    # Model summary
     print(model)
 
+    # Callbacks
     vis = VisualizationCallback(x_train, y_train)
+
+    # Setup trainer
     trainer = pl.Trainer(max_epochs=1000, callbacks=[vis])
 
+    # Training loop
     trainer.fit(model, train_loader)
 
+    # Visualization
     protos = model.prototypes
     plabels = model.prototype_labels
     visualize(x_train, y_train, protos, plabels)

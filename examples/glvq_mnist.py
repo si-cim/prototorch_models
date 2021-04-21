@@ -1,44 +1,85 @@
+"""GLVQ example using the MNIST dataset.
+
+This script also shows how to use Tensorboard for visualizing the prototypes.
+"""
+
 import pytorch_lightning as pl
 import torchvision
 from matplotlib import pyplot as plt
 from prototorch.functions.initializers import stratified_mean
 from prototorch.models.glvq import ImageGLVQ
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
 
-def plot_protos(protos, shape=(-1, 1, 28, 28), nrow=2):
-    grid = torchvision.utils.make_grid(protos.reshape(*shape), nrow=nrow)
-    grid = grid.permute((1, 2, 0))
-    plt.imshow(grid)
+class VisualizationCallback(pl.Callback):
+    def __init__(self, to_shape=(-1, 1, 28, 28), nrow=2):
+        super().__init__()
+        self.to_shape = to_shape
+        self.nrow = nrow
 
+    def on_epoch_end(self, trainer, pl_module):
+        protos = pl_module.proto_layer.prototypes.detach().cpu()
+        protos_img = protos.reshape(self.to_shape)
+        grid = torchvision.utils.make_grid(protos_img, nrow=self.nrow)
+        # grid = grid.permute((1, 2, 0))
+        tb = pl_module.logger.experiment
+        tb.add_image(tag="MNIST Prototypes",
+                     img_tensor=grid,
+                     global_step=trainer.current_epoch,
+                     dataformats="CHW")
 
 
 if __name__ == "__main__":
-    dataset = MNIST("./datasets",
-                    train=True,
-                    download=True,
-                    transform=transforms.ToTensor())
-    mnist_train, mnist_val = random_split(dataset, [55000, 5000])
-
-    train_loader = DataLoader(mnist_train, batch_size=1024)
-    val_loader = DataLoader(mnist_val, batch_size=1024)
-
-    model = ImageGLVQ(input_dim=28 * 28, nclasses=10, prototypes_per_class=2)
-
-    # Warm-start prototypes
-    prototypes, prototype_labels = stratified_mean(
-        x_train,
-        y_train,
-        prototype_distribution=self.prototype_distribution,
-        one_hot=one_hot_labels,
+    # Dataset
+    mnist_train = MNIST(
+        "./datasets",
+        train=True,
+        download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307, ), (0.3081, ))
+        ]),
+    )
+    mnist_test = MNIST(
+        "./datasets",
+        train=False,
+        download=True,
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307, ), (0.3081, ))
+        ]),
     )
 
-    trainer = pl.Trainer(gpus=0, max_epochs=3)
+    # Dataloaders
+    train_loader = DataLoader(mnist_train, batch_size=1024)
+    test_loader = DataLoader(mnist_test, batch_size=1024)
 
-    trainer.fit(model, train_loader, val_loader)
+    # Grab the full dataset to warm-start prototypes
+    x, y = next(iter(DataLoader(mnist_train, batch_size=len(mnist_train))))
+    x = x.view(len(mnist_train), -1)
 
-    protos = model.proto_layer.prototypes.detach().cpu()
-    plot_protos(protos, shape=(-1, 1, 28, 28), nrow=4)
-    plt.show(block=True)
+    # Initialize the model
+    model = ImageGLVQ(input_dim=28 * 28,
+                      nclasses=10,
+                      prototypes_per_class=10,
+                      prototype_initializer="stratified_mean",
+                      data=[x, y])
+    # Model summary
+    print(model)
+
+    # Callbacks
+    vis = VisualizationCallback(to_shape=(-1, 1, 28, 28), nrow=10)
+
+    # Setup trainer
+    trainer = pl.Trainer(
+        gpus=0,  # change to use GPUs for training
+        max_epochs=10,
+        callbacks=[vis],
+        # accelerator="ddp_cpu",  # DEBUG-ONLY
+        # num_processes=2,  # DEBUG-ONLY
+    )
+
+    # Training loop
+    trainer.fit(model, train_loader, test_loader)
