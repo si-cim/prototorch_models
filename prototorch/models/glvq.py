@@ -12,20 +12,14 @@ from prototorch.modules.prototypes import Prototypes1D
 
 class GLVQ(pl.LightningModule):
     """Generalized Learning Vector Quantization."""
-    def __init__(self, hparams, input_dim, nclasses, **kwargs):
+    def __init__(self, hparams, **kwargs):
         super().__init__()
-        self.lr = hparams.lr
-        self.hparams = hparams
-        # self.save_hyperparameters(
-        #     "lr",
-        #     "prototypes_per_class",
-        #     "prototype_initializer",
-        # )
+        self.save_hyperparameters(hparams)
         self.proto_layer = Prototypes1D(
-            input_dim=input_dim,
-            nclasses=nclasses,
-            prototypes_per_class=hparams.prototypes_per_class,
-            prototype_initializer=hparams.prototype_initializer,
+            input_dim=self.hparams.input_dim,
+            nclasses=self.hparams.nclasses,
+            prototypes_per_class=self.hparams.prototypes_per_class,
+            prototype_initializer=self.hparams.prototype_initializer,
             **kwargs)
         self.train_acc = torchmetrics.Accuracy()
 
@@ -38,21 +32,8 @@ class GLVQ(pl.LightningModule):
         return self.proto_layer.prototype_labels.detach().numpy()
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
         return optimizer
-
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(parents=[parent_parser],
-                                         add_help=False)
-        parser.add_argument("--epochs", type=int, default=1)
-        parser.add_argument("--lr", type=float, default=1e-2)
-        parser.add_argument("--batch_size", type=int, default=32)
-        parser.add_argument("--prototypes_per_class", type=int, default=1)
-        parser.add_argument("--prototype_initializer",
-                            type=str,
-                            default="zeros")
-        return parser
 
     def forward(self, x):
         protos = self.proto_layer.prototypes
