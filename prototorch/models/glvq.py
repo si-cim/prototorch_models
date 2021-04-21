@@ -54,10 +54,12 @@ class GLVQ(pl.LightningModule):
         self.train_acc(
             preds.int(),
             y.int())  # FloatTensors are assumed to be class probabilities
-        self.log("Training Accuracy",
+        self.log("acc",
                  self.train_acc,
                  on_step=False,
-                 on_epoch=True)
+                 on_epoch=True,
+                 prog_bar=True,
+                 logger=True)
         return loss
 
     # def training_epoch_end(self, outs):
