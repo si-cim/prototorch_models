@@ -1,21 +1,21 @@
 """
-  _____           _     _______             _ 
- |  __ \         | |   |__   __|           | |  
+  _____           _     _______             _
+ |  __ \         | |   |__   __|           | |
  | |__) | __ ___ | |_ ___ | | ___  _ __ ___| |__
- |  ___/ '__/ _ \| __/ _ \| |/ _ \| '__/ __| '_ \ 
+ |  ___/ '__/ _ \| __/ _ \| |/ _ \| '__/ __| '_ \
  | |   | | | (_) | || (_) | | (_) | | | (__| | | |
  |_|   |_|  \___/ \__\___/|_|\___/|_|  \___|_| |_|Plugin
 
-ProtoTorch plugintemplate Plugin Package
+ProtoTorch models Plugin Package
 """
 from pkg_resources import safe_name
 from setuptools import setup
 from setuptools import find_namespace_packages
 
-PLUGIN_NAME = "plugintemplate"
+PLUGIN_NAME = "models"
 
-PROJECT_URL = "https://github.com/si-cim/prototorch_plugintemplate"
-DOWNLOAD_URL = "https://github.com/si-cim/prototorch_plugintemplate.git"
+PROJECT_URL = "https://github.com/si-cim/prototorch_models"
+DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -25,7 +25,7 @@ INSTALL_REQUIRES = ["prototorch"]
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
     use_scm_version=True,
-    descripion="Template for ProtoTorch Plugin.",
+    descripion="Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
     author="Alexander Engelsberger",
     author_email="engelsbe@hs-mittweida.de",

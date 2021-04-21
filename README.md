@@ -1,4 +1,4 @@
-# prototorch_plugintemplate
-Prototorch plugin template.
+# prototorch_models
 
-TODO: Instructions
+Pre-packaged prototype-based machine learning models using ProtoTorch and
+PyTorch-Lightning.
