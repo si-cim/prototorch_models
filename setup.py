@@ -20,7 +20,7 @@ DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-INSTALL_REQUIRES = ["prototorch", "pytorch_lightning"]
+INSTALL_REQUIRES = ["prototorch", "pytorch_lightning", "torchmetrics"]
 EXAMPLES = ["matplotlib", "scikit-learn"]
 TESTS = ["pytest"]
 ALL = EXAMPLES + TESTS

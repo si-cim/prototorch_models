@@ -1,5 +1,7 @@
 """GLVQ example using the Iris dataset."""
 
+import argparse
+
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -60,6 +62,31 @@ class VisualizationCallback(pl.Callback):
 
 
 if __name__ == "__main__":
+    # Hyperparameters
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--epochs",
+                        type=int,
+                        default=100,
+                        help="Epochs to train.")
+    parser.add_argument("--lr",
+                        type=float,
+                        default=0.001,
+                        help="Learning rate.")
+    parser.add_argument("--batch_size",
+                        type=int,
+                        default=256,
+                        help="Batch size.")
+    parser.add_argument("--gpus",
+                        type=int,
+                        default=0,
+                        help="Number of GPUs to use.")
+    parser.add_argument("--ppc",
+                        type=int,
+                        default=1,
+                        help="Prototypes-Per-Class.")
+    args = parser.parse_args()
+    # https://pytorch-lightning.readthedocs.io/en/stable/common/hyperparameters.html
+
     # Dataset
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
@@ -72,10 +99,10 @@ if __name__ == "__main__":
     model = GLVQ(
         input_dim=x_train.shape[1],
         nclasses=3,
-        prototypes_per_class=3,
+        prototype_distribution=[2, 7, 5],
         prototype_initializer="stratified_mean",
         data=[x_train, y_train],
-        lr=0.1,
+        lr=0.01,
     )
 
     # Model summary
@@ -85,12 +112,24 @@ if __name__ == "__main__":
     vis = VisualizationCallback(x_train, y_train)
 
     # Setup trainer
-    trainer = pl.Trainer(max_epochs=1000, callbacks=[vis])
+    trainer = pl.Trainer(
+        max_epochs=hparams.epochs,
+        auto_lr_find=
+        True,  # finds learning rate automatically with `trainer.tune(model)`
+        callbacks=[
+            vis,  # comment this line out to disable the visualization
+        ],
+    )
+    trainer.tune(model)
 
     # Training loop
     trainer.fit(model, train_loader)
 
-    # Visualization
-    protos = model.prototypes
-    plabels = model.prototype_labels
-    visualize(x_train, y_train, protos, plabels)
+    # Save the model manually (use `pl.callbacks.ModelCheckpoint` to automate)
+    ckpt = "glvq_iris.ckpt"
+    trainer.save_checkpoint(ckpt)
+
+    # Load the checkpoint
+    new_model = GLVQ.load_from_checkpoint(checkpoint_path=ckpt)
+
+    print(new_model)
