@@ -17,6 +17,21 @@ class NumpyDataset(TensorDataset):
         super().__init__(*tensors)
 
 
+class GLVQIris(GLVQ):
+    @staticmethod
+    def add_model_specific_args(parent_parser):
+        parser = argparse.ArgumentParser(parents=[parent_parser],
+                                         add_help=False)
+        parser.add_argument("--epochs", type=int, default=1)
+        parser.add_argument("--lr", type=float, default=1e-1)
+        parser.add_argument("--batch_size", type=int, default=150)
+        parser.add_argument("--prototypes_per_class", type=int, default=3)
+        parser.add_argument("--prototype_initializer",
+                            type=str,
+                            default="stratified_mean")
+        return parser
+
+
 class VisualizationCallback(pl.Callback):
     def __init__(self,
                  x_train,
@@ -62,30 +77,9 @@ class VisualizationCallback(pl.Callback):
 
 
 if __name__ == "__main__":
-    # Hyperparameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs",
-                        type=int,
-                        default=100,
-                        help="Epochs to train.")
-    parser.add_argument("--lr",
-                        type=float,
-                        default=0.001,
-                        help="Learning rate.")
-    parser.add_argument("--batch_size",
-                        type=int,
-                        default=256,
-                        help="Batch size.")
-    parser.add_argument("--gpus",
-                        type=int,
-                        default=0,
-                        help="Number of GPUs to use.")
-    parser.add_argument("--ppc",
-                        type=int,
-                        default=1,
-                        help="Prototypes-Per-Class.")
-    args = parser.parse_args()
+    # For best-practices when using `argparse` with `pytorch_lightning`, see
     # https://pytorch-lightning.readthedocs.io/en/stable/common/hyperparameters.html
+    parser = argparse.ArgumentParser()
 
     # Dataset
     x_train, y_train = load_iris(return_X_y=True)
@@ -95,32 +89,35 @@ if __name__ == "__main__":
     # Dataloaders
     train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
 
-    # Initialize the model
-    model = GLVQ(
-        input_dim=x_train.shape[1],
-        nclasses=3,
-        prototype_distribution=[2, 7, 5],
-        prototype_initializer="stratified_mean",
-        data=[x_train, y_train],
-        lr=0.01,
-    )
-
-    # Model summary
-    print(model)
+    # Add model specific args
+    parser = GLVQIris.add_model_specific_args(parser)
 
     # Callbacks
     vis = VisualizationCallback(x_train, y_train)
 
+    # Automatically add trainer-specific-args like `--gpus`, `--num_nodes` etc.
+    parser = pl.Trainer.add_argparse_args(parser)
+
     # Setup trainer
-    trainer = pl.Trainer(
-        max_epochs=hparams.epochs,
-        auto_lr_find=
-        True,  # finds learning rate automatically with `trainer.tune(model)`
+    trainer = pl.Trainer.from_argparse_args(
+        parser,
         callbacks=[
             vis,  # comment this line out to disable the visualization
         ],
     )
-    trainer.tune(model)
+    # trainer.tune(model)
+
+    # Initialize the model
+    args = parser.parse_args()
+    model = GLVQIris(
+        args,
+        input_dim=x_train.shape[1],
+        nclasses=3,
+        data=[x_train, y_train],
+    )
+
+    # Model summary
+    print(model)
 
     # Training loop
     trainer.fit(model, train_loader)
@@ -130,6 +127,6 @@ if __name__ == "__main__":
     trainer.save_checkpoint(ckpt)
 
     # Load the checkpoint
-    new_model = GLVQ.load_from_checkpoint(checkpoint_path=ckpt)
+    new_model = GLVQIris.load_from_checkpoint(checkpoint_path=ckpt)
 
     print(new_model)
