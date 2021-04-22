@@ -128,3 +128,6 @@ if __name__ == "__main__":
     new_model = GLVQIris.load_from_checkpoint(checkpoint_path=ckpt)
 
     print(new_model)
+
+    # Continue training
+    trainer.fit(new_model, train_loader)  # TODO See why this fails!
