@@ -33,14 +33,12 @@ class CosineSimilarity(torch.nn.Module):
 
     def forward(self, x, y):
         epsilon = torch.finfo(x.dtype).eps
-        normed_x = (x/ x.pow(2) \
-            .sum(dim=tuple(range(1, x.ndim)), keepdim=True) \
-            .clamp(min=epsilon) \
-            .sqrt()).flatten(start_dim=1)
-        normed_y = (y / y.pow(2) \
-            .sum(dim=tuple(range(1, y.ndim)), keepdim=True) \
-            .clamp(min=epsilon) \
-            .sqrt()).flatten(start_dim=1)
+        normed_x = (x / x.pow(2).sum(dim=tuple(range(
+            1, x.ndim)), keepdim=True).clamp(min=epsilon).sqrt()).flatten(
+                start_dim=1)
+        normed_y = (y / y.pow(2).sum(dim=tuple(range(
+            1, y.ndim)), keepdim=True).clamp(min=epsilon).sqrt()).flatten(
+                start_dim=1)
         # normed_x = (x / torch.linalg.norm(x, dim=1))
         diss = torch.inner(normed_x, normed_y)
         return self.activation(diss)
@@ -73,14 +71,14 @@ class ReasoningLayer(torch.nn.Module):
         probabilities_init.uniform_(0.4, 0.6)
         self.reasoning_probabilities = torch.nn.Parameter(probabilities_init)
 
-    # @property
-    # def reasonings(self):
-    #     pk = self.reasoning_probabilities[0]
-    #     nk = (1 - pk) * self.reasoning_probabilities[1]
-    #     ik = (1 - pk - nk)
-    #     # pk is of shape (1, n_components, n_classes)
-    #     img = torch.cat([pk, nk, ik], dim=0).permute(1, 0, 2)
-    #     return img.unsqueeze(1)  # (n_components, 1, 3, n_classes)
+    @property
+    def reasonings(self):
+        pk = self.reasoning_probabilities[0]
+        nk = (1 - pk) * self.reasoning_probabilities[1]
+        ik = (1 - pk - nk)
+        # pk is of shape (1, n_components, n_classes)
+        img = torch.cat([pk, nk, ik], dim=0).permute(1, 0, 2)
+        return img.unsqueeze(1)  # (n_components, 1, 3, n_classes)
 
     def forward(self, detections):
         pk = self.reasoning_probabilities[0].clamp(0, 1)
@@ -128,7 +126,11 @@ class CBC(pl.LightningModule):
 
     @property
     def components(self):
-        return self.proto_layer.prototypes.detach().numpy()
+        return self.proto_layer.prototypes.detach().cpu()
+
+    @property
+    def reasonings(self):
+        return self.reasoning_layer.reasonings.cpu()
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
@@ -140,8 +142,8 @@ class CBC(pl.LightningModule):
 
     def forward(self, x):
         self.sync_backbones()
-        # protos = self.proto_layer.prototypes
-        protos, _ = self.proto_layer()
+        protos = self.proto_layer.prototypes
+        # protos, _ = self.proto_layer()
 
         latent_x = self.backbone(x)
         latent_protos = self.backbone_dependent(protos)
@@ -163,7 +165,7 @@ class CBC(pl.LightningModule):
         # y_true = torch.nn.functional.one_hot(y, num_classes=nclasses)
         # y_true = torch.eye(nclasses)[y.long()]
         y_true = torch.nn.functional.one_hot(y.long(), num_classes=nclasses)
-        loss = MarginLoss(self.margin)(y_pred, y_true).sum(dim=0)
+        loss = MarginLoss(self.margin)(y_pred, y_true).mean(dim=0)
         self.log("train_loss", loss)
         # with torch.no_grad():
         #     preds = torch.argmax(y_pred, dim=1)
@@ -172,16 +174,18 @@ class CBC(pl.LightningModule):
         #     preds.int(),
         #     y.int())  # FloatTensors are assumed to be class probabilities
         self.train_acc(y_pred, y_true)
-        self.log("acc",
-                 self.train_acc,
-                 on_step=False,
-                 on_epoch=True,
-                 prog_bar=True,
-                 logger=True)
+        self.log(
+            "acc",
+            self.train_acc,
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
         return loss
 
-    # def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-    #     self.reasoning_layer.reasoning_probabilities.data.clamp_(0., 1.)
+    #def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+    #    self.reasoning_layer.reasoning_probabilities.data.clamp_(0., 1.)
 
     # def training_epoch_end(self, outs):
     #     # Calling `self.train_acc.compute()` is
@@ -201,5 +205,5 @@ class ImageCBC(CBC):
     clamping after updates.
     """
     def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-        super().on_train_batch_end(outputs, batch, batch_idx, dataload_idx)
-        self.proto_layer.prototypes.data.clamp_(0., 1.)
+        #super().on_train_batch_end(outputs, batch, batch_idx, dataloader_idx)
+        self.proto_layer.prototypes.data.clamp_(0.0, 1.0)
