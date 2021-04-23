@@ -7,11 +7,11 @@ import argparse
 
 import pytorch_lightning as pl
 import torchvision
-from matplotlib import pyplot as plt
-from prototorch.models.cbc import ImageCBC, euclidean_similarity, rescaled_cosine_similarity
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
+
+from prototorch.models.cbc import CBC, ImageCBC, euclidean_similarity
 
 
 class VisualizationCallback(pl.Callback):
@@ -89,8 +89,8 @@ if __name__ == "__main__":
     )
 
     # Dataloaders
-    train_loader = DataLoader(mnist_train, batch_size=1024)
-    test_loader = DataLoader(mnist_test, batch_size=1024)
+    train_loader = DataLoader(mnist_train, batch_size=32)
+    test_loader = DataLoader(mnist_test, batch_size=32)
 
     # Grab the full dataset to warm-start prototypes
     x, y = next(iter(DataLoader(mnist_train, batch_size=len(mnist_train))))
@@ -102,12 +102,12 @@ if __name__ == "__main__":
         nclasses=10,
         prototypes_per_class=args.ppc,
         prototype_initializer="randn",
-        lr=1,
+        lr=0.01,
         similarity=euclidean_similarity,
     )
 
     # Initialize the model
-    model = ImageCBC(hparams, data=[x, y])
+    model = CBC(hparams, data=[x, y])
     # Model summary
     print(model)
 

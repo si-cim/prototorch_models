@@ -11,12 +11,11 @@ import argparse
 
 import pytorch_lightning as pl
 import torchvision
-from matplotlib import pyplot as plt
-from prototorch.functions.initializers import stratified_mean
-from prototorch.models.glvq import ImageGLVQ
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
+
+from prototorch.models.glvq import ImageGLVQ
 
 
 class VisualizationCallback(pl.Callback):
@@ -31,10 +30,12 @@ class VisualizationCallback(pl.Callback):
         grid = torchvision.utils.make_grid(protos_img, nrow=self.nrow)
         # grid = grid.permute((1, 2, 0))
         tb = pl_module.logger.experiment
-        tb.add_image(tag="MNIST Prototypes",
-                     img_tensor=grid,
-                     global_step=trainer.current_epoch,
-                     dataformats="CHW")
+        tb.add_image(
+            tag="MNIST Prototypes",
+            img_tensor=grid,
+            global_step=trainer.current_epoch,
+            dataformats="CHW",
+        )
 
 
 if __name__ == "__main__":
@@ -91,11 +92,13 @@ if __name__ == "__main__":
     x = x.view(len(mnist_train), -1)
 
     # Initialize the model
-    model = ImageGLVQ(input_dim=28 * 28,
-                      nclasses=10,
-                      prototypes_per_class=args.ppc,
-                      prototype_initializer="stratified_mean",
-                      data=[x, y])
+    model = ImageGLVQ(
+        input_dim=28 * 28,
+        nclasses=10,
+        prototypes_per_class=args.ppc,
+        prototype_initializer="stratified_mean",
+        data=[x, y],
+    )
     # Model summary
     print(model)
 

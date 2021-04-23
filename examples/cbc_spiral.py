@@ -4,13 +4,10 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
-from sklearn.datasets import make_circles
 from torch.utils.data import DataLoader
 
 from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisPointProtos
-from prototorch.models.cbc import CBC, euclidean_similarity
-from prototorch.models.glvq import GLVQ
+from prototorch.models.cbc import CBC
 
 
 class VisualizationCallback(pl.Callback):
@@ -67,13 +64,31 @@ class VisualizationCallback(pl.Callback):
         plt.pause(0.1)
 
 
+def make_spirals(n_samples=500, noise=0.3):
+    def get_samples(n, delta_t):
+        points = []
+        for i in range(n):
+            r = i / n_samples * 5
+            t = 1.75 * i / n * 2 * np.pi + delta_t
+            x = r * np.sin(t) + np.random.rand(1) * noise
+            y = r * np.cos(t) + np.random.rand(1) * noise
+            points.append([x, y])
+        return points
+
+    n = n_samples // 2
+    positive = get_samples(n=n, delta_t=0)
+    negative = get_samples(n=n, delta_t=np.pi)
+    x = np.concatenate(
+        [np.array(positive).reshape(n, -1),
+         np.array(negative).reshape(n, -1)],
+        axis=0)
+    y = np.concatenate([np.zeros(n), np.ones(n)])
+    return x, y
+
+
 if __name__ == "__main__":
     # Dataset
-    x_train, y_train = make_circles(n_samples=300,
-                                    shuffle=True,
-                                    noise=0.05,
-                                    random_state=None,
-                                    factor=0.5)
+    x_train, y_train = make_spirals(n_samples=1000, noise=0.3)
     train_ds = NumpyDataset(x_train, y_train)
 
     # Dataloaders
@@ -82,46 +97,37 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         input_dim=x_train.shape[1],
-        nclasses=len(np.unique(y_train)),
-        prototypes_per_class=5,
-        prototype_initializer="randn",
-        lr=0.01,
+        nclasses=2,
+        prototypes_per_class=40,
+        prototype_initializer="stratified_random",
+        lr=0.05,
     )
 
     # Initialize the model
-    model = CBC(
-        hparams,
-        data=[x_train, y_train],
-        similarity=euclidean_similarity,
-    )
+    model_class = CBC
+    model = model_class(hparams, data=[x_train, y_train])
 
-    model = GLVQ(hparams, data=[x_train, y_train])
+    # Pure-positive reasonings
+    new_reasoning = torch.zeros_like(
+        model.reasoning_layer.reasoning_probabilities)
+    for i, label in enumerate(model.proto_layer.prototype_labels):
+        new_reasoning[0][0][i][int(label)] = 1.0
 
-    # Fix the component locations
-    # model.proto_layer.requires_grad_(False)
-
-    # import sys
-    # sys.exit()
+    model.reasoning_layer.reasoning_probabilities.data = new_reasoning
 
     # Model summary
     print(model)
 
     # Callbacks
-    dvis = VisPointProtos(
-        data=(x_train, y_train),
-        save=True,
-        snap=False,
-        voronoi=True,
-        resolution=50,
-        pause_time=0.1,
-        make_gif=True,
-    )
+    vis = VisualizationCallback(x_train,
+                                y_train,
+                                prototype_model=hasattr(model, "prototypes"))
 
     # Setup trainer
     trainer = pl.Trainer(
-        max_epochs=10,
+        max_epochs=500,
         callbacks=[
-            dvis,
+            vis,
         ],
     )
 

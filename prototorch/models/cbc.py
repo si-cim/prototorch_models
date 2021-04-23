@@ -1,13 +1,9 @@
-import argparse
-
 import pytorch_lightning as pl
 import torch
 import torchmetrics
-from prototorch.functions.competitions import wtac
+
 from prototorch.functions.distances import euclidean_distance
 from prototorch.functions.similarities import cosine_similarity
-from prototorch.functions.initializers import get_initializer
-from prototorch.functions.losses import glvq_loss
 from prototorch.modules.prototypes import Prototypes1D
 
 
@@ -64,9 +60,6 @@ class ReasoningLayer(torch.nn.Module):
         super().__init__()
         self.n_replicas = n_replicas
         self.n_classes = n_classes
-        # probabilities_init = torch.zeros(2, self.n_replicas, n_components,
-        #                                  self.n_classes)
-        # probabilities_init = torch.zeros(2, n_components, self.n_classes)
         probabilities_init = torch.zeros(2, 1, n_components, self.n_classes)
         probabilities_init.uniform_(0.4, 0.6)
         self.reasoning_probabilities = torch.nn.Parameter(probabilities_init)
@@ -75,37 +68,28 @@ class ReasoningLayer(torch.nn.Module):
     def reasonings(self):
         pk = self.reasoning_probabilities[0]
         nk = (1 - pk) * self.reasoning_probabilities[1]
-        ik = (1 - pk - nk)
-        # pk is of shape (1, n_components, n_classes)
+        ik = 1 - pk - nk
         img = torch.cat([pk, nk, ik], dim=0).permute(1, 0, 2)
-        return img.unsqueeze(1)  # (n_components, 1, 3, n_classes)
+        return img.unsqueeze(1)
 
     def forward(self, detections):
         pk = self.reasoning_probabilities[0].clamp(0, 1)
         nk = (1 - pk) * self.reasoning_probabilities[1].clamp(0, 1)
         epsilon = torch.finfo(pk.dtype).eps
-        # print(f"{detections.shape=}")
-        # print(f"{pk.shape=}")
-        # print(f"{detections.min()=}")
-        # print(f"{detections.max()=}")
         numerator = (detections @ (pk - nk)) + nk.sum(1)
-        # probs = numerator / (pk + nk).sum(1).clamp(min=epsilon)
         probs = numerator / (pk + nk).sum(1)
-        # probs = probs.squeeze(0)
         probs = probs.squeeze(0)
         return probs
 
 
 class CBC(pl.LightningModule):
     """Classification-By-Components."""
-    def __init__(
-            self,
-            hparams,
-            margin=0.1,
-            backbone_class=torch.nn.Identity,
-            # similarity=rescaled_cosine_similarity,
-            similarity=euclidean_similarity,
-            **kwargs):
+    def __init__(self,
+                 hparams,
+                 margin=0.1,
+                 backbone_class=torch.nn.Identity,
+                 similarity=euclidean_similarity,
+                 **kwargs):
         super().__init__()
         self.save_hyperparameters(hparams)
         self.margin = margin
@@ -142,14 +126,10 @@ class CBC(pl.LightningModule):
 
     def forward(self, x):
         self.sync_backbones()
-        protos = self.proto_layer.prototypes
-        # protos, _ = self.proto_layer()
+        protos, _ = self.proto_layer()
 
         latent_x = self.backbone(x)
         latent_protos = self.backbone_dependent(protos)
-
-        # print(f"{latent_x.dtype=}")
-        # print(f"{latent_protos.dtype=}")
 
         detections = self.similarity(latent_x, latent_protos)
         probs = self.reasoning_layer(detections)
@@ -159,20 +139,10 @@ class CBC(pl.LightningModule):
         x, y = train_batch
         x = x.view(x.size(0), -1)
         y_pred = self(x)
-        # print(f"{y_pred.min()=}")
-        # print(f"{y_pred.max()=}")
         nclasses = self.reasoning_layer.n_classes
-        # y_true = torch.nn.functional.one_hot(y, num_classes=nclasses)
-        # y_true = torch.eye(nclasses)[y.long()]
         y_true = torch.nn.functional.one_hot(y.long(), num_classes=nclasses)
         loss = MarginLoss(self.margin)(y_pred, y_true).mean(dim=0)
         self.log("train_loss", loss)
-        # with torch.no_grad():
-        #     preds = torch.argmax(y_pred, dim=1)
-        # # self.train_acc.update(preds.int(), y.int())
-        # self.train_acc(
-        #     preds.int(),
-        #     y.int())  # FloatTensors are assumed to be class probabilities
         self.train_acc(y_pred, y_true)
         self.log(
             "acc",
@@ -184,17 +154,8 @@ class CBC(pl.LightningModule):
         )
         return loss
 
-    #def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-    #    self.reasoning_layer.reasoning_probabilities.data.clamp_(0., 1.)
-
-    # def training_epoch_end(self, outs):
-    #     # Calling `self.train_acc.compute()` is
-    #     # automatically done by setting `on_epoch=True` when logging in `self.training_step(...)`
-    #     self.log("train_acc_epoch", self.train_acc.compute())
-
     def predict(self, x):
         with torch.no_grad():
-            # model.eval()  # ?!
             y_pred = self(x)
             y_pred = torch.argmax(y_pred, dim=1)
         return y_pred.numpy()
@@ -205,5 +166,5 @@ class ImageCBC(CBC):
     clamping after updates.
     """
     def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-        #super().on_train_batch_end(outputs, batch, batch_idx, dataloader_idx)
+        # super().on_train_batch_end(outputs, batch, batch_idx, dataloader_idx)
         self.proto_layer.prototypes.data.clamp_(0.0, 1.0)

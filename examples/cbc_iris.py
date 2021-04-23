@@ -4,16 +4,11 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
-from prototorch.models.cbc import CBC
 from sklearn.datasets import load_iris
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
-
-class NumpyDataset(TensorDataset):
-    def __init__(self, *arrays):
-        # tensors = [torch.from_numpy(arr) for arr in arrays]
-        tensors = [torch.Tensor(arr) for arr in arrays]
-        super().__init__(*tensors)
+from prototorch.datasets.abstract import NumpyDataset
+from prototorch.models.cbc import CBC
 
 
 class VisualizationCallback(pl.Callback):
@@ -47,7 +42,8 @@ class VisualizationCallback(pl.Callback):
             cmap=self.cmap,
             edgecolor="k",
             marker="D",
-            s=50)
+            s=50,
+        )
         x = np.vstack((x_train, protos))
         x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
         y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
@@ -73,11 +69,13 @@ if __name__ == "__main__":
     train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
 
     # Hyperparameters
-    hparams = dict(input_dim=x_train.shape[1],
-                   nclasses=3,
-                   prototypes_per_class=3,
-                   prototype_initializer="stratified_mean",
-                   lr=0.01)
+    hparams = dict(
+        input_dim=x_train.shape[1],
+        nclasses=3,
+        prototypes_per_class=3,
+        prototype_initializer="stratified_mean",
+        lr=0.01,
+    )
 
     # Initialize the model
     model = CBC(hparams, data=[x_train, y_train])
