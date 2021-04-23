@@ -1,4 +1,4 @@
-"""CBC example using the Iris dataset."""
+"""Neural Gas example using the Iris dataset."""
 
 import numpy as np
 import pytorch_lightning as pl
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         nclasses=1,
         prototypes_per_class=30,
         prototype_initializer="rand",
-        lr=0.01,
+        lr=0.1,
     )
 
     # Initialize the model
