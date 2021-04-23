@@ -44,6 +44,12 @@ To assist in the development process, you may also find it useful to install
 ## Available models
 
 - [X] GLVQ
+- [X] Neural Gas
+
+## Work in Progress
+- [ ] CBC
+
+## Planned models
 - [ ] GMLVQ
 - [ ] Local-Matrix GMLVQ
 - [ ] Limited-Rank GMLVQ
@@ -51,4 +57,3 @@ To assist in the development process, you may also find it useful to install
 - [ ] RSLVQ
 - [ ] PLVQ
 - [ ] LVQMLN
-- [ ] CBC
