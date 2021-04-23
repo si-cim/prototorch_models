@@ -1,4 +1,8 @@
-"""CBC example using the Iris dataset."""
+"""CBC example using the spirals dataset.
+
+This example shows how to jump start a model by transferring weights from
+another more stable model.
+"""
 
 import numpy as np
 import pytorch_lightning as pl
