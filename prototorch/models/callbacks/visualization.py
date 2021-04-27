@@ -7,8 +7,7 @@ from matplotlib.offsetbox import AnchoredText
 
 from prototorch.utils.celluloid import Camera
 from prototorch.utils.colors import color_scheme
-from prototorch.utils.utils import (gif_from_dir, make_directory,
-                                    prettify_string)
+from prototorch.utils.utils import gif_from_dir, make_directory, prettify_string
 
 
 class VisWeights(Callback):
