@@ -27,6 +27,7 @@ class VisualizationCallback(pl.Callback):
     def on_epoch_end(self, trainer, pl_module):
         protos = pl_module.prototypes
         plabels = pl_module.prototype_labels
+        x_train, y_train = self.x_train, self.y_train
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
