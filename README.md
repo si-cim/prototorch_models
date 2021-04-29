@@ -48,13 +48,17 @@ To assist in the development process, you may also find it useful to install
 - Neural Gas
 
 ## Work in Progress
+
 - CBC
+- LVQMLN
+- GMLVQ
+- Limited-Rank GMLVQ
 
 ## Planned models
-- GMLVQ
+
 - Local-Matrix GMLVQ
-- Limited-Rank GMLVQ
 - GTLVQ
 - RSLVQ
 - PLVQ
-- LVQMLN
+- SILVQ
+- KNN
