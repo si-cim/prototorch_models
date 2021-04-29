@@ -1,6 +1,4 @@
-"""GLVQ example using the Iris dataset."""
-
-import argparse
+"""CBC example using the Iris dataset."""
 
 import numpy as np
 import pytorch_lightning as pl
@@ -10,24 +8,7 @@ from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader
 
 from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.glvq import GLVQ
-
-
-class GLVQIris(GLVQ):
-    @staticmethod
-    def add_model_specific_args(parent_parser):
-        parser = argparse.ArgumentParser(parents=[parent_parser],
-                                         add_help=False)
-        parser.add_argument("--epochs", type=int, default=1)
-        parser.add_argument("--lr", type=float, default=1e-1)
-        parser.add_argument("--batch_size", type=int, default=150)
-        parser.add_argument("--input_dim", type=int, default=2)
-        parser.add_argument("--nclasses", type=int, default=3)
-        parser.add_argument("--prototypes_per_class", type=int, default=3)
-        parser.add_argument("--prototype_initializer",
-                            type=str,
-                            default="stratified_mean")
-        return parser
+from prototorch.models.cbc import CBC
 
 
 class VisualizationCallback(pl.Callback):
@@ -44,8 +25,9 @@ class VisualizationCallback(pl.Callback):
         self.cmap = cmap
 
     def on_epoch_end(self, trainer, pl_module):
-        protos = pl_module.prototypes
-        plabels = pl_module.prototype_labels
+        # protos = pl_module.prototypes
+        protos = pl_module.components
+        # plabels = pl_module.prototype_labels
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
@@ -55,7 +37,8 @@ class VisualizationCallback(pl.Callback):
         ax.scatter(
             protos[:, 0],
             protos[:, 1],
-            c=plabels,
+            # c=plabels,
+            c="k",
             cmap=self.cmap,
             edgecolor="k",
             marker="D",
@@ -77,10 +60,6 @@ class VisualizationCallback(pl.Callback):
 
 
 if __name__ == "__main__":
-    # For best-practices when using `argparse` with `pytorch_lightning`, see
-    # https://pytorch-lightning.readthedocs.io/en/stable/common/hyperparameters.html
-    parser = argparse.ArgumentParser()
-
     # Dataset
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
@@ -89,43 +68,47 @@ if __name__ == "__main__":
     # Dataloaders
     train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
 
-    # Add model specific args
-    parser = GLVQIris.add_model_specific_args(parser)
-
-    # Callbacks
-    vis = VisualizationCallback(x_train, y_train)
-
-    # Automatically add trainer-specific-args like `--gpus`, `--num_nodes` etc.
-    parser = pl.Trainer.add_argparse_args(parser)
-
-    # Setup trainer
-    trainer = pl.Trainer.from_argparse_args(
-        parser,
-        max_epochs=10,
-        callbacks=[
-            vis,
-        ],  # comment this line out to disable the visualization
+    # Hyperparameters
+    hparams = dict(
+        input_dim=x_train.shape[1],
+        nclasses=3,
+        prototypes_per_class=3,
+        prototype_initializer="stratified_mean",
+        lr=0.01,
     )
-    # trainer.tune(model)
 
     # Initialize the model
-    args = parser.parse_args()
-    model = GLVQIris(args, data=[x_train, y_train])
+    model = CBC(hparams, data=[x_train, y_train])
+
+    # Fix the component locations
+    # model.proto_layer.requires_grad_(False)
+
+    # Pure-positive reasonings
+    ncomps = 3
+    nclasses = 3
+    rmat = torch.stack(
+        [0.9 * torch.eye(ncomps),
+         torch.zeros(ncomps, nclasses)], dim=0)
+    # model.reasoning_layer.load_state_dict({"reasoning_probabilities": rmat},
+    #                                       strict=True)
+
+    print(model.reasoning_layer.reasoning_probabilities)
+    # import sys
+    # sys.exit()
 
     # Model summary
     print(model)
 
+    # Callbacks
+    vis = VisualizationCallback(x_train, y_train)
+
+    # Setup trainer
+    trainer = pl.Trainer(
+        max_epochs=100,
+        callbacks=[
+            vis,
+        ],
+    )
+
     # Training loop
     trainer.fit(model, train_loader)
-
-    # Save the model manually (use `pl.callbacks.ModelCheckpoint` to automate)
-    ckpt = "glvq_iris.ckpt"
-    trainer.save_checkpoint(ckpt)
-
-    # Load the checkpoint
-    new_model = GLVQIris.load_from_checkpoint(checkpoint_path=ckpt)
-
-    print(new_model)
-
-    # Continue training
-    trainer.fit(new_model, train_loader)  # TODO See why this fails!

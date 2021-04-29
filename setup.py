@@ -9,8 +9,7 @@
 ProtoTorch models Plugin Package
 """
 from pkg_resources import safe_name
-from setuptools import setup
-from setuptools import find_namespace_packages
+from setuptools import find_namespace_packages, setup
 
 PLUGIN_NAME = "models"
 
@@ -20,7 +19,7 @@ DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-INSTALL_REQUIRES = ["prototorch", "pytorch_lightning"]
+INSTALL_REQUIRES = ["prototorch", "pytorch_lightning", "torchmetrics"]
 EXAMPLES = ["matplotlib", "scikit-learn"]
 TESTS = ["pytest"]
 ALL = EXAMPLES + TESTS
@@ -28,7 +27,8 @@ ALL = EXAMPLES + TESTS
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
     use_scm_version=True,
-    descripion="Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning.",
+    descripion=
+    "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
     author="Alexander Engelsberger",
     author_email="engelsbe@hs-mittweida.de",
