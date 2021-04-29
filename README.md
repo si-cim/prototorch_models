@@ -35,7 +35,7 @@ workon pt
 git clone git@github.com:si-cim/prototorch_models.git
 cd prototorch_models
 git checkout dev
-pip install -e .[all]  # \[all\] if you are using zsh
+pip install -e .[all]  # \[all\] if you are using zsh or MacOS
 ```
 
 To assist in the development process, you may also find it useful to install
