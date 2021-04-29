@@ -28,7 +28,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = GLVQ(hparams, data=[x_train, y_train])
+    model = GLVQ(hparams)
 
     # Setup trainer
     trainer = pl.Trainer(
