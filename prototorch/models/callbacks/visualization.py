@@ -261,20 +261,29 @@ class VisPointProtos(VisWeights):
         self._show_and_save(epoch)
 
 
-class VisGLVQ2D(pl.Callback):
+class Vis2DAbstract(pl.Callback):
     def __init__(self,
                  x_train,
                  y_train,
                  title="Prototype Visualization",
-                 cmap="viridis"):
+                 cmap="viridis",
+                 show_last_only=False,
+                 block=False):
         super().__init__()
         self.x_train = x_train
         self.y_train = y_train
         self.title = title
         self.fig = plt.figure(self.title)
         self.cmap = cmap
+        self.show_last_only = show_last_only
+        self.block = block
 
+
+class VisGLVQ2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
+        if self.show_last_only:
+            if trainer.current_epoch != trainer.max_epochs - 1:
+                return
         protos = pl_module.prototypes
         plabels = pl_module.prototype_labels
         x_train, y_train = self.x_train, self.y_train
@@ -306,22 +315,13 @@ class VisGLVQ2D(pl.Callback):
         ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
         ax.set_xlim(left=x_min + 0, right=x_max - 0)
         ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
-        plt.pause(0.1)
+        if not self.block:
+            plt.pause(0.01)
+        else:
+            plt.show(block=True)
 
 
-class VisSiameseGLVQ2D(pl.Callback):
-    def __init__(self,
-                 x_train,
-                 y_train,
-                 title="Prototype Visualization",
-                 cmap="viridis"):
-        super().__init__()
-        self.x_train = x_train
-        self.y_train = y_train
-        self.title = title
-        self.fig = plt.figure(self.title)
-        self.cmap = cmap
-
+class VisSiameseGLVQ2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
         protos = pl_module.prototypes
         plabels = pl_module.prototype_labels
@@ -361,22 +361,14 @@ class VisSiameseGLVQ2D(pl.Callback):
             global_step=trainer.current_epoch,
             close=False,
         )
-        plt.pause(0.1)
+
+        if not self.block:
+            plt.pause(0.01)
+        else:
+            plt.show(block=True)
 
 
-class VisNG2D(pl.Callback):
-    def __init__(self,
-                 x_train,
-                 y_train,
-                 title="Neural Gas Visualization",
-                 cmap="viridis"):
-        super().__init__()
-        self.x_train = x_train
-        self.y_train = y_train
-        self.title = title
-        self.fig = plt.figure(self.title)
-        self.cmap = cmap
-
+class VisNG2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
         protos = pl_module.prototypes
         cmat = pl_module.topology_layer.cmat.cpu().numpy()
@@ -410,4 +402,7 @@ class VisNG2D(pl.Callback):
                         "k-",
                     )
 
-        plt.pause(0.01)
+        if not self.block:
+            plt.pause(0.01)
+        else:
+            plt.show(block=True)
