@@ -1,16 +1,17 @@
 import os
 
 import numpy as np
+import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
 from matplotlib.offsetbox import AnchoredText
-
 from prototorch.utils.celluloid import Camera
 from prototorch.utils.colors import color_scheme
-from prototorch.utils.utils import gif_from_dir, make_directory, prettify_string
+from prototorch.utils.utils import (gif_from_dir, make_directory,
+                                    prettify_string)
 
 
-class VisWeights(Callback):
+class VisWeights(pl.Callback):
     """Abstract weight visualization callback."""
     def __init__(
         self,
@@ -258,3 +259,155 @@ class VisPointProtos(VisWeights):
         epoch = trainer.current_epoch
         self._display_logs(self.ax, epoch, logs)
         self._show_and_save(epoch)
+
+
+class VisGLVQ2D(pl.Callback):
+    def __init__(self,
+                 x_train,
+                 y_train,
+                 title="Prototype Visualization",
+                 cmap="viridis"):
+        super().__init__()
+        self.x_train = x_train
+        self.y_train = y_train
+        self.title = title
+        self.fig = plt.figure(self.title)
+        self.cmap = cmap
+
+    def on_epoch_end(self, trainer, pl_module):
+        protos = pl_module.prototypes
+        plabels = pl_module.prototype_labels
+        x_train, y_train = self.x_train, self.y_train
+        ax = self.fig.gca()
+        ax.cla()
+        ax.set_title(self.title)
+        ax.axis("off")
+        ax.set_xlabel("Data dimension 1")
+        ax.set_ylabel("Data dimension 2")
+        ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
+        ax.scatter(
+            protos[:, 0],
+            protos[:, 1],
+            c=plabels,
+            cmap=self.cmap,
+            edgecolor="k",
+            marker="D",
+            s=50,
+        )
+        x = np.vstack((x_train, protos))
+        x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
+        y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, 1 / 50),
+                             np.arange(y_min, y_max, 1 / 50))
+        mesh_input = np.c_[xx.ravel(), yy.ravel()]
+        y_pred = pl_module.predict(torch.Tensor(mesh_input))
+        y_pred = y_pred.reshape(xx.shape)
+
+        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
+        ax.set_xlim(left=x_min + 0, right=x_max - 0)
+        ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
+        plt.pause(0.1)
+
+
+class VisSiameseGLVQ2D(pl.Callback):
+    def __init__(self,
+                 x_train,
+                 y_train,
+                 title="Prototype Visualization",
+                 cmap="viridis"):
+        super().__init__()
+        self.x_train = x_train
+        self.y_train = y_train
+        self.title = title
+        self.fig = plt.figure(self.title)
+        self.cmap = cmap
+
+    def on_epoch_end(self, trainer, pl_module):
+        protos = pl_module.prototypes
+        plabels = pl_module.prototype_labels
+        x_train, y_train = self.x_train, self.y_train
+        x_train = pl_module.backbone(torch.Tensor(x_train)).detach()
+        protos = pl_module.backbone(torch.Tensor(protos)).detach()
+        ax = self.fig.gca()
+        ax.cla()
+        ax.set_title(self.title)
+        ax.axis("off")
+        ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
+        ax.scatter(
+            protos[:, 0],
+            protos[:, 1],
+            c=plabels,
+            cmap=self.cmap,
+            edgecolor="k",
+            marker="D",
+            s=50,
+        )
+        x = np.vstack((x_train, protos))
+        x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
+        y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, 1 / 50),
+                             np.arange(y_min, y_max, 1 / 50))
+        mesh_input = np.c_[xx.ravel(), yy.ravel()]
+        y_pred = pl_module.predict_latent(torch.Tensor(mesh_input))
+        y_pred = y_pred.reshape(xx.shape)
+
+        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
+        ax.set_xlim(left=x_min + 0, right=x_max - 0)
+        ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
+        tb = pl_module.logger.experiment
+        tb.add_figure(
+            tag=f"{self.title}",
+            figure=self.fig,
+            global_step=trainer.current_epoch,
+            close=False,
+        )
+        plt.pause(0.1)
+
+
+class VisNG2D(pl.Callback):
+    def __init__(self,
+                 x_train,
+                 y_train,
+                 title="Neural Gas Visualization",
+                 cmap="viridis"):
+        super().__init__()
+        self.x_train = x_train
+        self.y_train = y_train
+        self.title = title
+        self.fig = plt.figure(self.title)
+        self.cmap = cmap
+
+    def on_epoch_end(self, trainer, pl_module):
+        protos = pl_module.prototypes
+        cmat = pl_module.topology_layer.cmat.cpu().numpy()
+
+        # Visualize the data and the prototypes
+        ax = self.fig.gca()
+        ax.cla()
+        ax.set_title(self.title)
+        ax.set_xlabel("Data dimension 1")
+        ax.set_ylabel("Data dimension 2")
+        ax.scatter(self.x_train[:, 0],
+                   self.x_train[:, 1],
+                   c=self.y_train,
+                   edgecolor="k")
+        ax.scatter(
+            protos[:, 0],
+            protos[:, 1],
+            c="k",
+            edgecolor="k",
+            marker="D",
+            s=50,
+        )
+
+        # Draw connections
+        for i in range(len(protos)):
+            for j in range(len(protos)):
+                if cmat[i][j]:
+                    ax.plot(
+                        [protos[i, 0], protos[j, 0]],
+                        [protos[i, 1], protos[j, 1]],
+                        "k-",
+                    )
+
+        plt.pause(0.01)

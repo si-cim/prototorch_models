@@ -1,9 +1,12 @@
 import pytorch_lightning as pl
 import torch
-
+from prototorch.components import Components
+from prototorch.components import initializers as cinit
 from prototorch.functions.distances import euclidean_distance
 from prototorch.modules import Prototypes1D
 from prototorch.modules.losses import NeuralGasEnergy
+
+from .abstract import AbstractPrototypeModel
 
 
 class EuclideanDistance(torch.nn.Module):
@@ -34,41 +37,35 @@ class ConnectionTopology(torch.nn.Module):
         return f"agelimit: {self.agelimit}"
 
 
-class NeuralGas(pl.LightningModule):
+class NeuralGas(AbstractPrototypeModel):
     def __init__(self, hparams, **kwargs):
         super().__init__()
 
         self.save_hyperparameters(hparams)
 
         # Default Values
+        self.hparams.setdefault("input_dim", 2)
         self.hparams.setdefault("agelimit", 10)
         self.hparams.setdefault("lm", 1)
-        self.hparams.setdefault("prototype_initializer", "zeros")
+        self.hparams.setdefault("prototype_initializer",
+                                cinit.ZerosInitializer(self.hparams.input_dim))
 
-        self.proto_layer = Prototypes1D(
-            input_dim=self.hparams.input_dim,
-            nclasses=self.hparams.nclasses,
-            prototypes_per_class=self.hparams.prototypes_per_class,
-            prototype_initializer=self.hparams.prototype_initializer,
-            **kwargs,
-        )
+        self.proto_layer = Components(
+            self.hparams.num_prototypes,
+            initializer=self.hparams.prototype_initializer)
 
         self.distance_layer = EuclideanDistance()
         self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
         self.topology_layer = ConnectionTopology(
             agelimit=self.hparams.agelimit,
-            num_prototypes=len(self.proto_layer.prototypes),
+            num_prototypes=self.hparams.num_prototypes,
         )
 
     def training_step(self, train_batch, batch_idx):
-        x, _ = train_batch
-        protos, _ = self.proto_layer()
+        x = train_batch[0]
+        protos = self.proto_layer()
         d = self.distance_layer(x, protos)
         cost, order = self.energy_layer(d)
 
         self.topology_layer(d)
         return cost
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
-        return optimizer
