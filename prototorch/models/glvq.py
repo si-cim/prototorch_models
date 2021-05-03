@@ -19,6 +19,7 @@ class GLVQ(AbstractPrototypeModel):
 
         # Default Values
         self.hparams.setdefault("distance", euclidean_distance)
+        self.hparams.setdefault("optimizer", torch.optim.Adam)
 
         self.proto_layer = LabeledComponents(
             labels=(self.hparams.nclasses, self.hparams.prototypes_per_class),
@@ -35,7 +36,7 @@ class GLVQ(AbstractPrototypeModel):
         dis = self.hparams.distance(x, protos)
         return dis
 
-    def training_step(self, train_batch, batch_idx):
+    def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         x, y = train_batch
         x = x.view(x.size(0), -1)  # flatten
         dis = self(x)
@@ -101,6 +102,13 @@ class SiameseGLVQ(GLVQ):
     def sync_backbones(self):
         master_state = self.backbone.state_dict()
         self.backbone_dependent.load_state_dict(master_state, strict=True)
+
+    def configure_optimizers(self):
+        optim = self.hparams.optimizer
+        proto_opt = optim(self.proto_layer.parameters(),
+                          lr=self.hparams.proto_lr)
+        bb_opt = optim(self.backbone.parameters(), lr=self.hparams.bb_lr)
+        return proto_opt, bb_opt
 
     def forward(self, x):
         self.sync_backbones()
