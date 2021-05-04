@@ -35,6 +35,8 @@ if __name__ == "__main__":
         prototype_initializer=cinit.SSI(torch.Tensor(x_train),
                                         torch.Tensor(y_train),
                                         noise=1e-7),
+        transfer_function="sigmoid_beta",
+        transfer_beta=10.0,
         lr=0.01,
     )
 
