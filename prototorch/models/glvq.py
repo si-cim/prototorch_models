@@ -94,11 +94,13 @@ class SiameseGLVQ(GLVQ):
                  hparams,
                  backbone_module=torch.nn.Identity,
                  backbone_params={},
+                 sync=True,
                  **kwargs):
         super().__init__(hparams, **kwargs)
         self.backbone = backbone_module(**backbone_params)
         self.backbone_dependent = backbone_module(
             **backbone_params).requires_grad_(False)
+        self.sync = sync
 
     def sync_backbones(self):
         master_state = self.backbone.state_dict()
@@ -117,7 +119,8 @@ class SiameseGLVQ(GLVQ):
             return proto_opt
 
     def forward(self, x):
-        self.sync_backbones()
+        if self.sync:
+            self.sync_backbones()
         protos, _ = self.proto_layer()
         latent_x = self.backbone(x)
         latent_protos = self.backbone_dependent(protos)
@@ -145,7 +148,7 @@ class GMLVQ(GLVQ):
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.omega_layer = torch.nn.Linear(self.hparams.input_dim,
-                                           self.latent_dim,
+                                           self.hparams.latent_dim,
                                            bias=False)
 
     def forward(self, x):
@@ -154,6 +157,21 @@ class GMLVQ(GLVQ):
         latent_protos = self.omega_layer(protos)
         dis = squared_euclidean_distance(latent_x, latent_protos)
         return dis
+
+    def predict_latent(self, x):
+        """Predict `x` assuming it is already embedded in the latent space.
+
+        Only the prototypes are embedded in the latent space using the
+        backbone.
+
+        """
+        # model.eval()  # ?!
+        with torch.no_grad():
+            protos, plabels = self.proto_layer()
+            latent_protos = self.omega_layer(protos)
+            d = squared_euclidean_distance(x, latent_protos)
+            y_pred = wtac(d, plabels)
+        return y_pred.numpy()
 
 
 class LVQMLN(GLVQ):

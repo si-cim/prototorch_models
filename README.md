@@ -46,13 +46,13 @@ To assist in the development process, you may also find it useful to install
 - GLVQ
 - Siamese GLVQ
 - Neural Gas
+- GMLVQ
+- Limited-Rank GMLVQ
 
 ## Work in Progress
 
 - CBC
 - LVQMLN
-- GMLVQ
-- Limited-Rank GMLVQ
 
 ## Planned models
 
@@ -62,3 +62,4 @@ To assist in the development process, you may also find it useful to install
 - PLVQ
 - SILVQ
 - KNN
+- LVQ1
