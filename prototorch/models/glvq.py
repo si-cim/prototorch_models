@@ -52,6 +52,8 @@ class GLVQ(AbstractPrototypeModel):
         # Compute training accuracy
         with torch.no_grad():
             preds = wtac(dis, plabels)
+
+        self.train_acc(preds.int(), y.int())
         # `.int()` because FloatTensors are assumed to be class probabilities
 
         # Logging
