@@ -3,7 +3,7 @@ import torchmetrics
 from prototorch.components import LabeledComponents
 from prototorch.functions.activations import get_activation
 from prototorch.functions.competitions import wtac
-from prototorch.functions.distances import (euclidean_distance,
+from prototorch.functions.distances import (euclidean_distance, omega_distance,
                                             squared_euclidean_distance)
 from prototorch.functions.losses import glvq_loss
 
@@ -32,7 +32,7 @@ class GLVQ(AbstractPrototypeModel):
 
     @property
     def prototype_labels(self):
-        return self.proto_layer.component_labels.detach().numpy()
+        return self.proto_layer.component_labels.detach().cpu()
 
     def forward(self, x):
         protos, _ = self.proto_layer()
@@ -144,6 +144,41 @@ class SiameseGLVQ(GLVQ):
             protos, plabels = self.proto_layer()
             latent_protos = self.backbone_dependent(protos)
             d = euclidean_distance(x, latent_protos)
+            y_pred = wtac(d, plabels)
+        return y_pred.numpy()
+
+
+class GRLVQ(GLVQ):
+    """Generalized Relevance Learning Vector Quantization."""
+    def __init__(self, hparams, **kwargs):
+        super().__init__(hparams, **kwargs)
+        self.relevances = torch.nn.parameter.Parameter(
+            torch.ones(self.hparams.input_dim))
+
+    def forward(self, x):
+        protos, _ = self.proto_layer()
+        dis = omega_distance(x, protos, torch.diag(self.relevances))
+        return dis
+
+    def backbone(self, x):
+        return x @ torch.diag(self.relevances)
+
+    @property
+    def relevance_profile(self):
+        return self.relevances.detach().cpu()
+
+    def predict_latent(self, x):
+        """Predict `x` assuming it is already embedded in the latent space.
+
+        Only the prototypes are embedded in the latent space using the
+        backbone.
+
+        """
+        # model.eval()  # ?!
+        with torch.no_grad():
+            protos, plabels = self.proto_layer()
+            latent_protos = protos @ torch.diag(self.relevances)
+            d = squared_euclidean_distance(x, latent_protos)
             y_pred = wtac(d, plabels)
         return y_pred.numpy()
 
