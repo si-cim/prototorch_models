@@ -1,14 +1,13 @@
 """Neural Gas example using the Iris dataset."""
 
-import numpy as np
 import pytorch_lightning as pl
-from matplotlib import pyplot as plt
 from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisNG2D
-from prototorch.models.neural_gas import NeuralGas
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
+
+from prototorch.models.callbacks.visualization import VisNG2D
+from prototorch.models.neural_gas import NeuralGas
 
 if __name__ == "__main__":
     # Dataset

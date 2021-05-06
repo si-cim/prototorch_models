@@ -4,13 +4,12 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+from prototorch.components import initializers as cinit
+from prototorch.datasets.abstract import NumpyDataset
 from sklearn.datasets import make_circles
 from torch.utils.data import DataLoader
 
-from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisPointProtos
 from prototorch.models.cbc import CBC, euclidean_similarity
-from prototorch.models.glvq import GLVQ
 
 
 class VisualizationCallback(pl.Callback):
@@ -32,7 +31,7 @@ class VisualizationCallback(pl.Callback):
 
     def on_epoch_end(self, trainer, pl_module):
         if self.prototype_model:
-            protos = pl_module.prototypes
+            protos = pl_module.components
             color = pl_module.prototype_labels
         else:
             protos = pl_module.components
@@ -83,8 +82,8 @@ if __name__ == "__main__":
     hparams = dict(
         input_dim=x_train.shape[1],
         nclasses=len(np.unique(y_train)),
-        prototypes_per_class=5,
-        prototype_initializer="randn",
+        num_components=5,
+        component_initializer=cinit.RandomInitializer(x_train.shape[1]),
         lr=0.01,
     )
 
@@ -95,31 +94,15 @@ if __name__ == "__main__":
         similarity=euclidean_similarity,
     )
 
-    model = GLVQ(hparams, data=[x_train, y_train])
-
-    # Fix the component locations
-    # model.proto_layer.requires_grad_(False)
-
-    # import sys
-    # sys.exit()
-
-    # Model summary
-    print(model)
-
     # Callbacks
-    dvis = VisPointProtos(
-        data=(x_train, y_train),
-        save=True,
-        snap=False,
-        voronoi=True,
-        resolution=50,
-        pause_time=0.1,
-        make_gif=True,
-    )
+    dvis = VisualizationCallback(x_train,
+                                 y_train,
+                                 prototype_model=False,
+                                 title="CBC Circle Example")
 
     # Setup trainer
     trainer = pl.Trainer(
-        max_epochs=10,
+        max_epochs=50,
         callbacks=[
             dvis,
         ],

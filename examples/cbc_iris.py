@@ -4,30 +4,38 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+from prototorch.components import initializers as cinit
+from prototorch.datasets.abstract import NumpyDataset
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader
 
-from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.cbc import CBC
+from prototorch.models.cbc import CBC, euclidean_similarity
 
 
 class VisualizationCallback(pl.Callback):
-    def __init__(self,
-                 x_train,
-                 y_train,
-                 title="Prototype Visualization",
-                 cmap="viridis"):
+    def __init__(
+        self,
+        x_train,
+        y_train,
+        prototype_model=True,
+        title="Prototype Visualization",
+        cmap="viridis",
+    ):
         super().__init__()
         self.x_train = x_train
         self.y_train = y_train
         self.title = title
         self.fig = plt.figure(self.title)
         self.cmap = cmap
+        self.prototype_model = prototype_model
 
     def on_epoch_end(self, trainer, pl_module):
-        # protos = pl_module.prototypes
-        protos = pl_module.components
-        # plabels = pl_module.prototype_labels
+        if self.prototype_model:
+            protos = pl_module.components
+            color = pl_module.prototype_labels
+        else:
+            protos = pl_module.components
+            color = "k"
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
@@ -37,8 +45,7 @@ class VisualizationCallback(pl.Callback):
         ax.scatter(
             protos[:, 0],
             protos[:, 1],
-            # c=plabels,
-            c="k",
+            c=color,
             cmap=self.cmap,
             edgecolor="k",
             marker="D",
@@ -71,42 +78,31 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         input_dim=x_train.shape[1],
-        nclasses=3,
-        prototypes_per_class=3,
-        prototype_initializer="stratified_mean",
+        nclasses=len(np.unique(y_train)),
+        num_components=9,
+        component_initializer=cinit.StratifiedMeanInitializer(
+            torch.Tensor(x_train), torch.Tensor(y_train)),
         lr=0.01,
     )
 
     # Initialize the model
-    model = CBC(hparams, data=[x_train, y_train])
-
-    # Fix the component locations
-    # model.proto_layer.requires_grad_(False)
-
-    # Pure-positive reasonings
-    ncomps = 3
-    nclasses = 3
-    rmat = torch.stack(
-        [0.9 * torch.eye(ncomps),
-         torch.zeros(ncomps, nclasses)], dim=0)
-    # model.reasoning_layer.load_state_dict({"reasoning_probabilities": rmat},
-    #                                       strict=True)
-
-    print(model.reasoning_layer.reasoning_probabilities)
-    # import sys
-    # sys.exit()
-
-    # Model summary
-    print(model)
+    model = CBC(
+        hparams,
+        data=[x_train, y_train],
+        similarity=euclidean_similarity,
+    )
 
     # Callbacks
-    vis = VisualizationCallback(x_train, y_train)
+    dvis = VisualizationCallback(x_train,
+                                 y_train,
+                                 prototype_model=False,
+                                 title="CBC Iris Example")
 
     # Setup trainer
     trainer = pl.Trainer(
-        max_epochs=100,
+        max_epochs=50,
         callbacks=[
-            vis,
+            dvis,
         ],
     )
 

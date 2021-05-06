@@ -8,9 +8,9 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+from prototorch.datasets.abstract import NumpyDataset
 from torch.utils.data import DataLoader
 
-from prototorch.datasets.abstract import NumpyDataset
 from prototorch.models.cbc import CBC
 from prototorch.models.glvq import GLVQ
 
@@ -132,11 +132,12 @@ if __name__ == "__main__":
     train(glvq_model, x_train, y_train, train_loader, epochs=10)
 
     # Transfer Prototypes
-    cbc_model.proto_layer.load_state_dict(glvq_model.proto_layer.state_dict())
+    cbc_model.component_layer.load_state_dict(
+        glvq_model.proto_layer.state_dict())
     # Pure-positive reasonings
     new_reasoning = torch.zeros_like(
         cbc_model.reasoning_layer.reasoning_probabilities)
-    for i, label in enumerate(cbc_model.proto_layer.prototype_labels):
+    for i, label in enumerate(cbc_model.component_layer.prototype_labels):
         new_reasoning[0][0][i][int(label)] = 1.0
         new_reasoning[1][0][i][1 - int(label)] = 1.0
 

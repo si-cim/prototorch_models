@@ -1,12 +1,12 @@
 """GMLVQ example using the Tecator dataset."""
 
 import pytorch_lightning as pl
-import torch
 from prototorch.components import initializers as cinit
 from prototorch.datasets.tecator import Tecator
+from torch.utils.data import DataLoader
+
 from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
 from prototorch.models.glvq import GMLVQ
-from torch.utils.data import DataLoader
 
 if __name__ == "__main__":
     # Dataset

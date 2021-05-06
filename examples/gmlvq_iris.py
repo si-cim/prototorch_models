@@ -4,10 +4,11 @@ import pytorch_lightning as pl
 import torch
 from prototorch.components import initializers as cinit
 from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
-from prototorch.models.glvq import GMLVQ
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader
+
+from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
+from prototorch.models.glvq import GMLVQ
 
 if __name__ == "__main__":
     # Dataset

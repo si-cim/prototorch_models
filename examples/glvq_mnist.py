@@ -7,6 +7,7 @@ import argparse
 
 import pytorch_lightning as pl
 import torchvision
+from prototorch.components import initializers as cinit
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
@@ -92,12 +93,12 @@ if __name__ == "__main__":
         input_dim=28 * 28,
         nclasses=10,
         prototypes_per_class=1,
-        prototype_initializer="stratified_mean",
+        prototype_initializer=cinit.StratifiedMeanInitializer(x, y),
         lr=args.lr,
     )
 
     # Initialize the model
-    model = ImageGLVQ(hparams, data=[x, y])
+    model = ImageGLVQ(hparams)
 
     # Model summary
     print(model)

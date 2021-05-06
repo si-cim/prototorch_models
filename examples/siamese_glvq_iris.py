@@ -2,13 +2,15 @@
 
 import pytorch_lightning as pl
 import torch
-from prototorch.components import (StratifiedMeanInitializer,
-                                   StratifiedSelectionInitializer)
+from prototorch.components import (
+    StratifiedMeanInitializer
+)
 from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
-from prototorch.models.glvq import SiameseGLVQ
 from sklearn.datasets import load_iris
 from torch.utils.data import DataLoader
+
+from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
+from prototorch.models.glvq import SiameseGLVQ
 
 
 class Backbone(torch.nn.Module):

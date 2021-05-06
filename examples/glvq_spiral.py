@@ -5,9 +5,10 @@ import torch
 from prototorch.components import initializers as cinit
 from prototorch.datasets.abstract import NumpyDataset
 from prototorch.datasets.spiral import make_spiral
+from torch.utils.data import DataLoader
+
 from prototorch.models.callbacks.visualization import VisGLVQ2D
 from prototorch.models.glvq import GLVQ
-from torch.utils.data import DataLoader
 
 
 class StopOnNaN(pl.Callback):

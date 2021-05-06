@@ -4,9 +4,9 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+from prototorch.datasets.abstract import NumpyDataset
 from torch.utils.data import DataLoader
 
-from prototorch.datasets.abstract import NumpyDataset
 from prototorch.models.cbc import CBC
 
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     # Pure-positive reasonings
     new_reasoning = torch.zeros_like(
         model.reasoning_layer.reasoning_probabilities)
-    for i, label in enumerate(model.proto_layer.prototype_labels):
+    for i, label in enumerate(model.component_layer.prototype_labels):
         new_reasoning[0][0][i][int(label)] = 1.0
 
     model.reasoning_layer.reasoning_probabilities.data = new_reasoning
