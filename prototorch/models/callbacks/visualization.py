@@ -378,7 +378,7 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
         if self.tensorboard:
             self.add_to_tensorboard(trainer, pl_module)
         if not self.block:
-            plt.pause(0.01)
+            plt.pause(0.05)
         else:
             plt.show(block=True)
 
