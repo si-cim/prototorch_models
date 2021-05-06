@@ -1,4 +1,4 @@
-"""GMLVQ example using the Tecator dataset."""
+"""Limited Rank MLVQ example using the Tecator dataset."""
 
 import pytorch_lightning as pl
 from prototorch.components import initializers as cinit
