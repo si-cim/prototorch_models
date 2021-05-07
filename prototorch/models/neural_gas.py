@@ -1,9 +1,7 @@
-import pytorch_lightning as pl
 import torch
 from prototorch.components import Components
 from prototorch.components import initializers as cinit
 from prototorch.functions.distances import euclidean_distance
-from prototorch.modules import Prototypes1D
 from prototorch.modules.losses import NeuralGasEnergy
 
 from .abstract import AbstractPrototypeModel

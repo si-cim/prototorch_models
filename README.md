@@ -5,9 +5,15 @@ PyTorch-Lightning.
 
 ## Installation
 
-To install this plugin, simple install
-[ProtoTorch](https://github.com/si-cim/prototorch) first by following the
-installation instructions there and then install this plugin by doing:
+To install this plugin, first install
+[ProtoTorch](https://github.com/si-cim/prototorch) with:
+
+```sh
+git clone https://github.com/si-cim/prototorch.git && cd prototorch
+pip install -e .
+```
+
+and then install the plugin itself with:
 
 ```sh
 git clone https://github.com/si-cim/prototorch_models.git && cd prototorch_models
@@ -28,9 +34,14 @@ following:
 ```sh
 export WORKON_HOME=~/pyenvs
 mkdir -p $WORKON_HOME
-source /usr/local/bin/virtualenvwrapper.sh  # might be different
-# source ~/.local/bin/virtualenvwrapper.sh
+source /usr/local/bin/virtualenvwrapper.sh  # location may vary
 mkvirtualenv pt
+```
+
+Once you have a virtual environment setup, you can start install the `models`
+plugin with:
+
+```sh
 workon pt
 git clone git@github.com:si-cim/prototorch_models.git
 cd prototorch_models
@@ -43,18 +54,31 @@ To assist in the development process, you may also find it useful to install
 
 ## Available models
 
-- GLVQ
+- Generalized Learning Vector Quantization (GLVQ)
+- Generalized Matrix Learning Vector Quantization (GMLVQ)
+- Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
 - Siamese GLVQ
-- Neural Gas
+- Neural Gas (NG)
 
 ## Work in Progress
-- CBC
+
+- Classification-By-Components Network (CBC)
+- Learning Vector Quantization Multi-Layer Network (LVQMLN)
 
 ## Planned models
-- GMLVQ
+
 - Local-Matrix GMLVQ
-- Limited-Rank GMLVQ
-- GTLVQ
-- RSLVQ
-- PLVQ
-- LVQMLN
+- Generalized Tangent Learning Vector Quantization (GTLVQ)
+- Robust Soft Learning Vector Quantization (RSLVQ)
+- Probabilistic Learning Vector Quantization (PLVQ)
+- Self-Incremental Learning Vector Quantization (SILVQ)
+- K-Nearest Neighbors (KNN)
+- Learning Vector Quantization 1 (LVQ1)
+
+## FAQ
+
+### How do I update the plugin?
+
+If you have already cloned and installed `prototorch` and the
+`prototorch_models` plugin with the `-e` flag via `pip`, all you have to do is
+navigate to those folders from your terminal and do `git pull` to update.

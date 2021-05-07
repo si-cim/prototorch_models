@@ -9,6 +9,7 @@ from prototorch.utils.celluloid import Camera
 from prototorch.utils.colors import color_scheme
 from prototorch.utils.utils import (gif_from_dir, make_directory,
                                     prettify_string)
+from torch.utils.data import DataLoader, Dataset
 
 
 class VisWeights(pl.Callback):
@@ -261,29 +262,82 @@ class VisPointProtos(VisWeights):
         self._show_and_save(epoch)
 
 
-class VisGLVQ2D(pl.Callback):
+class Vis2DAbstract(pl.Callback):
     def __init__(self,
-                 x_train,
-                 y_train,
+                 data,
                  title="Prototype Visualization",
-                 cmap="viridis"):
+                 cmap="viridis",
+                 border=1,
+                 resolution=50,
+                 tensorboard=False,
+                 show_last_only=False,
+                 pause_time=0.1,
+                 block=False):
         super().__init__()
-        self.x_train = x_train
-        self.y_train = y_train
+
+        if isinstance(data, Dataset):
+            x, y = next(iter(DataLoader(data, batch_size=len(data))))
+            x = x.view(len(data), -1)  # flatten
+        else:
+            x, y = data
+        self.x_train = x
+        self.y_train = y
+
         self.title = title
         self.fig = plt.figure(self.title)
         self.cmap = cmap
+        self.border = border
+        self.resolution = resolution
+        self.tensorboard = tensorboard
+        self.show_last_only = show_last_only
+        self.pause_time = pause_time
+        self.block = block
 
-    def on_epoch_end(self, trainer, pl_module):
-        protos = pl_module.prototypes
-        plabels = pl_module.prototype_labels
-        x_train, y_train = self.x_train, self.y_train
+    def setup_ax(self, xlabel=None, ylabel=None):
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
         ax.axis("off")
-        ax.set_xlabel("Data dimension 1")
-        ax.set_ylabel("Data dimension 2")
+        if xlabel:
+            ax.set_xlabel("Data dimension 1")
+        if ylabel:
+            ax.set_ylabel("Data dimension 2")
+        return ax
+
+    def get_mesh_input(self, x):
+        x_min, x_max = x[:, 0].min() - self.border, x[:, 0].max() + self.border
+        y_min, y_max = x[:, 1].min() - self.border, x[:, 1].max() + self.border
+        xx, yy = np.meshgrid(np.arange(x_min, x_max, 1 / self.resolution),
+                             np.arange(y_min, y_max, 1 / self.resolution))
+        mesh_input = np.c_[xx.ravel(), yy.ravel()]
+        return mesh_input, xx, yy
+
+    def add_to_tensorboard(self, trainer, pl_module):
+        tb = pl_module.logger.experiment
+        tb.add_figure(tag=f"{self.title}",
+                      figure=self.fig,
+                      global_step=trainer.current_epoch,
+                      close=False)
+
+    def log_and_display(self, trainer, pl_module):
+        if self.tensorboard:
+            self.add_to_tensorboard(trainer, pl_module)
+        if not self.block:
+            plt.pause(self.pause_time)
+        else:
+            plt.show(block=True)
+
+
+class VisGLVQ2D(Vis2DAbstract):
+    def on_epoch_end(self, trainer, pl_module):
+        if self.show_last_only:
+            if trainer.current_epoch != trainer.max_epochs - 1:
+                return
+        protos = pl_module.prototypes
+        plabels = pl_module.prototype_labels
+        x_train, y_train = self.x_train, self.y_train
+        ax = self.setup_ax(xlabel="Data dimension 1",
+                           ylabel="Data dimension 2")
         ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
         ax.scatter(
             protos[:, 0],
@@ -295,43 +349,25 @@ class VisGLVQ2D(pl.Callback):
             s=50,
         )
         x = np.vstack((x_train, protos))
-        x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
-        y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
-        xx, yy = np.meshgrid(np.arange(x_min, x_max, 1 / 50),
-                             np.arange(y_min, y_max, 1 / 50))
-        mesh_input = np.c_[xx.ravel(), yy.ravel()]
+        mesh_input, xx, yy = self.get_mesh_input(x)
         y_pred = pl_module.predict(torch.Tensor(mesh_input))
         y_pred = y_pred.reshape(xx.shape)
 
         ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
-        ax.set_xlim(left=x_min + 0, right=x_max - 0)
-        ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
-        plt.pause(0.1)
+        # ax.set_xlim(left=x_min + 0, right=x_max - 0)
+        # ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
+
+        self.log_and_display(trainer, pl_module)
 
 
-class VisSiameseGLVQ2D(pl.Callback):
-    def __init__(self,
-                 x_train,
-                 y_train,
-                 title="Prototype Visualization",
-                 cmap="viridis"):
-        super().__init__()
-        self.x_train = x_train
-        self.y_train = y_train
-        self.title = title
-        self.fig = plt.figure(self.title)
-        self.cmap = cmap
-
+class VisSiameseGLVQ2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
         protos = pl_module.prototypes
         plabels = pl_module.prototype_labels
         x_train, y_train = self.x_train, self.y_train
         x_train = pl_module.backbone(torch.Tensor(x_train)).detach()
         protos = pl_module.backbone(torch.Tensor(protos)).detach()
-        ax = self.fig.gca()
-        ax.cla()
-        ax.set_title(self.title)
-        ax.axis("off")
+        ax = self.setup_ax()
         ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
         ax.scatter(
             protos[:, 0],
@@ -343,54 +379,54 @@ class VisSiameseGLVQ2D(pl.Callback):
             s=50,
         )
         x = np.vstack((x_train, protos))
-        x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
-        y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
-        xx, yy = np.meshgrid(np.arange(x_min, x_max, 1 / 50),
-                             np.arange(y_min, y_max, 1 / 50))
-        mesh_input = np.c_[xx.ravel(), yy.ravel()]
+        mesh_input, xx, yy = self.get_mesh_input(x)
         y_pred = pl_module.predict_latent(torch.Tensor(mesh_input))
         y_pred = y_pred.reshape(xx.shape)
 
         ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
-        ax.set_xlim(left=x_min + 0, right=x_max - 0)
-        ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
-        tb = pl_module.logger.experiment
-        tb.add_figure(
-            tag=f"{self.title}",
-            figure=self.fig,
-            global_step=trainer.current_epoch,
-            close=False,
-        )
-        plt.pause(0.1)
+        # ax.set_xlim(left=x_min + 0, right=x_max - 0)
+        # ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
+
+        self.log_and_display(trainer, pl_module)
 
 
-class VisNG2D(pl.Callback):
-    def __init__(self,
-                 x_train,
-                 y_train,
-                 title="Neural Gas Visualization",
-                 cmap="viridis"):
-        super().__init__()
-        self.x_train = x_train
-        self.y_train = y_train
-        self.title = title
-        self.fig = plt.figure(self.title)
-        self.cmap = cmap
-
+class VisCBC2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
+        x_train, y_train = self.x_train, self.y_train
+        protos = pl_module.components
+        ax = self.setup_ax(xlabel="Data dimension 1",
+                           ylabel="Data dimension 2")
+        ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
+        ax.scatter(
+            protos[:, 0],
+            protos[:, 1],
+            c="w",
+            cmap=self.cmap,
+            edgecolor="k",
+            marker="D",
+            s=50,
+        )
+        x = np.vstack((x_train, protos))
+        mesh_input, xx, yy = self.get_mesh_input(x)
+        y_pred = pl_module.predict(torch.Tensor(mesh_input))
+        y_pred = y_pred.reshape(xx.shape)
+
+        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
+        # ax.set_xlim(left=x_min + 0, right=x_max - 0)
+        # ax.set_ylim(bottom=y_min + 0, top=y_max - 0)
+
+        self.log_and_display(trainer, pl_module)
+
+
+class VisNG2D(Vis2DAbstract):
+    def on_epoch_end(self, trainer, pl_module):
+        x_train, y_train = self.x_train, self.y_train
         protos = pl_module.prototypes
         cmat = pl_module.topology_layer.cmat.cpu().numpy()
 
-        # Visualize the data and the prototypes
-        ax = self.fig.gca()
-        ax.cla()
-        ax.set_title(self.title)
-        ax.set_xlabel("Data dimension 1")
-        ax.set_ylabel("Data dimension 2")
-        ax.scatter(self.x_train[:, 0],
-                   self.x_train[:, 1],
-                   c=self.y_train,
-                   edgecolor="k")
+        ax = self.setup_ax(xlabel="Data dimension 1",
+                           ylabel="Data dimension 2")
+        ax.scatter(x_train[:, 0], x_train[:, 1], c=y_train, edgecolor="k")
         ax.scatter(
             protos[:, 0],
             protos[:, 1],
@@ -410,4 +446,4 @@ class VisNG2D(pl.Callback):
                         "k-",
                     )
 
-        plt.pause(0.01)
+        self.log_and_display(trainer, pl_module)
