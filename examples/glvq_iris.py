@@ -1,40 +1,39 @@
 """GLVQ example using the Iris dataset."""
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from prototorch.components import initializers as cinit
-from prototorch.datasets.abstract import NumpyDataset
-from sklearn.datasets import load_iris
-from torch.utils.data import DataLoader
-
-from prototorch.models.callbacks.visualization import VisGLVQ2D
-from prototorch.models.glvq import GLVQ
 
 if __name__ == "__main__":
     # Dataset
+    from sklearn.datasets import load_iris
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
-    train_ds = NumpyDataset(x_train, y_train)
+    train_ds = pt.datasets.NumpyDataset(x_train, y_train)
 
     # Dataloaders
-    train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds,
+                                               num_workers=0,
+                                               batch_size=150)
 
     # Hyperparameters
     hparams = dict(
         nclasses=3,
         prototypes_per_class=2,
-        prototype_initializer=cinit.StratifiedMeanInitializer(
-            torch.Tensor(x_train), torch.Tensor(y_train)),
+        prototype_initializer=pt.components.SMI(train_ds),
         lr=0.01,
     )
 
     # Initialize the model
-    model = GLVQ(hparams)
+    model = pt.models.GLVQ(hparams)
+
+    # Callbacks
+    vis = pt.models.VisGLVQ2D(data=(x_train, y_train))
 
     # Setup trainer
     trainer = pl.Trainer(
         max_epochs=50,
-        callbacks=[VisGLVQ2D(x_train, y_train)],
+        callbacks=[vis],
     )
 
     # Training loop

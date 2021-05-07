@@ -1,50 +1,40 @@
 """Neural Gas example using the Iris dataset."""
 
+import prototorch as pt
 import pytorch_lightning as pl
-from prototorch.datasets.abstract import NumpyDataset
-from sklearn.datasets import load_iris
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import DataLoader
-
-from prototorch.models.callbacks.visualization import VisNG2D
-from prototorch.models.neural_gas import NeuralGas
+import torch
 
 if __name__ == "__main__":
-    # Dataset
+    # Prepare and pre-process the dataset
+    from sklearn.datasets import load_iris
+    from sklearn.preprocessing import StandardScaler
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
     scaler = StandardScaler()
     scaler.fit(x_train)
     x_train = scaler.transform(x_train)
 
-    train_ds = NumpyDataset(x_train, y_train)
+    train_ds = pt.datasets.NumpyDataset(x_train, y_train)
 
     # Dataloaders
-    train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds,
+                                               num_workers=0,
+                                               batch_size=150)
 
     # Hyperparameters
-    hparams = dict(
-        input_dim=x_train.shape[1],
-        num_prototypes=30,
-        lr=0.01,
-    )
+    hparams = dict(num_prototypes=30, lr=0.03)
 
     # Initialize the model
-    model = NeuralGas(hparams)
+    model = pt.models.NeuralGas(hparams)
 
     # Model summary
     print(model)
 
     # Callbacks
-    vis = VisNG2D(x_train, y_train)
+    vis = pt.models.VisNG2D(data=train_ds)
 
     # Setup trainer
-    trainer = pl.Trainer(
-        max_epochs=100,
-        callbacks=[
-            vis,
-        ],
-    )
+    trainer = pl.Trainer(max_epochs=200, callbacks=[vis])
 
     # Training loop
     trainer.fit(model, train_loader)

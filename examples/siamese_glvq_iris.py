@@ -1,13 +1,8 @@
 """Siamese GLVQ example using all four dimensions of the Iris dataset."""
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from prototorch.components import initializers as cinit
-from prototorch.datasets.abstract import NumpyDataset
-from prototorch.models.callbacks.visualization import VisSiameseGLVQ2D
-from prototorch.models.glvq import SiameseGLVQ
-from sklearn.datasets import load_iris
-from torch.utils.data import DataLoader
 
 
 class Backbone(torch.nn.Module):
@@ -29,27 +24,29 @@ class Backbone(torch.nn.Module):
 
 if __name__ == "__main__":
     # Dataset
+    from sklearn.datasets import load_iris
     x_train, y_train = load_iris(return_X_y=True)
-    train_ds = NumpyDataset(x_train, y_train)
+    train_ds = pt.datasets.NumpyDataset(x_train, y_train)
 
     # Reproducibility
     pl.utilities.seed.seed_everything(seed=2)
 
     # Dataloaders
-    train_loader = DataLoader(train_ds, num_workers=0, batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds,
+                                               num_workers=0,
+                                               batch_size=150)
 
     # Hyperparameters
     hparams = dict(
         nclasses=3,
         prototypes_per_class=2,
-        prototype_initializer=cinit.SMI(torch.Tensor(x_train),
-                                        torch.Tensor(y_train)),
+        prototype_initializer=pt.components.SMI((x_train, y_train)),
         proto_lr=0.001,
         bb_lr=0.001,
     )
 
     # Initialize the model
-    model = SiameseGLVQ(
+    model = pt.models.SiameseGLVQ(
         hparams,
         backbone_module=Backbone,
     )
@@ -58,7 +55,7 @@ if __name__ == "__main__":
     print(model)
 
     # Callbacks
-    vis = VisSiameseGLVQ2D(x_train, y_train, border=0.1)
+    vis = pt.models.VisSiameseGLVQ2D(data=(x_train, y_train), border=0.1)
 
     # Setup trainer
     trainer = pl.Trainer(max_epochs=100, callbacks=[vis])
