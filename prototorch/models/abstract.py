@@ -20,4 +20,4 @@ class AbstractLightningModel(pl.LightningModule):
 class AbstractPrototypeModel(AbstractLightningModel):
     @property
     def prototypes(self):
-        return self.proto_layer.components.detach().numpy()
+        return self.proto_layer.components.detach().cpu()
