@@ -29,14 +29,8 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.GMLVQ(hparams)
 
-    # Model summary
-    print(model)
-
     # Callbacks
     vis = pt.models.VisSiameseGLVQ2D(train_ds, border=0.1)
-
-    # Namespace hook for the visualization to work
-    model.backbone = model.omega_layer
 
     # Setup trainer
     trainer = pl.Trainer(max_epochs=200, callbacks=[vis])
