@@ -55,6 +55,7 @@ To assist in the development process, you may also find it useful to install
 ## Available models
 
 - Generalized Learning Vector Quantization (GLVQ)
+- Generalized Relevance Learning Vector Quantization (GRLVQ)
 - Generalized Matrix Learning Vector Quantization (GMLVQ)
 - Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
 - Siamese GLVQ
