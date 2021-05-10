@@ -27,7 +27,7 @@ ALL = DEV + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
-    version="0.1.4",
+    version="0.1.5",
     description="Pre-packaged prototype-based "
     "machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
