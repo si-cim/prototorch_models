@@ -1,5 +1,3 @@
-"""ProtoTorch datasets test suite."""
-
 import unittest
 
 
