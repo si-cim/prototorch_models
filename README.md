@@ -1,7 +1,7 @@
 # ProtoTorch Models
 
 
-[![PyPI](https://img.shields.io/pypi/v/prototorch)](https://pypi.org/project/prototorch_models/)
+[![PyPI](https://img.shields.io/pypi/v/prototorch_models)](https://pypi.org/project/prototorch_models/)
 
 Pre-packaged prototype-based machine learning models using ProtoTorch and
 PyTorch-Lightning.
