@@ -5,4 +5,4 @@ from .glvq import GLVQ, GMLVQ, GRLVQ, LVQMLN, ImageGLVQ, SiameseGLVQ
 from .neural_gas import NeuralGas
 from .vis import *
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
