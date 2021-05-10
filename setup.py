@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
 
 INSTALL_REQUIRES = ["prototorch", "pytorch_lightning", "torchmetrics"]
 EXAMPLES = ["matplotlib", "scikit-learn"]
-TESTS = ["pytest"]
+TESTS = ["codecov", "pytest"]
 ALL = EXAMPLES + TESTS
 
 setup(
