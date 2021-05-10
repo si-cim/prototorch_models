@@ -21,12 +21,12 @@ with open("README.md", "r") as fh:
 
 INSTALL_REQUIRES = ["prototorch", "pytorch_lightning", "torchmetrics"]
 EXAMPLES = ["matplotlib", "scikit-learn"]
-TESTS = ["pytest"]
+TESTS = ["codecov", "pytest"]
 ALL = EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
-    use_scm_version=True,
+    version="0.0.0",
     descripion=
     "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
@@ -36,7 +36,6 @@ setup(
     download_url=DOWNLOAD_URL,
     license="MIT",
     install_requires=INSTALL_REQUIRES,
-    setup_requires=["setuptools_scm"],
     extras_require={
         "examples": EXAMPLES,
         "tests": TESTS,

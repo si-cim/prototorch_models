@@ -191,14 +191,17 @@ class GMLVQ(GLVQ):
                                            self.hparams.latent_dim,
                                            bias=False)
 
+        # Namespace hook for the visualization callbacks to work
+        self.backbone = self.omega_layer
+
     @property
     def omega_matrix(self):
         return self.omega_layer.weight.detach().cpu()
 
     @property
     def lambda_matrix(self):
-        omega = self.omega_layer.weight
-        lam = omega @ omega.T
+        omega = self.omega_layer.weight  # (latent_dim, input_dim)
+        lam = omega.T @ omega
         return lam.detach().cpu()
 
     def show_lambda(self):
@@ -250,6 +253,9 @@ class LVQMLN(GLVQ):
                  **kwargs):
         super().__init__(hparams, **kwargs)
         self.backbone = backbone_module(**backbone_params)
+        with torch.no_grad():
+            protos = self.backbone(self.proto_layer()[0])
+        self.proto_layer.load_state_dict({"_components": protos}, strict=False)
 
     def forward(self, x):
         latent_protos, _ = self.proto_layer()
