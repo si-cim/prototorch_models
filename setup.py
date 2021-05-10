@@ -31,6 +31,7 @@ setup(
     description="Pre-packaged prototype-based "
     "machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Alexander Engelsberger",
     author_email="engelsbe@hs-mittweida.de",
     url=PROJECT_URL,
