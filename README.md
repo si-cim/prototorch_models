@@ -1,6 +1,6 @@
 # ProtoTorch Models
 
-
+[![Build Status](https://travis-ci.org/si-cim/prototorch_models.svg?branch=main)](https://travis-ci.org/si-cim/prototorch_models)
 [![PyPI](https://img.shields.io/pypi/v/prototorch_models)](https://pypi.org/project/prototorch_models/)
 
 Pre-packaged prototype-based machine learning models using ProtoTorch and
