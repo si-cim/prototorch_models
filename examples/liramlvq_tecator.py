@@ -37,3 +37,12 @@ if __name__ == "__main__":
 
     # Training loop
     trainer.fit(model, train_loader)
+
+    # Save the model
+    torch.save(model, "liramlvq_tecator.pt")
+
+    # Load a saved model
+    saved_model = torch.load("liramlvq_tecator.pt")
+
+    # Display the Lambda matrix
+    saved_model.show_lambda()

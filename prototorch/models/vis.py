@@ -356,6 +356,9 @@ class Vis2DAbstract(pl.Callback):
         else:
             plt.show(block=True)
 
+    def on_train_end(self, trainer, pl_module):
+        plt.show()
+
 
 class VisGLVQ2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
