@@ -20,15 +20,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 INSTALL_REQUIRES = ["prototorch", "pytorch_lightning", "torchmetrics"]
+DEV = ["bumpversion"]
 EXAMPLES = ["matplotlib", "scikit-learn"]
 TESTS = ["codecov", "pytest"]
-ALL = EXAMPLES + TESTS
+ALL = DEV + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
     version="0.0.0",
-    descripion=
-    "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning.",
+    description="Pre-packaged prototype-based "
+    "machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
     author="Alexander Engelsberger",
     author_email="engelsbe@hs-mittweida.de",
@@ -37,6 +38,7 @@ setup(
     license="MIT",
     install_requires=INSTALL_REQUIRES,
     extras_require={
+        "dev": DEV,
         "examples": EXAMPLES,
         "tests": TESTS,
         "all": ALL,
