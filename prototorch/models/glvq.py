@@ -9,8 +9,6 @@ from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 
 from .abstract import AbstractPrototypeModel
 
-from torch.optim.lr_scheduler import ExponentialLR
-
 
 class GLVQ(AbstractPrototypeModel):
     """Generalized Learning Vector Quantization."""
@@ -19,14 +17,15 @@ class GLVQ(AbstractPrototypeModel):
 
         self.save_hyperparameters(hparams)
 
+        self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
+
         # Default Values
         self.hparams.setdefault("distance", euclidean_distance)
-        self.hparams.setdefault("optimizer", torch.optim.Adam)
         self.hparams.setdefault("transfer_function", "identity")
         self.hparams.setdefault("transfer_beta", 10.0)
 
         self.proto_layer = LabeledComponents(
-            labels=(self.hparams.nclasses, self.hparams.prototypes_per_class),
+            distribution=self.hparams.distribution,
             initializer=self.hparams.prototype_initializer)
 
         self.transfer_function = get_activation(self.hparams.transfer_function)
@@ -81,39 +80,19 @@ class GLVQ(AbstractPrototypeModel):
 
 
 class LVQ1(GLVQ):
+    """Learning Vector Quantization 1."""
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = lvq1_loss
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.hparams.lr)
-        scheduler = ExponentialLR(optimizer,
-                                  gamma=0.99,
-                                  last_epoch=-1,
-                                  verbose=False)
-        sch = {
-            "scheduler": scheduler,
-            "interval": "step",
-        }  # called after each training step
-        return [optimizer], [sch]
+        self.optimizer = torch.optim.SGD
 
 
 class LVQ21(GLVQ):
+    """Learning Vector Quantization 2.1."""
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = lvq21_loss
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.hparams.lr)
-        scheduler = ExponentialLR(optimizer,
-                                  gamma=0.99,
-                                  last_epoch=-1,
-                                  verbose=False)
-        sch = {
-            "scheduler": scheduler,
-            "interval": "step",
-        }  # called after each training step
-        return [optimizer], [sch]
+        self.optimizer = torch.optim.SGD
 
 
 class ImageGLVQ(GLVQ):
@@ -152,13 +131,13 @@ class SiameseGLVQ(GLVQ):
         self.backbone_dependent.load_state_dict(master_state, strict=True)
 
     def configure_optimizers(self):
-        optim = self.hparams.optimizer
-        proto_opt = optim(self.proto_layer.parameters(),
-                          lr=self.hparams.proto_lr)
+        proto_opt = self.optimizer(self.proto_layer.parameters(),
+                                   lr=self.hparams.proto_lr)
         if list(self.backbone.parameters()):
             # only add an optimizer is the backbone has trainable parameters
             # otherwise, the next line fails
-            bb_opt = optim(self.backbone.parameters(), lr=self.hparams.bb_lr)
+            bb_opt = self.optimizer(self.backbone.parameters(),
+                                    lr=self.hparams.bb_lr)
             return proto_opt, bb_opt
         else:
             return proto_opt

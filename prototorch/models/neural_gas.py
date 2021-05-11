@@ -1,6 +1,7 @@
 import torch
 from prototorch.components import Components
 from prototorch.components import initializers as cinit
+from prototorch.components.initializers import ZerosInitializer
 from prototorch.functions.distances import euclidean_distance
 from prototorch.modules.losses import NeuralGasEnergy
 
@@ -41,12 +42,14 @@ class NeuralGas(AbstractPrototypeModel):
 
         self.save_hyperparameters(hparams)
 
+        self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
+
         # Default Values
         self.hparams.setdefault("input_dim", 2)
         self.hparams.setdefault("agelimit", 10)
         self.hparams.setdefault("lm", 1)
         self.hparams.setdefault("prototype_initializer",
-                                cinit.ZerosInitializer(self.hparams.input_dim))
+                                ZerosInitializer(self.hparams.input_dim))
 
         self.proto_layer = Components(
             self.hparams.num_prototypes,
