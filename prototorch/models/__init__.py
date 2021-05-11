@@ -7,4 +7,4 @@ from .knn import KNN
 from .neural_gas import NeuralGas
 from .vis import *
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
