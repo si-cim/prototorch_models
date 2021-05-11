@@ -51,6 +51,7 @@ To assist in the development process, you may also find it useful to install
 
 ## Available models
 
+- K-Nearest Neighbors (KNN)
 - Learning Vector Quantization 1 (LVQ1)
 - Generalized Learning Vector Quantization (GLVQ)
 - Generalized Relevance Learning Vector Quantization (GRLVQ)
@@ -72,7 +73,6 @@ To assist in the development process, you may also find it useful to install
 - Robust Soft Learning Vector Quantization (RSLVQ)
 - Probabilistic Learning Vector Quantization (PLVQ)
 - Self-Incremental Learning Vector Quantization (SILVQ)
-- K-Nearest Neighbors (KNN)
 
 ## FAQ
 

@@ -24,9 +24,7 @@ class Backbone(torch.nn.Module):
 
 if __name__ == "__main__":
     # Dataset
-    from sklearn.datasets import load_iris
-    x_train, y_train = load_iris(return_X_y=True)
-    train_ds = pt.datasets.NumpyDataset(x_train, y_train)
+    train_ds = pt.datasets.Iris()
 
     # Reproducibility
     pl.utilities.seed.seed_everything(seed=2)
@@ -39,7 +37,7 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         distribution=[1, 2, 3],
-        prototype_initializer=pt.components.SMI((x_train, y_train)),
+        prototype_initializer=pt.components.SMI(train_ds),
         proto_lr=0.01,
         bb_lr=0.01,
     )
@@ -54,7 +52,7 @@ if __name__ == "__main__":
     print(model)
 
     # Callbacks
-    vis = pt.models.VisSiameseGLVQ2D(data=(x_train, y_train), border=0.1)
+    vis = pt.models.VisSiameseGLVQ2D(data=train_ds, border=0.1)
 
     # Setup trainer
     trainer = pl.Trainer(max_epochs=100, callbacks=[vis])
