@@ -8,23 +8,17 @@ PyTorch-Lightning.
 
 ## Installation
 
-To install this plugin, first install
-[ProtoTorch](https://github.com/si-cim/prototorch) with:
+To install this plugin, simply run the following command:
 
 ```sh
-git clone https://github.com/si-cim/prototorch.git && cd prototorch
-pip install -e .
-```
-
-and then install the plugin itself with:
-
-```sh
-git clone https://github.com/si-cim/prototorch_models.git && cd prototorch_models
-pip install -e .
+pip install prototorch_models
 ```
 
 The plugin should then be available for use in your Python environment as
 `prototorch.models`.
+
+*Note: Installing the models plugin should automatically install a suitable
+version of * [ProtoTorch](https://github.com/si-cim/prototorch).
 
 ## Development setup
 
@@ -57,17 +51,19 @@ To assist in the development process, you may also find it useful to install
 
 ## Available models
 
+- Learning Vector Quantization 1 (LVQ1)
 - Generalized Learning Vector Quantization (GLVQ)
 - Generalized Relevance Learning Vector Quantization (GRLVQ)
 - Generalized Matrix Learning Vector Quantization (GMLVQ)
 - Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
+- Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
 - Neural Gas (NG)
 
 ## Work in Progress
 
 - Classification-By-Components Network (CBC)
-- Learning Vector Quantization Multi-Layer Network (LVQMLN)
+- Learning Vector Quantization 2.1 (LVQ2.1)
 
 ## Planned models
 
@@ -77,7 +73,6 @@ To assist in the development process, you may also find it useful to install
 - Probabilistic Learning Vector Quantization (PLVQ)
 - Self-Incremental Learning Vector Quantization (SILVQ)
 - K-Nearest Neighbors (KNN)
-- Learning Vector Quantization 1 (LVQ1)
 
 ## FAQ
 
