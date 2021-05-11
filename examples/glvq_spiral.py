@@ -25,10 +25,11 @@ if __name__ == "__main__":
                                                batch_size=256)
 
     # Hyperparameters
+    nclasses = 2
+    prototypes_per_class = 20
     hparams = dict(
-        nclasses=2,
-        prototypes_per_class=20,
-        prototype_initializer=pt.components.SSI(train_ds, noise=1e-7),
+        distribution=(nclasses, prototypes_per_class),
+        prototype_initializer=pt.components.SSI(train_ds, noise=1e-1),
         transfer_function="sigmoid_beta",
         transfer_beta=10.0,
         lr=0.01,

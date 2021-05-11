@@ -15,9 +15,10 @@ if __name__ == "__main__":
                                                num_workers=0,
                                                batch_size=150)
     # Hyperparameters
+    nclasses = 3
+    prototypes_per_class = 1
     hparams = dict(
-        nclasses=3,
-        prototypes_per_class=1,
+        distribution=(nclasses, prototypes_per_class),
         input_dim=x_train.shape[1],
         latent_dim=x_train.shape[1],
         prototype_initializer=pt.components.SMI(train_ds),

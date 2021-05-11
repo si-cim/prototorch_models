@@ -17,15 +17,16 @@ if __name__ == "__main__":
                                                batch_size=150)
 
     # Hyperparameters
+    nclasses = 3
+    prototypes_per_class = 2
     hparams = dict(
-        nclasses=3,
-        prototypes_per_class=2,
+        distribution=(nclasses, prototypes_per_class),
         prototype_initializer=pt.components.SMI(train_ds),
         lr=0.01,
     )
 
     # Initialize the model
-    model = pt.models.GLVQ(hparams)
+    model = pt.models.GLVQ(hparams, optimizer=torch.optim.Adam)
 
     # Callbacks
     vis = pt.models.VisGLVQ2D(data=(x_train, y_train))

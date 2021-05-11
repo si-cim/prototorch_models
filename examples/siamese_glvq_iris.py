@@ -38,11 +38,10 @@ if __name__ == "__main__":
 
     # Hyperparameters
     hparams = dict(
-        nclasses=3,
-        prototypes_per_class=2,
+        distribution=[1, 2, 3],
         prototype_initializer=pt.components.SMI((x_train, y_train)),
-        proto_lr=0.001,
-        bb_lr=0.001,
+        proto_lr=0.01,
+        bb_lr=0.01,
     )
 
     # Initialize the model
