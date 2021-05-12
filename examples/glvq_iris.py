@@ -21,12 +21,13 @@ if __name__ == "__main__":
     prototypes_per_class = 2
     hparams = dict(
         distribution=(nclasses, prototypes_per_class),
-        prototype_initializer=pt.components.SMI(train_ds),
         lr=0.01,
     )
 
     # Initialize the model
-    model = pt.models.GLVQ(hparams, optimizer=torch.optim.Adam)
+    model = pt.models.GLVQ(hparams,
+                           optimizer=torch.optim.Adam,
+                           prototype_initializer=pt.components.SMI(train_ds))
 
     # Callbacks
     vis = pt.models.VisGLVQ2D(data=(x_train, y_train))

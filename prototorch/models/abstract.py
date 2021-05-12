@@ -8,6 +8,11 @@ class AbstractPrototypeModel(pl.LightningModule):
     def prototypes(self):
         return self.proto_layer.components.detach().cpu()
 
+    @property
+    def components(self):
+        """Only an alias for the prototypes."""
+        return self.prototypes
+
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.hparams.lr)
         scheduler = ExponentialLR(optimizer,
@@ -19,3 +24,8 @@ class AbstractPrototypeModel(pl.LightningModule):
             "interval": "step",
         }  # called after each training step
         return [optimizer], [sch]
+
+
+class PrototypeImageModel(pl.LightningModule):
+    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+        self.proto_layer.components.data.clamp_(0.0, 1.0)

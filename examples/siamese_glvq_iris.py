@@ -37,7 +37,6 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         distribution=[1, 2, 3],
-        prototype_initializer=pt.components.SMI(train_ds),
         proto_lr=0.01,
         bb_lr=0.01,
     )
@@ -45,6 +44,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.SiameseGLVQ(
         hparams,
+        prototype_initializer=pt.components.SMI(train_ds),
         backbone_module=Backbone,
     )
 

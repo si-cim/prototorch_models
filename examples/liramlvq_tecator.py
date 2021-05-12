@@ -23,12 +23,12 @@ if __name__ == "__main__":
         distribution=(nclasses, prototypes_per_class),
         input_dim=100,
         latent_dim=2,
-        prototype_initializer=pt.components.SMI(train_ds),
         lr=0.001,
     )
 
     # Initialize the model
-    model = pt.models.GMLVQ(hparams)
+    model = pt.models.GMLVQ(hparams,
+                            prototype_initializer=pt.components.SMI(train_ds))
 
     # Callbacks
     vis = pt.models.VisSiameseGLVQ2D(train_ds, border=0.1)

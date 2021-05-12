@@ -29,14 +29,15 @@ if __name__ == "__main__":
     prototypes_per_class = 20
     hparams = dict(
         distribution=(nclasses, prototypes_per_class),
-        prototype_initializer=pt.components.SSI(train_ds, noise=1e-1),
         transfer_function="sigmoid_beta",
         transfer_beta=10.0,
         lr=0.01,
     )
 
     # Initialize the model
-    model = pt.models.GLVQ(hparams)
+    model = pt.models.GLVQ(hparams,
+                           prototype_initializer=pt.components.SSI(train_ds,
+                                                                   noise=1e-1))
 
     # Callbacks
     vis = pt.models.VisGLVQ2D(train_ds, show_last_only=True, block=True)

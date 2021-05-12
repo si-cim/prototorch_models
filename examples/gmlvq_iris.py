@@ -21,12 +21,12 @@ if __name__ == "__main__":
         distribution=(nclasses, prototypes_per_class),
         input_dim=x_train.shape[1],
         latent_dim=x_train.shape[1],
-        prototype_initializer=pt.components.SMI(train_ds),
         lr=0.01,
     )
 
     # Initialize the model
-    model = pt.models.GMLVQ(hparams)
+    model = pt.models.GMLVQ(hparams,
+                            prototype_initializer=pt.components.SMI(train_ds))
 
     # Setup trainer
     trainer = pl.Trainer(max_epochs=100)
