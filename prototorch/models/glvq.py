@@ -7,7 +7,6 @@ from prototorch.functions.distances import (euclidean_distance, omega_distance,
                                             squared_euclidean_distance)
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
-from prototorch.modules.mappings import OmegaMapping
 
 from .abstract import AbstractPrototypeModel, PrototypeImageModel
 
