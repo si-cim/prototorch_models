@@ -33,7 +33,7 @@ class KNN(AbstractPrototypeModel):
 
     @property
     def prototype_labels(self):
-        return self.proto_layer.component_labels.detach().cpu()
+        return self.proto_layer.component_labels.detach()
 
     def forward(self, x):
         protos, _ = self.proto_layer()
@@ -46,7 +46,7 @@ class KNN(AbstractPrototypeModel):
             d = self(x)
             plabels = self.proto_layer.component_labels
             y_pred = knnc(d, plabels, k=self.hparams.k)
-        return y_pred.numpy()
+        return y_pred
 
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         return 1

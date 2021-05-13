@@ -153,7 +153,7 @@ class CBC(pl.LightningModule):
         with torch.no_grad():
             y_pred = self(x)
             y_pred = torch.argmax(y_pred, dim=1)
-        return y_pred.numpy()
+        return y_pred
 
 
 class ImageCBC(CBC):

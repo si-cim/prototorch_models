@@ -30,10 +30,11 @@ if __name__ == "__main__":
                            prototype_initializer=pt.components.SMI(train_ds))
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=(x_train, y_train))
+    vis = pt.models.VisGLVQ2D(data=(x_train, y_train), block=False)
 
     # Setup trainer
     trainer = pl.Trainer(
+        gpus=-1,
         max_epochs=50,
         callbacks=[vis],
     )

@@ -53,13 +53,15 @@ if __name__ == "__main__":
     # Callbacks
     vis = pt.models.VisImgComp(data=train_ds,
                                nrow=5,
-                               show=False,
-                               tensorboard=True)
+                               show=True,
+                               tensorboard=True,
+                               pause_time=0.5)
 
     # Setup trainer
     trainer = pl.Trainer(
         max_epochs=50,
         callbacks=[vis],
+        gpus=-1,
         # overfit_batches=1,
         # fast_dev_run=3,
     )

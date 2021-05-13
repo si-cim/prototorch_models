@@ -84,7 +84,7 @@ class GLVQ(AbstractPrototypeModel):
             d = self(x)
             plabels = self.proto_layer.component_labels
             y_pred = wtac(d, plabels)
-        return y_pred.numpy()
+        return y_pred
 
 
 class LVQ1(GLVQ):
