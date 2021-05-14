@@ -17,8 +17,34 @@ pip install prototorch_models
 The plugin should then be available for use in your Python environment as
 `prototorch.models`.
 
-*Note: Installing the models plugin should automatically install a suitable
-version of * [ProtoTorch](https://github.com/si-cim/prototorch).
+**Note: Installing the models plugin should automatically install a suitable version of
+[ProtoTorch](https://github.com/si-cim/prototorch).**
+
+## Available models
+
+- k-Nearest Neighbors (KNN)
+- Learning Vector Quantization 1 (LVQ1)
+- Generalized Learning Vector Quantization (GLVQ)
+- Generalized Relevance Learning Vector Quantization (GRLVQ)
+- Generalized Matrix Learning Vector Quantization (GMLVQ)
+- Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
+- Learning Vector Quantization Multi-Layer Network (LVQMLN)
+- Siamese GLVQ
+- Neural Gas (NG)
+
+## Work in Progress
+
+- Classification-By-Components Network (CBC)
+- Learning Vector Quantization 2.1 (LVQ2.1)
+
+## Planned models
+
+- Median-LVQ
+- Local-Matrix GMLVQ
+- Generalized Tangent Learning Vector Quantization (GTLVQ)
+- Robust Soft Learning Vector Quantization (RSLVQ)
+- Probabilistic Learning Vector Quantization (PLVQ)
+- Self-Incremental Learning Vector Quantization (SILVQ)
 
 ## Development setup
 
@@ -48,32 +74,6 @@ pip install -e .[all]  # \[all\] if you are using zsh or MacOS
 
 To assist in the development process, you may also find it useful to install
 `yapf`, `isort` and `autoflake`. You can install them easily with `pip`.
-
-## Available models
-
-- k-Nearest Neighbors (KNN)
-- Learning Vector Quantization 1 (LVQ1)
-- Generalized Learning Vector Quantization (GLVQ)
-- Generalized Relevance Learning Vector Quantization (GRLVQ)
-- Generalized Matrix Learning Vector Quantization (GMLVQ)
-- Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
-- Learning Vector Quantization Multi-Layer Network (LVQMLN)
-- Siamese GLVQ
-- Neural Gas (NG)
-
-## Work in Progress
-
-- Classification-By-Components Network (CBC)
-- Learning Vector Quantization 2.1 (LVQ2.1)
-
-## Planned models
-
-- Median-LVQ
-- Local-Matrix GMLVQ
-- Generalized Tangent Learning Vector Quantization (GTLVQ)
-- Robust Soft Learning Vector Quantization (RSLVQ)
-- Probabilistic Learning Vector Quantization (PLVQ)
-- Self-Incremental Learning Vector Quantization (SILVQ)
 
 ## FAQ
 
