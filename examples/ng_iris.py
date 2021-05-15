@@ -34,7 +34,7 @@ if __name__ == "__main__":
     vis = pt.models.VisNG2D(data=train_ds)
 
     # Setup trainer
-    trainer = pl.Trainer(gpus=-1, max_epochs=200, callbacks=[vis])
+    trainer = pl.Trainer(gpus=0, max_epochs=200, callbacks=[vis])
 
     # Training loop
     trainer.fit(model, train_loader)

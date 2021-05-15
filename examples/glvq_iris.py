@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     # Setup trainer
     trainer = pl.Trainer(
-        gpus=-1,
+        gpus=0,
         max_epochs=50,
         callbacks=[vis],
     )

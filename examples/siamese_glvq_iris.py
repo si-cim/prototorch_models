@@ -55,7 +55,7 @@ if __name__ == "__main__":
     vis = pt.models.VisSiameseGLVQ2D(data=train_ds, border=0.1)
 
     # Setup trainer
-    trainer = pl.Trainer(max_epochs=100, callbacks=[vis], gpus=-1)
+    trainer = pl.Trainer(max_epochs=100, callbacks=[vis], gpus=0)
 
     # Training loop
     trainer.fit(model, train_loader)

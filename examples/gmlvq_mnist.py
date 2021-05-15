@@ -61,7 +61,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         max_epochs=50,
         callbacks=[vis],
-        gpus=-1,
+        gpus=0,
         # overfit_batches=1,
         # fast_dev_run=3,
     )

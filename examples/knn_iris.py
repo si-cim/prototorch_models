@@ -26,7 +26,7 @@ if __name__ == "__main__":
     vis = pt.models.VisGLVQ2D(data=(x_train, y_train))
 
     # Setup trainer
-    trainer = pl.Trainer(max_epochs=1, callbacks=[vis], gpus=-1)
+    trainer = pl.Trainer(max_epochs=1, callbacks=[vis], gpus=0)
 
     # Training loop
     # This is only for visualization. k-NN has no training phase.
