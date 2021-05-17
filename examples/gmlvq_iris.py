@@ -21,7 +21,8 @@ if __name__ == "__main__":
         distribution=(nclasses, prototypes_per_class),
         input_dim=x_train.shape[1],
         latent_dim=x_train.shape[1],
-        lr=0.01,
+        proto_lr=0.01,
+        bb_lr=0.01,
     )
 
     # Initialize the model

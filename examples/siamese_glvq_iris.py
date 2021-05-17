@@ -6,7 +6,6 @@ import torch
 
 
 class Backbone(torch.nn.Module):
-    """Two fully connected layers with ReLU activation."""
     def __init__(self, input_size=4, hidden_size=10, latent_size=2):
         super().__init__()
         self.input_size = input_size
@@ -14,11 +13,11 @@ class Backbone(torch.nn.Module):
         self.latent_size = latent_size
         self.dense1 = torch.nn.Linear(self.input_size, self.hidden_size)
         self.dense2 = torch.nn.Linear(self.hidden_size, self.latent_size)
-        self.relu = torch.nn.ReLU()
+        self.activation = torch.nn.Sigmoid()
 
     def forward(self, x):
-        x = self.relu(self.dense1(x))
-        out = self.relu(self.dense2(x))
+        x = self.activation(self.dense1(x))
+        out = self.activation(self.dense2(x))
         return out
 
 
@@ -41,11 +40,15 @@ if __name__ == "__main__":
         bb_lr=0.01,
     )
 
+    # Initialize the backbone
+    backbone = Backbone()
+
     # Initialize the model
     model = pt.models.SiameseGLVQ(
         hparams,
         prototype_initializer=pt.components.SMI(train_ds),
-        backbone_module=Backbone,
+        backbone=backbone,
+        both_path_gradients=True,
     )
 
     # Model summary

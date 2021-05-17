@@ -23,7 +23,7 @@ if __name__ == "__main__":
     model = pt.models.KNN(hparams, data=train_ds)
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=(x_train, y_train))
+    vis = pt.models.VisGLVQ2D(data=(x_train, y_train), resolution=200)
 
     # Setup trainer
     trainer = pl.Trainer(max_epochs=1, callbacks=[vis], gpus=0)
