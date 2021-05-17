@@ -33,7 +33,9 @@ if __name__ == "__main__":
 
     # Callbacks
     dvis = pt.models.VisCBC2D(data=(x_train, y_train),
-                              title="CBC Iris Example")
+                              title="CBC Iris Example",
+                              resolution=300,
+                              axis_off=True)
 
     # Setup trainer
     trainer = pl.Trainer(

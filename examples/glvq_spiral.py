@@ -30,7 +30,7 @@ if __name__ == "__main__":
                                                                    noise=1e-1))
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(train_ds, show_last_only=True, block=True)
+    vis = pt.models.VisGLVQ2D(train_ds, show_last_only=True)
     snan = StopOnNaN(model.proto_layer.components)
 
     # Setup trainer

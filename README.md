@@ -28,12 +28,12 @@ The plugin should then be available for use in your Python environment as
 - Generalized Relevance Learning Vector Quantization (GRLVQ)
 - Generalized Matrix Learning Vector Quantization (GMLVQ)
 - Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
+- Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
 - Neural Gas (NG)
 
 ## Work in Progress
 
-- Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Classification-By-Components Network (CBC)
 - Learning Vector Quantization 2.1 (LVQ2.1)
 
