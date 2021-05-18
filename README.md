@@ -72,6 +72,8 @@ git checkout dev
 pip install -e .[all]  # \[all\] if you are using zsh or MacOS
 ```
 
+**Note: Please avoid installing Tensorflow in this environment.**
+
 To assist in the development process, you may also find it useful to install
 `yapf`, `isort` and `autoflake`. You can install them easily with `pip`.
 
