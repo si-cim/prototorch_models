@@ -36,6 +36,7 @@ needs_sphinx = "1.6"
 # ones.
 extensions = [
     "recommonmark",
+    "nbsphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
@@ -47,6 +48,18 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinxcontrib.katex",
 ]
+
+# https://nbsphinx.readthedocs.io/en/0.8.5/custom-css.html#For-All-Pages
+nbsphinx_prolog = """
+.. raw:: html
+
+    <style>
+        .nbinput .prompt,
+        .nboutput .prompt {
+            display: none;
+        }
+    </style>
+"""
 
 # katex_prerender = True
 katex_prerender = False

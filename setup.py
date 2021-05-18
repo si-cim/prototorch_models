@@ -19,11 +19,30 @@ DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-INSTALL_REQUIRES = ["prototorch>=0.4.4", "pytorch_lightning", "torchmetrics"]
-DEV = ["bumpversion"]
-EXAMPLES = ["matplotlib", "scikit-learn"]
-TESTS = ["codecov", "pytest"]
-ALL = DEV + EXAMPLES + TESTS
+INSTALL_REQUIRES = [
+    "prototorch>=0.4.4",
+    "pytorch_lightning",
+    "torchmetrics",
+]
+DEV = [
+    "bumpversion",
+]
+DOCS = [
+    "recommonmark",
+    "sphinx",
+    "nbsphinx",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-katex",
+]
+EXAMPLES = [
+    "matplotlib",
+    "scikit-learn",
+]
+TESTS = [
+    "codecov",
+    "pytest",
+]
+ALL = DEV + DOCS + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),

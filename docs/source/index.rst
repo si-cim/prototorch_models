@@ -12,6 +12,7 @@ About ProtoTorch Models
 
    self
    models
+   tutorial.ipynb
 
 `Prototorch Models <https://github.com/si-cim/prototorch_models>`_ is a Plugin
 for `Prototorch <https://github.com/si-cim/prototorch>`_. It implements common
