@@ -48,7 +48,7 @@ if __name__ == "__main__":
         hparams,
         prototype_initializer=pt.components.SMI(train_ds),
         backbone=backbone,
-        both_path_gradients=True,
+        both_path_gradients=False,
     )
 
     # Model summary

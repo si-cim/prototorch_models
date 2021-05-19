@@ -52,7 +52,7 @@ class SiamesePrototypeModel(pl.LightningModule):
         backbone.
 
         """
-        # model.eval()  # ?!
+        self.eval()
         with torch.no_grad():
             protos, plabels = self.proto_layer()
             if map_protos:
