@@ -42,7 +42,7 @@ class Vis2DAbstract(pl.Callback):
             x, y = data
 
         if flatten_data:
-            x = x.view(len(data), -1)
+            x = x.reshape(len(x), -1)
 
         self.x_train = x
         self.y_train = y
