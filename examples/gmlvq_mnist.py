@@ -64,6 +64,9 @@ if __name__ == "__main__":
         nrow=5,
         show=False,
         tensorboard=True,
+        random_data=20,
+        add_embedding=True,
+        flatten_data=False,
     )
 
     # Setup trainer
@@ -73,7 +76,7 @@ if __name__ == "__main__":
         # kwargs override the cli-arguments
         # max_epochs=50,
         # overfit_batches=1,
-        # fast_dev_run=3,
+        # fast_dev_run=1,
     )
 
     # Training loop
