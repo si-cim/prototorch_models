@@ -5,6 +5,10 @@ from prototorch.components.components import Components
 from prototorch.functions.distances import euclidean_distance
 from prototorch.functions.similarities import cosine_similarity
 
+from .abstract import (AbstractPrototypeModel, PrototypeImageModel,
+                       SiamesePrototypeModel)
+from .glvq import SiameseGLVQ
+
 
 def rescaled_cosine_similarity(x, y):
     """Cosine Similarity rescaled to [0, 1]."""
@@ -16,9 +20,9 @@ def shift_activation(x):
     return (x + 1.0) / 2.0
 
 
-def euclidean_similarity(x, y):
+def euclidean_similarity(x, y, beta=3):
     d = euclidean_distance(x, y)
-    return torch.exp(-d * 3)
+    return torch.exp(-d * beta)
 
 
 class CosineSimilarity(torch.nn.Module):
@@ -55,11 +59,12 @@ class MarginLoss(torch.nn.modules.loss._Loss):
 
 
 class ReasoningLayer(torch.nn.Module):
-    def __init__(self, n_components, n_classes, n_replicas=1):
+    def __init__(self, num_components, num_classes, n_replicas=1):
         super().__init__()
         self.n_replicas = n_replicas
-        self.n_classes = n_classes
-        probabilities_init = torch.zeros(2, 1, n_components, self.n_classes)
+        self.num_classes = num_classes
+        probabilities_init = torch.zeros(2, 1, num_components,
+                                         self.num_classes)
         probabilities_init.uniform_(0.4, 0.6)
         self.reasoning_probabilities = torch.nn.Parameter(probabilities_init)
 
@@ -81,73 +86,59 @@ class ReasoningLayer(torch.nn.Module):
         return probs
 
 
-class CBC(pl.LightningModule):
+class CBC(SiameseGLVQ):
     """Classification-By-Components."""
     def __init__(self,
                  hparams,
                  margin=0.1,
-                 backbone_class=torch.nn.Identity,
                  similarity=euclidean_similarity,
                  **kwargs):
-        super().__init__()
-        self.save_hyperparameters(hparams)
+        super().__init__(hparams, **kwargs)
         self.margin = margin
-        self.component_layer = Components(self.hparams.num_components,
-                                          self.hparams.component_initializer)
-        # self.similarity = CosineSimilarity()
-        self.similarity = similarity
-        self.backbone = backbone_class()
-        self.backbone_dependent = backbone_class().requires_grad_(False)
-        n_components = self.components.shape[0]
-        self.reasoning_layer = ReasoningLayer(n_components=n_components,
-                                              n_classes=self.hparams.nclasses)
-        self.train_acc = torchmetrics.Accuracy()
+        self.similarity_fn = kwargs.get("similarity_fn", euclidean_similarity)
+        num_components = self.components.shape[0]
+        self.reasoning_layer = ReasoningLayer(num_components=num_components,
+                                              num_classes=self.num_classes)
+        self.component_layer = self.proto_layer
 
     @property
     def components(self):
-        return self.component_layer.components.detach().cpu()
+        return self.prototypes
 
     @property
     def reasonings(self):
         return self.reasoning_layer.reasonings.cpu()
 
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
-        return optimizer
-
-    def sync_backbones(self):
-        master_state = self.backbone.state_dict()
-        self.backbone_dependent.load_state_dict(master_state, strict=True)
-
     def forward(self, x):
-        self.sync_backbones()
-        protos = self.component_layer()
-
+        components, _ = self.component_layer()
         latent_x = self.backbone(x)
-        latent_protos = self.backbone_dependent(protos)
-
-        detections = self.similarity(latent_x, latent_protos)
+        self.backbone.requires_grad_(self.both_path_gradients)
+        latent_components = self.backbone(components)
+        self.backbone.requires_grad_(True)
+        detections = self.similarity_fn(latent_x, latent_components)
         probs = self.reasoning_layer(detections)
         return probs
 
-    def training_step(self, train_batch, batch_idx):
-        x, y = train_batch
-        x = x.view(x.size(0), -1)
+    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+        x, y = batch
+        # x = x.view(x.size(0), -1)
         y_pred = self(x)
-        nclasses = self.reasoning_layer.n_classes
+        nclasses = self.reasoning_layer.num_classes
         y_true = torch.nn.functional.one_hot(y.long(), num_classes=nclasses)
         loss = MarginLoss(self.margin)(y_pred, y_true).mean(dim=0)
-        self.log("train_loss", loss)
-        self.train_acc(y_pred, y_true)
-        self.log(
-            "acc",
-            self.train_acc,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True,
-        )
-        return loss
+        return y_pred, loss
+
+    def training_step(self, batch, batch_idx, optimizer_idx=None):
+        y_pred, train_loss = self.shared_step(batch, batch_idx, optimizer_idx)
+        preds = torch.argmax(y_pred, dim=1)
+        self.acc_metric(preds.int(), batch[1].int())
+        self.log("train_acc",
+                 self.acc_metric,
+                 on_step=False,
+                 on_epoch=True,
+                 prog_bar=True,
+                 logger=True)
+        return train_loss
 
     def predict(self, x):
         with torch.no_grad():
