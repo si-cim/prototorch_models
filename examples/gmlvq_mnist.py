@@ -66,6 +66,7 @@ if __name__ == "__main__":
         tensorboard=True,
         random_data=20,
         add_embedding=True,
+        embedding_data=100,
         flatten_data=False,
     )
 
