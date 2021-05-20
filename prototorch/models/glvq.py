@@ -54,12 +54,20 @@ class GLVQ(AbstractPrototypeModel):
         distances = self.distance_fn(x, protos)
         return distances
 
-    def log_acc(self, distances, targets, tag):
-        plabels = self.proto_layer.component_labels
-        # Compute training accuracy
+    def predict_from_distances(self, distances):
         with torch.no_grad():
-            preds = wtac(distances, plabels)
+            plabels = self.proto_layer.component_labels
+            y_pred = wtac(distances, plabels)
+        return y_pred
 
+    def predict(self, x):
+        with torch.no_grad():
+            distances = self(x)
+        y_pred = self.predict_from_distances(distances)
+        return y_pred
+
+    def log_acc(self, distances, targets, tag):
+        preds = self.predict_from_distances(distances)
         self.acc_metric(preds.int(), targets.int())
         # `.int()` because FloatTensors are assumed to be class probabilities
 
@@ -81,7 +89,6 @@ class GLVQ(AbstractPrototypeModel):
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):
         out, train_loss = self.shared_step(batch, batch_idx, optimizer_idx)
-        self.log("train_loss", train_loss)
         self.log_acc(out, batch[-1], tag="train_acc")
         return train_loss
 
@@ -95,27 +102,17 @@ class GLVQ(AbstractPrototypeModel):
     def test_step(self, batch, batch_idx):
         # `model.eval()` and `torch.no_grad()` handled by pl
         out, test_loss = self.shared_step(batch, batch_idx)
-
         self.log_acc(out, batch[-1], tag="test_acc")
-
         return test_loss
 
     def test_epoch_end(self, outputs):
-        total_loss = 0
+        test_loss = 0.0
         for batch_loss in outputs:
-            total_loss += batch_loss.item()
-        self.log('test_loss', total_loss)
+            test_loss += batch_loss.item()
+        self.log("test_loss", test_loss)
 
     # def predict_step(self, batch, batch_idx, dataloader_idx=None):
     #     pass
-
-    def predict(self, x):
-        self.eval()
-        with torch.no_grad():
-            d = self(x)
-            plabels = self.proto_layer.component_labels
-            y_pred = wtac(d, plabels)
-        return y_pred
 
     def __repr__(self):
         super_repr = super().__repr__()

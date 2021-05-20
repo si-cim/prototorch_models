@@ -23,8 +23,8 @@ if __name__ == "__main__":
         distribution=(nclasses, prototypes_per_class),
         input_dim=100,
         latent_dim=2,
-        proto_lr=0.005,
-        bb_lr=0.005,
+        proto_lr=0.001,
+        bb_lr=0.001,
     )
 
     # Initialize the model
@@ -33,12 +33,17 @@ if __name__ == "__main__":
 
     # Callbacks
     vis = pt.models.VisSiameseGLVQ2D(train_ds, border=0.1)
+    es = pl.callbacks.EarlyStopping(monitor="val_loss",
+                                    min_delta=0.001,
+                                    patience=3,
+                                    verbose=False,
+                                    mode="min")
 
     # Setup trainer
     trainer = pl.Trainer(
         gpus=0,
-        max_epochs=20,
-        callbacks=[vis],
+        max_epochs=100,
+        callbacks=[vis, es],
         weights_summary=None,
     )
 
@@ -55,5 +60,4 @@ if __name__ == "__main__":
     saved_model.show_lambda()
 
     # Testing
-    # TODO
-    # trainer.test(model, test_dataloaders=test_loader)
+    trainer.test(model, test_dataloaders=test_loader)
