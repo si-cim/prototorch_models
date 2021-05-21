@@ -9,6 +9,7 @@ install:
 - pip install .[all] --progress-bar off
 script:
 - coverage run -m pytest
+- ./tests/test_examples.sh examples/
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 deploy:
