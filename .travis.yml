@@ -4,7 +4,9 @@ language: python
 python: 3.8
 cache:
   directories:
+  - "$HOME/.cache/pip"
   - "./tests/artifacts"
+  - "$HOME/datasets"
 install:
 - pip install git+git://github.com/si-cim/prototorch@dev --progress-bar off
 - pip install .[all] --progress-bar off
