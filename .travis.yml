@@ -6,8 +6,8 @@ cache:
   directories:
   - "./tests/artifacts"
 install:
+- pip install git+git://github.com/si-cim/prototorch@dev --progress-bar off
 - pip install .[all] --progress-bar off
-- pip install git+git://github.com/si-cim/prototorch@dev --upgrade --progress-bar off
 script:
 - coverage run -m pytest
 - ./tests/test_examples.sh examples/
