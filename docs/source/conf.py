@@ -104,7 +104,7 @@ autodoc_inherit_docstrings = False
 # https://sphinx-themes.org/
 html_theme = "sphinx_rtd_theme"
 
-html_logo = "_static/img/horizontal-lockup.png"
+html_logo = "_static/img/logo.png"
 
 html_theme_options = {
     "logo_only": True,
@@ -168,8 +168,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "ProtoTorch", "ProtoTorch Documentation", [author],
-              1)]
+man_pages = [(master_doc, "ProtoTorch Models",
+              "ProtoTorch Models Plugin Documentation", [author], 1)]
 
 # -- Options for Texinfo output -------------------------------------------
 
@@ -179,19 +179,22 @@ man_pages = [(master_doc, "ProtoTorch", "ProtoTorch Documentation", [author],
 texinfo_documents = [
     (
         master_doc,
-        "prototorch",
-        "ProtoTorch Documentation",
+        "prototorch models",
+        "ProtoTorch Models Plugin Documentation",
         author,
-        "prototorch",
-        "Prototype-based machine learning in PyTorch.",
+        "prototorch models",
+        "Prototype-based machine learning Models in ProtoTorch.",
         "Miscellaneous",
     ),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/", None),
-    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "torch": ('https://pytorch.org/docs/stable/', None),
+    "pytorch_lightning":
+    ("https://pytorch-lightning.readthedocs.io/en/stable/", None),
 }
 
 # -- Options for Epub output ----------------------------------------------

@@ -1,7 +1,13 @@
+"""Unsupervised prototype learning algorithms."""
+
+import warnings
+
 import torch
-from prototorch.components import Components
+import torchmetrics
+from prototorch.components import Components, LabeledComponents
 from prototorch.components import initializers as cinit
-from prototorch.components.initializers import ZerosInitializer
+from prototorch.components.initializers import ZerosInitializer, parse_data_arg
+from prototorch.functions.competitions import knnc
 from prototorch.functions.distances import euclidean_distance
 from prototorch.modules.losses import NeuralGasEnergy
 
@@ -34,6 +40,56 @@ class ConnectionTopology(torch.nn.Module):
 
     def extra_repr(self):
         return f"agelimit: {self.agelimit}"
+
+
+class KNN(AbstractPrototypeModel):
+    """K-Nearest-Neighbors classification algorithm."""
+    def __init__(self, hparams, **kwargs):
+        super().__init__()
+
+        self.save_hyperparameters(hparams)
+
+        # Default Values
+        self.hparams.setdefault("k", 1)
+        self.hparams.setdefault("distance", euclidean_distance)
+
+        data = kwargs.get("data")
+        x_train, y_train = parse_data_arg(data)
+
+        self.proto_layer = LabeledComponents(initialized_components=(x_train,
+                                                                     y_train))
+
+        self.train_acc = torchmetrics.Accuracy()
+
+    @property
+    def prototype_labels(self):
+        return self.proto_layer.component_labels.detach()
+
+    def forward(self, x):
+        protos, _ = self.proto_layer()
+        dis = self.hparams.distance(x, protos)
+        return dis
+
+    def predict(self, x):
+        # model.eval()  # ?!
+        with torch.no_grad():
+            d = self(x)
+            plabels = self.proto_layer.component_labels
+            y_pred = knnc(d, plabels, k=self.hparams.k)
+        return y_pred
+
+    def training_step(self, train_batch, batch_idx, optimizer_idx=None):
+        return 1
+
+    def on_train_batch_start(self,
+                             train_batch,
+                             batch_idx,
+                             dataloader_idx=None):
+        warnings.warn("k-NN has no training, skipping!")
+        return -1
+
+    def configure_optimizers(self):
+        return None
 
 
 class NeuralGas(AbstractPrototypeModel):

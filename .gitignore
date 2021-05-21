@@ -133,3 +133,5 @@ datasets/
 
 # PyTorch-Lightning
 lightning_logs/
+
+.vscode/

@@ -1,3 +1,4 @@
+"""Models based on the GLVQ Framework"""
 import torch
 import torchmetrics
 from prototorch.components import LabeledComponents
@@ -6,15 +7,8 @@ from prototorch.functions.competitions import wtac
 from prototorch.functions.distances import (euclidean_distance, omega_distance,
                                             sed)
 from prototorch.functions.helper import get_flat
-from prototorch.functions.losses import (_get_dp_dm, _get_matcher, glvq_loss,
-                                         lvq1_loss, lvq21_loss)
-
-from .abstract import AbstractPrototypeModel, PrototypeImageModel
-
-
-class GLVQ(AbstractPrototypeModel):
-    """Generalized Learning Vector Quantization."""
-
+from prototorch.functions.losses import (_get_dp_dm, glvq_loss, lvq1_loss,
+                                         lvq21_loss)
 
 from .abstract import AbstractPrototypeModel, PrototypeImageModel
 
@@ -192,11 +186,14 @@ class GRLVQ(SiameseGLVQ):
         self.relevances = torch.nn.parameter.Parameter(
             torch.ones(self.hparams.input_dim))
 
+        # Overwrite backbone
+        self.backbone = self._backbone
+
     @property
     def relevance_profile(self):
         return self.relevances.detach().cpu()
 
-    def backbone(self, x):
+    def _backbone(self, x):
         """Namespace hook for the visualization callbacks to work."""
         return x @ torch.diag(self.relevances)
 
@@ -262,6 +259,7 @@ class LVQMLN(SiameseGLVQ):
 
 
 class NonGradientGLVQ(GLVQ):
+    """Abstract Model for Models that do not use gradients in their update phase."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.automatic_optimization = False
@@ -271,6 +269,7 @@ class NonGradientGLVQ(GLVQ):
 
 
 class LVQ1(NonGradientGLVQ):
+    """Learning Vector Quantization 1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
         plabels = self.proto_layer.component_labels
@@ -299,6 +298,7 @@ class LVQ1(NonGradientGLVQ):
 
 
 class LVQ21(NonGradientGLVQ):
+    """Learning Vector Quantization 2.1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
         plabels = self.proto_layer.component_labels
@@ -311,8 +311,7 @@ class LVQ21(NonGradientGLVQ):
             xi = xi.view(1, -1)
             yi = yi.view(1, )
             d = self(xi)
-            preds = wtac(d, plabels)
-            (dp, wp), (dn, wn) = _get_dp_dm(d, yi, plabels, with_indices=True)
+            (_, wp), (_, wn) = _get_dp_dm(d, yi, plabels, with_indices=True)
             shiftp = xi - protos[wp]
             shiftn = protos[wn] - xi
             updated_protos = protos + 0.0
@@ -328,11 +327,11 @@ class LVQ21(NonGradientGLVQ):
 
 
 class MedianLVQ(NonGradientGLVQ):
-    ...
+    """Median LVQ"""
 
 
 class GLVQ1(GLVQ):
-    """Learning Vector Quantization 1."""
+    """Generalized Learning Vector Quantization 1."""
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = lvq1_loss
@@ -340,7 +339,7 @@ class GLVQ1(GLVQ):
 
 
 class GLVQ21(GLVQ):
-    """Learning Vector Quantization 2.1."""
+    """Generalized Learning Vector Quantization 2.1."""
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = lvq21_loss
@@ -354,7 +353,6 @@ class ImageGLVQ(PrototypeImageModel, GLVQ):
     after updates.
 
     """
-    pass
 
 
 class ImageGMLVQ(PrototypeImageModel, GMLVQ):
@@ -364,4 +362,3 @@ class ImageGMLVQ(PrototypeImageModel, GMLVQ):
     after updates.
 
     """
-    pass

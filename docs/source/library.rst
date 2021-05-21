@@ -1,25 +1,33 @@
 .. Available Models
 
-Available Models
+Models
 ========================================
 
 Unsupervised Methods
 -----------------------------------------
-.. autoclass:: prototorch.models.knn.KNN
+.. autoclass:: prototorch.models.unsupervised.KNN
    :members:
 
-.. autoclass:: prototorch.models.neural_gas.NeuralGas
+.. autoclass:: prototorch.models.unsupervised.NeuralGas
    :members:
 
 
 Classical Learning Vector Quantization
 -----------------------------------------
-Original LVQ models. Implementations use GLVQ structure as shown in [Sato&Yamada].
+Original LVQ models by Kohonen.
+These heuristic algorithms do not use gradient descent.
 
 .. autoclass:: prototorch.models.glvq.LVQ1
    :members:
-
 .. autoclass:: prototorch.models.glvq.LVQ21
+   :members:
+
+It is also possible to use the GLVQ structure as shown in [Sato&Yamada].
+This allows the use of gradient descent methods.
+
+.. autoclass:: prototorch.models.glvq.GLVQ1
+   :members:
+.. autoclass:: prototorch.models.glvq.GLVQ21
    :members:
 
 Generalized Learning Vector Quantization
@@ -43,10 +51,17 @@ Generalized Learning Vector Quantization
 .. autoclass:: prototorch.models.glvq.LVQMLN
    :members:
 
-CBC
+Classification by Component
 -----------------------------------------
 .. autoclass:: prototorch.models.cbc.CBC
    :members:
 
 .. autoclass:: prototorch.models.cbc.ImageCBC
    :members:
+
+Visualization
+========================================
+
+.. automodule:: prototorch.models.vis
+   :members:
+   :undoc-members:
