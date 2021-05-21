@@ -22,7 +22,6 @@ class GLVQ(AbstractPrototypeModel):
 
         self.distance_fn = kwargs.get("distance_fn", euclidean_distance)
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
-        prototype_initializer = kwargs.get("prototype_initializer", None)
 
         # Default Values
         self.hparams.setdefault("transfer_fn", "identity")
@@ -31,12 +30,15 @@ class GLVQ(AbstractPrototypeModel):
 
         self.proto_layer = LabeledComponents(
             distribution=self.hparams.distribution,
-            initializer=prototype_initializer)
+            initializer=self.prototype_initializer(**kwargs))
 
         self.transfer_fn = get_activation(self.hparams.transfer_fn)
         self.acc_metric = torchmetrics.Accuracy()
 
         self.loss = glvq_loss
+
+    def prototype_initializer(self, **kwargs):
+        return kwargs.get("prototype_initializer", None)
 
     @property
     def prototype_labels(self):
