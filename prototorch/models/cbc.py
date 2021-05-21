@@ -153,4 +153,4 @@ class ImageCBC(CBC):
     """
     def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
         # super().on_train_batch_end(outputs, batch, batch_idx, dataloader_idx)
-        self.component_layer.prototypes.data.clamp_(0.0, 1.0)
+        self.component_layer.components.data.clamp_(0.0, 1.0)
