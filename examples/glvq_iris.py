@@ -1,12 +1,19 @@
 """GLVQ example using the Iris dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from sklearn.datasets import load_iris
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
-    from sklearn.datasets import load_iris
     x_train, y_train = load_iris(return_X_y=True)
     x_train = x_train[:, [0, 2]]
     train_ds = pt.datasets.NumpyDataset(x_train, y_train)
@@ -33,9 +40,8 @@ if __name__ == "__main__":
     vis = pt.models.VisGLVQ2D(data=(x_train, y_train), block=False)
 
     # Setup trainer
-    trainer = pl.Trainer(
-        gpus=0,
-        max_epochs=50,
+    trainer = pl.Trainer.from_argparse_args(
+        args,
         callbacks=[vis],
     )
 

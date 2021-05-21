@@ -1,12 +1,19 @@
 """GMLVQ example using all four dimensions of the Iris dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from sklearn.datasets import load_iris
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
-    from sklearn.datasets import load_iris
     x_train, y_train = load_iris(return_X_y=True)
     train_ds = pt.datasets.NumpyDataset(x_train, y_train)
 
@@ -30,7 +37,7 @@ if __name__ == "__main__":
                             prototype_initializer=pt.components.SMI(train_ds))
 
     # Setup trainer
-    trainer = pl.Trainer(max_epochs=100, gpus=0)
+    trainer = pl.Trainer.from_argparse_args(args, )
 
     # Training loop
     trainer.fit(model, train_loader)

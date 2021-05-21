@@ -1,10 +1,17 @@
 """Limited Rank Matrix LVQ example using the Tecator dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
     train_ds = pt.datasets.Tecator(root="~/datasets/", train=True)
     test_ds = pt.datasets.Tecator(root="~/datasets/", train=False)
@@ -40,11 +47,9 @@ if __name__ == "__main__":
                                     mode="min")
 
     # Setup trainer
-    trainer = pl.Trainer(
-        gpus=0,
-        max_epochs=100,
+    trainer = pl.Trainer.from_argparse_args(
+        args,
         callbacks=[vis, es],
-        weights_summary=None,
     )
 
     # Training loop

@@ -74,10 +74,6 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(
         args,
         callbacks=[vis],
-        # kwargs override the cli-arguments
-        # max_epochs=50,
-        # overfit_batches=1,
-        # fast_dev_run=1,
     )
 
     # Training loop

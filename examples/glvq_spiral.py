@@ -1,11 +1,17 @@
 """GLVQ example using the spiral dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from prototorch.models.callbacks import StopOnNaN
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
     train_ds = pt.datasets.Spiral(n_samples=600, noise=0.6)
 
@@ -31,13 +37,12 @@ if __name__ == "__main__":
 
     # Callbacks
     vis = pt.models.VisGLVQ2D(train_ds, show_last_only=True, block=True)
-    snan = StopOnNaN(model.proto_layer.components)
 
     # Setup trainer
-    trainer = pl.Trainer(
-        gpus=0,
-        max_epochs=200,
-        callbacks=[vis, snan],
+    trainer = pl.Trainer.from_argparse_args(
+        args,
+        callbacks=[vis],
+        terminate_on_nan=True,
     )
 
     # Training loop

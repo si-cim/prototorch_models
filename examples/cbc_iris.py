@@ -1,10 +1,17 @@
 """CBC example using the Iris dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
     train_ds = pt.datasets.Iris(dims=[0, 2])
 
@@ -30,18 +37,15 @@ if __name__ == "__main__":
     )
 
     # Callbacks
-    dvis = pt.models.VisCBC2D(data=train_ds,
-                              title="CBC Iris Example",
-                              resolution=300,
-                              axis_off=True)
+    vis = pt.models.VisCBC2D(data=train_ds,
+                             title="CBC Iris Example",
+                             resolution=300,
+                             axis_off=True)
 
     # Setup trainer
-    trainer = pl.Trainer(
-        gpus=0,
-        max_epochs=200,
-        callbacks=[
-            dvis,
-        ],
+    trainer = pl.Trainer.from_argparse_args(
+        args,
+        callbacks=[vis],
     )
 
     # Training loop

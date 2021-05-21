@@ -1,5 +1,7 @@
 """Siamese GLVQ example using all four dimensions of the Iris dataset."""
 
+import argparse
+
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
@@ -22,6 +24,11 @@ class Backbone(torch.nn.Module):
 
 
 if __name__ == "__main__":
+    # Command-line arguments
+    parser = argparse.ArgumentParser()
+    parser = pl.Trainer.add_argparse_args(parser)
+    args = parser.parse_args()
+
     # Dataset
     train_ds = pt.datasets.Iris()
 
@@ -58,7 +65,10 @@ if __name__ == "__main__":
     vis = pt.models.VisSiameseGLVQ2D(data=train_ds, border=0.1)
 
     # Setup trainer
-    trainer = pl.Trainer(max_epochs=100, callbacks=[vis], gpus=0)
+    trainer = pl.Trainer.from_argparse_args(
+        args,
+        callbacks=[vis],
+    )
 
     # Training loop
     trainer.fit(model, train_loader)
