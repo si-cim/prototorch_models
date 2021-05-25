@@ -135,3 +135,7 @@ datasets/
 lightning_logs/
 
 .vscode/
+
+#  Pytorch Models or Weights
+#  If necessary make exceptions for single pretrained models
+*.pt
