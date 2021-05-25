@@ -1,4 +1,4 @@
-"""GMLVQ example using the MNIST dataset."""
+"""GLVQ example using the MNIST dataset."""
 
 from prototorch.models import ImageGLVQ
 from pytorch_lightning.utilities.cli import LightningCLI
@@ -6,8 +6,8 @@ from pytorch_lightning.utilities.cli import LightningCLI
 from mnist import TrainOnMNIST
 
 
-class Model(TrainOnMNIST, ImageGLVQ):
-    """Model Definition"""
+class GLVQMNIST(TrainOnMNIST, ImageGLVQ):
+    """Model Definition."""
 
 
-cli = LightningCLI(Model)
+cli = LightningCLI(GLVQMNIST)
