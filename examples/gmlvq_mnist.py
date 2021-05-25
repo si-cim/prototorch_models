@@ -41,12 +41,12 @@ if __name__ == "__main__":
                                               batch_size=256)
 
     # Hyperparameters
-    nclasses = 10
+    num_classes = 10
     prototypes_per_class = 2
     hparams = dict(
         input_dim=28 * 28,
         latent_dim=28 * 28,
-        distribution=(nclasses, prototypes_per_class),
+        distribution=(num_classes, prototypes_per_class),
         proto_lr=0.01,
         bb_lr=0.01,
     )
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     # Callbacks
     vis = pt.models.VisImgComp(
         data=train_ds,
-        nrow=5,
+        num_columns=5,
         show=False,
         tensorboard=True,
         random_data=20,

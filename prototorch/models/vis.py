@@ -246,14 +246,14 @@ class VisImgComp(Vis2DAbstract):
                  *args,
                  random_data=0,
                  dataformats="CHW",
-                 nrow=2,
+                 num_columns=2,
                  add_embedding=False,
                  embedding_data=100,
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.random_data = random_data
         self.dataformats = dataformats
-        self.nrow = nrow
+        self.num_columns = num_columns
         self.add_embedding = add_embedding
         self.embedding_data = embedding_data
 
@@ -278,7 +278,7 @@ class VisImgComp(Vis2DAbstract):
                                    size=self.random_data,
                                    replace=False)
             data = self.x_train[ind]
-            grid = torchvision.utils.make_grid(data, nrow=self.nrow)
+            grid = torchvision.utils.make_grid(data, nrow=self.num_columns)
             tb.add_image(tag="Data",
                          img_tensor=grid,
                          global_step=None,
@@ -288,7 +288,7 @@ class VisImgComp(Vis2DAbstract):
         tb = pl_module.logger.experiment
 
         components = pl_module.components
-        grid = torchvision.utils.make_grid(components, nrow=self.nrow)
+        grid = torchvision.utils.make_grid(components, nrow=self.num_columns)
         tb.add_image(
             tag="Components",
             img_tensor=grid,
@@ -302,7 +302,8 @@ class VisImgComp(Vis2DAbstract):
 
         if self.show:
             components = pl_module.components
-            grid = torchvision.utils.make_grid(components, nrow=self.nrow)
+            grid = torchvision.utils.make_grid(components,
+                                               nrow=self.num_columns)
             plt.imshow(grid.permute((1, 2, 0)).cpu(), cmap=self.cmap)
 
         self.log_and_display(trainer, pl_module)

@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Dataset
-    train_ds = pt.datasets.Spiral(n_samples=600, noise=0.6)
+    train_ds = pt.datasets.Spiral(num_samples=600, noise=0.6)
 
     # Dataloaders
     train_loader = torch.utils.data.DataLoader(train_ds,
@@ -21,10 +21,10 @@ if __name__ == "__main__":
                                                batch_size=256)
 
     # Hyperparameters
-    nclasses = 2
+    num_classes = 2
     prototypes_per_class = 20
     hparams = dict(
-        distribution=(nclasses, prototypes_per_class),
+        distribution=(num_classes, prototypes_per_class),
         transfer_function="sigmoid_beta",
         transfer_beta=10.0,
         lr=0.01,

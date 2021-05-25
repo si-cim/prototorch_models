@@ -58,9 +58,9 @@ class MarginLoss(torch.nn.modules.loss._Loss):
 
 
 class ReasoningLayer(torch.nn.Module):
-    def __init__(self, num_components, num_classes, n_replicas=1):
+    def __init__(self, num_components, num_classes, num_replicas=1):
         super().__init__()
-        self.n_replicas = n_replicas
+        self.num_replicas = num_replicas
         self.num_classes = num_classes
         probabilities_init = torch.zeros(2, 1, num_components,
                                          self.num_classes)
@@ -122,8 +122,8 @@ class CBC(SiameseGLVQ):
         x, y = batch
         # x = x.view(x.size(0), -1)
         y_pred = self(x)
-        nclasses = self.reasoning_layer.num_classes
-        y_true = torch.nn.functional.one_hot(y.long(), num_classes=nclasses)
+        num_classes = self.reasoning_layer.num_classes
+        y_true = torch.nn.functional.one_hot(y.long(), num_classes=num_classes)
         loss = MarginLoss(self.margin)(y_pred, y_true).mean(dim=0)
         return y_pred, loss
 

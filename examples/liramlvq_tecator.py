@@ -24,10 +24,10 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=32)
 
     # Hyperparameters
-    nclasses = 2
+    num_classes = 2
     prototypes_per_class = 2
     hparams = dict(
-        distribution=(nclasses, prototypes_per_class),
+        distribution=(num_classes, prototypes_per_class),
         input_dim=100,
         latent_dim=2,
         proto_lr=0.001,

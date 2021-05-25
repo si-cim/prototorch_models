@@ -24,10 +24,10 @@ if __name__ == "__main__":
                                                batch_size=150)
 
     # Hyperparameters
-    nclasses = 3
+    num_classes = 3
     prototypes_per_class = 2
     hparams = dict(
-        distribution=(nclasses, prototypes_per_class),
+        distribution=(num_classes, prototypes_per_class),
         lr=0.01,
     )
 
