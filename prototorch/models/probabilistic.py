@@ -6,7 +6,7 @@ from .glvq import GLVQ
 
 
 # HELPER
-# TODO: Refactor into general files, if usefull
+# TODO: Refactor into general files, if useful
 def probability(distance, variance):
     return torch.exp(-(distance * distance) / (2 * variance))
 
@@ -14,30 +14,30 @@ def probability(distance, variance):
 def grouped_sum(value: torch.Tensor,
                 labels: torch.LongTensor) -> (torch.Tensor, torch.LongTensor):
     """Group-wise average for (sparse) grouped tensors
-    
+
     Args:
         value (torch.Tensor): values to average (# samples, latent dimension)
         labels (torch.LongTensor): labels for embedding parameters (# samples,)
-    
-    Returns: 
+
+    Returns:
         result (torch.Tensor): (# unique labels, latent dimension)
         new_labels (torch.LongTensor): (# unique labels,)
-        
+
     Examples:
         >>> samples = torch.Tensor([
                              [0.15, 0.15, 0.15],    #-> group / class 1
-                             [0.2, 0.2, 0.2],    #-> group / class 3
-                             [0.4, 0.4, 0.4],    #-> group / class 3
-                             [0.0, 0.0, 0.0]     #-> group / class 0
+                             [0.2,  0.2,  0.2 ],    #-> group / class 3
+                             [0.4,  0.4,  0.4 ],    #-> group / class 3
+                             [0.0,  0.0,  0.0 ]     #-> group / class 0
                       ])
         >>> labels = torch.LongTensor([1, 5, 5, 0])
         >>> result, new_labels = groupby_mean(samples, labels)
-        
+
         >>> result
         tensor([[0.0000, 0.0000, 0.0000],
-            [0.1500, 0.1500, 0.1500],
-            [0.3000, 0.3000, 0.3000]])
-            
+                [0.1500, 0.1500, 0.1500],
+                [0.3000, 0.3000, 0.3000]])
+
         >>> new_labels
         tensor([0, 1, 5])
     """
