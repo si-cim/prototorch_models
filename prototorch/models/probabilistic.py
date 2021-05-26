@@ -90,8 +90,6 @@ def robust_soft_loss(probabilities, target, prototype_labels):
 
 class LikelihoodRatioLVQ(GLVQ):
     """Learning Vector Quantization based on Likelihood Ratios
-
-    Based on "Soft Learning Vector Quantization" from Sambu Seo and Klaus Obermayer (2003).
     """
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
@@ -128,8 +126,6 @@ class LikelihoodRatioLVQ(GLVQ):
 
 class RSLVQ(GLVQ):
     """Learning Vector Quantization based on Likelihood Ratios
-
-    Based on "Soft Learning Vector Quantization" from Sambu Seo and Klaus Obermayer (2003).
     """
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)

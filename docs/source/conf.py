@@ -47,6 +47,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_rtd_theme",
     "sphinxcontrib.katex",
+    "sphinxcontrib.bibtex",
 ]
 
 # https://nbsphinx.readthedocs.io/en/0.8.5/custom-css.html#For-All-Pages
@@ -202,3 +203,7 @@ intersphinx_mapping = {
 
 epub_cover = ()
 version = release
+
+# -- Options for Bibliography -------------------------------------------
+bibtex_bibfiles = ['refs.bib']
+bibtex_reference_style = 'author_year'
