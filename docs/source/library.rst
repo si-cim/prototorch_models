@@ -3,6 +3,9 @@
 Models
 ========================================
 
+.. image:: _static/img/model_tree.png
+   :width: 600
+
 Unsupervised Methods
 -----------------------------------------
 .. autoclass:: prototorch.models.unsupervised.KNN
