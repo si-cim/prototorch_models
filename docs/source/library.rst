@@ -17,9 +17,9 @@ Classical Learning Vector Quantization
 Original LVQ models by Kohonen.
 These heuristic algorithms do not use gradient descent.
 
-.. autoclass:: prototorch.models.glvq.LVQ1
+.. autoclass:: prototorch.models.lvq.LVQ1
    :members:
-.. autoclass:: prototorch.models.glvq.LVQ21
+.. autoclass:: prototorch.models.lvq.LVQ21
    :members:
 
 It is also possible to use the GLVQ structure as shown in [Sato&Yamada].
