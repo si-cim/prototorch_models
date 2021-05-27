@@ -4,11 +4,11 @@ import torch
 import torchmetrics
 from prototorch.components import LabeledComponents
 from prototorch.functions.activations import get_activation
-from prototorch.functions.competitions import wtac
+from prototorch.functions.competitions import stratified_min, wtac
 from prototorch.functions.distances import (euclidean_distance, omega_distance,
                                             sed)
 from prototorch.functions.helper import get_flat
-from prototorch.functions.losses import (glvq_loss, lvq1_loss, lvq21_loss)
+from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 
 from .abstract import AbstractPrototypeModel, PrototypeImageModel
 
@@ -258,6 +258,22 @@ class LVQMLN(SiameseGLVQ):
         latent_x = self.backbone(x)
         distances = self.distance_fn(latent_x, latent_protos)
         return distances
+
+
+class CELVQ(GLVQ):
+    """Cross-Entropy Learning Vector Quantization."""
+    def __init__(self, hparams, **kwargs):
+        super().__init__(hparams, **kwargs)
+        self.loss = torch.nn.CrossEntropyLoss()
+
+    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+        x, y = batch
+        out = self._forward(x)  # [None, num_protos]
+        plabels = self.proto_layer.component_labels
+        probs = -1.0 * stratified_min(out, plabels)  # [None, num_classes]
+        batch_loss = self.loss(out, y.long())
+        loss = batch_loss.sum(dim=0)
+        return out, loss
 
 
 class GLVQ1(GLVQ):
