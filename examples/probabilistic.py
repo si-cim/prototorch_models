@@ -36,6 +36,8 @@ if __name__ == "__main__":
         prototype_initializer=pt.components.SMI(train_ds),
     )
 
+    print(model)
+
     # Callbacks
     vis = pt.models.VisGLVQ2D(data=train_ds)
 

@@ -130,9 +130,10 @@ class CBC(SiameseGLVQ):
     def training_step(self, batch, batch_idx, optimizer_idx=None):
         y_pred, train_loss = self.shared_step(batch, batch_idx, optimizer_idx)
         preds = torch.argmax(y_pred, dim=1)
-        self.acc_metric(preds.int(), batch[1].int())
+        accuracy = torchmetrics.functional.accuracy(preds.int(),
+                                                    batch[1].int())
         self.log("train_acc",
-                 self.acc_metric,
+                 accuracy,
                  on_step=False,
                  on_epoch=True,
                  prog_bar=True,
