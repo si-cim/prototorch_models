@@ -1,6 +1,5 @@
 import pytorch_lightning as pl
 import torch
-from prototorch.functions.competitions import wtac
 from torch.optim.lr_scheduler import ExponentialLR
 
 

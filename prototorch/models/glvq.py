@@ -120,6 +120,9 @@ class GLVQ(AbstractPrototypeModel):
     # def predict_step(self, batch, batch_idx, dataloader_idx=None):
     #     pass
 
+    def increase_prototypes(self, initializer, distribution):
+        self.proto_layer.increase_components(initializer, distribution)
+
     def __repr__(self):
         super_repr = super().__repr__()
         return f"{super_repr}"
