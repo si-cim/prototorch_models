@@ -2,9 +2,10 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
+
+import prototorch as pt
 
 
 class Backbone(torch.nn.Module):
@@ -36,9 +37,7 @@ if __name__ == "__main__":
     pl.utilities.seed.seed_everything(seed=2)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds,
-                                               num_workers=0,
-                                               batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=150)
 
     # Hyperparameters
     hparams = dict(

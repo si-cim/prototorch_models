@@ -2,11 +2,12 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from torchvision import transforms
 from torchvision.datasets import MNIST
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments

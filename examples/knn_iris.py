@@ -2,10 +2,11 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from sklearn.datasets import load_iris
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -19,9 +20,7 @@ if __name__ == "__main__":
     train_ds = pt.datasets.NumpyDataset(x_train, y_train)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds,
-                                               num_workers=0,
-                                               batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=150)
 
     # Hyperparameters
     hparams = dict(k=20)

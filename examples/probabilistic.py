@@ -1,11 +1,11 @@
-"""GLVQ example using the Iris dataset."""
+"""Probabilistic-LVQ example using the Iris dataset."""
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from sklearn.datasets import load_iris
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -14,14 +14,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Dataset
-    x_train, y_train = load_iris(return_X_y=True)
-    x_train = x_train[:, [0, 2]]
-    train_ds = pt.datasets.NumpyDataset(x_train, y_train)
+    train_ds = pt.datasets.Iris(dims=[0, 2])
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds,
-                                               num_workers=0,
-                                               batch_size=150)
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
 
     # Hyperparameters
     num_classes = 3
@@ -29,20 +25,19 @@ if __name__ == "__main__":
     hparams = dict(
         distribution=(num_classes, prototypes_per_class),
         lr=0.05,
-        variance=1,
+        variance=1.0,
     )
 
     # Initialize the model
     model = pt.models.probabilistic.LikelihoodRatioLVQ(
-        #model = pt.models.probabilistic.RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        #prototype_initializer=pt.components.SSI(train_ds, noise=2),
-        prototype_initializer=pt.components.UniformInitializer(2),
+        # prototype_initializer=pt.components.UniformInitializer(2),
+        prototype_initializer=pt.components.SMI(train_ds),
     )
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=(x_train, y_train), block=False)
+    vis = pt.models.VisGLVQ2D(data=train_ds)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(

@@ -2,9 +2,10 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -24,10 +25,11 @@ if __name__ == "__main__":
     test_loader = torch.utils.data.DataLoader(test_ds, batch_size=32)
 
     # Hyperparameters
-    num_classes = 2
-    prototypes_per_class = 2
     hparams = dict(
-        distribution=(num_classes, prototypes_per_class),
+        distribution={
+            "num_classes": 3,
+            "prototypes_per_class": 4
+        },
         input_dim=100,
         latent_dim=2,
         proto_lr=0.001,
