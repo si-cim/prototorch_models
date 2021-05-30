@@ -10,15 +10,12 @@ class MNISTDataModule(pl.LightningDataModule):
         super().__init__()
         self.batch_size = batch_size
 
-    # When doing distributed training, Datamodules have two optional arguments for
-    # granular control over download/prepare/splitting data:
-
-    # OPTIONAL, called only on 1 GPU/machine
+    # Download mnist dataset as side-effect, only called on the first cpu
     def prepare_data(self):
         MNIST("~/datasets", train=True, download=True)
         MNIST("~/datasets", train=False, download=True)
 
-    # OPTIONAL, called for every GPU/machine (assigning state is OK)
+    # called for every GPU/machine (assigning state is OK)
     def setup(self, stage=None):
         # Transforms
         transform = transforms.Compose([
@@ -28,13 +25,17 @@ class MNISTDataModule(pl.LightningDataModule):
         if stage in (None, "fit"):
             mnist_train = MNIST("~/datasets", train=True, transform=transform)
             self.mnist_train, self.mnist_val = random_split(
-                mnist_train, [55000, 5000])
+                mnist_train,
+                [55000, 5000],
+            )
         if stage == (None, "test"):
-            self.mnist_test = MNIST("~/datasets",
-                                    train=False,
-                                    transform=transform)
+            self.mnist_test = MNIST(
+                "~/datasets",
+                train=False,
+                transform=transform,
+            )
 
-    # Return the dataloader for each split
+    # Dataloaders
     def train_dataloader(self):
         mnist_train = DataLoader(self.mnist_train, batch_size=self.batch_size)
         return mnist_train
@@ -48,8 +49,11 @@ class MNISTDataModule(pl.LightningDataModule):
         return mnist_test
 
 
-class TrainOnMNIST(pl.LightningModule):
-    datamodule = MNISTDataModule(batch_size=256)
+def train_on_mnist(batch_size=256) -> type:
+    class DataClass(pl.LightningModule):
+        datamodule = MNISTDataModule(batch_size=batch_size)
 
-    def prototype_initializer(self, **kwargs):
-        return pt.components.Zeros((28, 28, 1))
+        def prototype_initializer(self, **kwargs):
+            return pt.components.Zeros((28, 28, 1))
+
+    return DataClass

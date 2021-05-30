@@ -33,11 +33,12 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.probabilistic.RSLVQ(
+    model = pt.models.probabilistic.LikelihoodRatioLVQ(
+        #model = pt.models.probabilistic.RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        prototype_initializer=pt.components.SSI(train_ds, noise=2),
-        #prototype_initializer=pt.components.UniformInitializer(2),
+        #prototype_initializer=pt.components.SSI(train_ds, noise=2),
+        prototype_initializer=pt.components.UniformInitializer(2),
     )
 
     # Callbacks
