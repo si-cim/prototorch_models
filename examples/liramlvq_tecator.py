@@ -27,8 +27,8 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         distribution={
-            "num_classes": 3,
-            "prototypes_per_class": 4
+            "num_classes": 2,
+            "prototypes_per_class": 2
         },
         input_dim=100,
         latent_dim=2,
