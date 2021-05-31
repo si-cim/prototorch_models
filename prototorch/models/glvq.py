@@ -137,7 +137,7 @@ class GLVQ(AbstractPrototypeModel):
 
     def increase_prototypes(self, initializer, distribution):
         self.proto_layer.increase_components(initializer, distribution)
-        #self.trainer.accelerated_backend.setup_optimizers(self)
+        self.trainer.accelerator_backend.setup_optimizers(self.trainer)
 
     def __repr__(self):
         super_repr = super().__repr__()
