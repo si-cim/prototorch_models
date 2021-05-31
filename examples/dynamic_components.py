@@ -47,17 +47,25 @@ if __name__ == "__main__":
         prototype_initializer=pt.components.SMI(train_ds),
     )
 
+    # Summary
+    print(model)
+
     # Callbacks
     vis = pt.models.VisGLVQ2D(train_ds)
     proto_scheduler = PrototypeScheduler(train_ds, 10)
 
     # Setup trainer
-    trainer = pl.Trainer.from_argparse_args(args,
-                                            max_epochs=100,
-                                            callbacks=[vis, proto_scheduler],
-                                            terminate_on_nan=True,
-                                            weights_summary=None,
-                                            accelerator='ddp')
+    trainer = pl.Trainer.from_argparse_args(
+        args,
+        max_epochs=100,
+        callbacks=[
+            vis,
+            proto_scheduler,
+        ],
+        terminate_on_nan=True,
+        weights_summary=None,
+        accelerator="ddp",
+    )
 
     # Training loop
     trainer.fit(model, train_loader)

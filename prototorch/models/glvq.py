@@ -9,21 +9,9 @@ from prototorch.functions.distances import (euclidean_distance, omega_distance,
                                             sed)
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
+from prototorch.modules import LambdaLayer
 
 from .abstract import AbstractPrototypeModel, PrototypeImageModel
-
-
-class FunctionLayer(torch.nn.Module):
-    def __init__(self, distance_fn):
-        super().__init__()
-        self.fn = distance_fn
-        self.name = distance_fn.__name__
-
-    def forward(self, *args, **kwargs):
-        return self.fn(*args, **kwargs)
-
-    def extra_repr(self):
-        return self.name
 
 
 class GLVQ(AbstractPrototypeModel):
@@ -46,9 +34,9 @@ class GLVQ(AbstractPrototypeModel):
             distribution=self.hparams.distribution,
             initializer=self.prototype_initializer(**kwargs))
 
-        self.distance_layer = FunctionLayer(distance_fn)
-        self.transfer_layer = FunctionLayer(tranfer_fn)
-        self.loss = FunctionLayer(glvq_loss)
+        self.distance_layer = LambdaLayer(distance_fn)
+        self.transfer_layer = LambdaLayer(tranfer_fn)
+        self.loss = LambdaLayer(glvq_loss)
 
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
 
