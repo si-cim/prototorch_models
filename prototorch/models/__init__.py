@@ -1,6 +1,6 @@
 from importlib.metadata import PackageNotFoundError, version
 
-from . import probabilistic
+from .probabilistic import LikelihoodRatioLVQ, RSLVQ
 from .cbc import CBC, ImageCBC
 from .glvq import (CELVQ, GLVQ, GLVQ1, GLVQ21, GMLVQ, GRLVQ, LVQMLN, ImageGLVQ,
                    ImageGMLVQ, SiameseGLVQ)

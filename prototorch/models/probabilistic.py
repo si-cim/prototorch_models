@@ -2,15 +2,14 @@
 
 import torch
 from prototorch.functions.competitions import stratified_sum
-from prototorch.functions.losses import (log_likelihood_ratio_loss,
-                                         robust_soft_loss)
+from prototorch.functions.losses import log_likelihood_ratio_loss, robust_soft_loss
 from prototorch.functions.transform import gaussian
 
 from .glvq import GLVQ
 
 
 class ProbabilisticLVQ(GLVQ):
-    def __init__(self, hparams, rejection_confidence=1.0, **kwargs):
+    def __init__(self, hparams, rejection_confidence=0.0, **kwargs):
         super().__init__(hparams, **kwargs)
 
         self.conditional_distribution = gaussian
@@ -45,19 +44,14 @@ class ProbabilisticLVQ(GLVQ):
 
 
 class LikelihoodRatioLVQ(ProbabilisticLVQ):
-    """Learning Vector Quantization based on Likelihood Ratios
-    """
+    """Learning Vector Quantization based on Likelihood Ratios."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss_fn = log_likelihood_ratio_loss
 
 
 class RSLVQ(ProbabilisticLVQ):
-    """Learning Vector Quantization based on Likelihood Ratios
-    """
+    """Robust Soft Learning Vector Quantization."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss_fn = robust_soft_loss
-
-
-__all__ = ["LikelihoodRatioLVQ", "RSLVQ"]

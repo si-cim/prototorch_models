@@ -13,6 +13,9 @@ if __name__ == "__main__":
     parser = pl.Trainer.add_argparse_args(parser)
     args = parser.parse_args()
 
+    # Reproducibility
+    pl.utilities.seed.seed_everything(seed=42)
+
     # Dataset
     train_ds = pt.datasets.Iris(dims=[0, 2])
 
@@ -20,20 +23,17 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
 
     # Hyperparameters
-    num_classes = 3
-    prototypes_per_class = 2
     hparams = dict(
-        distribution=(num_classes, prototypes_per_class),
+        distribution=[2, 2, 3],
         lr=0.05,
-        variance=1.0,
+        variance=0.3,
     )
 
     # Initialize the model
-    model = pt.models.probabilistic.LikelihoodRatioLVQ(
+    model = pt.models.probabilistic.RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        # prototype_initializer=pt.components.UniformInitializer(2),
-        prototype_initializer=pt.components.SMI(train_ds),
+        prototype_initializer=pt.components.SSI(train_ds, noise=0.2),
     )
 
     print(model)
@@ -45,6 +45,9 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(
         args,
         callbacks=[vis],
+        terminate_on_nan=True,
+        weights_summary=None,
+        # accelerator="ddp",
     )
 
     # Training loop
