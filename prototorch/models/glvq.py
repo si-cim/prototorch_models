@@ -13,28 +13,44 @@ from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 from .abstract import AbstractPrototypeModel, PrototypeImageModel
 
 
+class FunctionLayer(torch.nn.Module):
+    def __init__(self, distance_fn):
+        super().__init__()
+        self.fn = distance_fn
+        self.name = distance_fn.__name__
+
+    def forward(self, *args, **kwargs):
+        return self.fn(*args, **kwargs)
+
+    def extra_repr(self):
+        return self.name
+
+
 class GLVQ(AbstractPrototypeModel):
     """Generalized Learning Vector Quantization."""
     def __init__(self, hparams, **kwargs):
         super().__init__()
 
-        self.save_hyperparameters(hparams)
+        # Hyperparameters
+        self.save_hyperparameters(hparams)  # Default Values
 
-        self.distance_fn = kwargs.get("distance_fn", euclidean_distance)
-        self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
-
-        # Default Values
         self.hparams.setdefault("transfer_fn", "identity")
         self.hparams.setdefault("transfer_beta", 10.0)
         self.hparams.setdefault("lr", 0.01)
 
+        distance_fn = kwargs.get("distance_fn", euclidean_distance)
+        tranfer_fn = get_activation(self.hparams.transfer_fn)
+
+        # Layers
         self.proto_layer = LabeledComponents(
             distribution=self.hparams.distribution,
             initializer=self.prototype_initializer(**kwargs))
 
-        self.transfer_fn = get_activation(self.hparams.transfer_fn)
+        self.distance_layer = FunctionLayer(distance_fn)
+        self.transfer_layer = FunctionLayer(tranfer_fn)
+        self.loss = FunctionLayer(glvq_loss)
 
-        self.loss = glvq_loss
+        self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
 
     def prototype_initializer(self, **kwargs):
         return kwargs.get("prototype_initializer", None)
@@ -49,7 +65,7 @@ class GLVQ(AbstractPrototypeModel):
 
     def _forward(self, x):
         protos, _ = self.proto_layer()
-        distances = self.distance_fn(x, protos)
+        distances = self.distance_layer(x, protos)
         return distances
 
     def forward(self, x):
@@ -87,7 +103,7 @@ class GLVQ(AbstractPrototypeModel):
         out = self._forward(x)
         plabels = self.proto_layer.component_labels
         mu = self.loss(out, y, prototype_labels=plabels)
-        batch_loss = self.transfer_fn(mu, beta=self.hparams.transfer_beta)
+        batch_loss = self.transfer_layer(mu, beta=self.hparams.transfer_beta)
         loss = batch_loss.sum(dim=0)
         return out, loss
 
@@ -121,6 +137,7 @@ class GLVQ(AbstractPrototypeModel):
 
     def increase_prototypes(self, initializer, distribution):
         self.proto_layer.increase_components(initializer, distribution)
+        #self.trainer.accelerated_backend.setup_optimizers(self)
 
     def __repr__(self):
         super_repr = super().__repr__()
