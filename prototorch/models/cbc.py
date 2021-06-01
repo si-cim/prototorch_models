@@ -16,9 +16,9 @@ def shift_activation(x):
     return (x + 1.0) / 2.0
 
 
-def euclidean_similarity(x, y, beta=3):
+def euclidean_similarity(x, y, variance=1.0):
     d = euclidean_distance(x, y)
-    return torch.exp(-d * beta)
+    return torch.exp(-(d * d) / (2 * variance))
 
 
 class CosineSimilarity(torch.nn.Module):
