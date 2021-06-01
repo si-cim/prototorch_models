@@ -22,14 +22,22 @@ The plugin should then be available for use in your Python environment as
 
 ## Available models
 
-- k-Nearest Neighbors (KNN)
+### LVQ Family
+
 - Learning Vector Quantization 1 (LVQ1)
 - Generalized Learning Vector Quantization (GLVQ)
 - Generalized Relevance Learning Vector Quantization (GRLVQ)
 - Generalized Matrix Learning Vector Quantization (GMLVQ)
+- Localized and Generalized Matrix Learning Vector Quantization (LGMLVQ)
 - Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
 - Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
+- Cross-Entropy Learning Vector Quantization (CELVQ)
+- Robust Soft Learning Vector Quantization (RSLVQ)
+
+### Other
+
+- k-Nearest Neighbors (KNN)
 - Neural Gas (NG)
 - Growing Neural Gas (GNG)
 
@@ -41,9 +49,7 @@ The plugin should then be available for use in your Python environment as
 ## Planned models
 
 - Median-LVQ
-- Local-Matrix GMLVQ
 - Generalized Tangent Learning Vector Quantization (GTLVQ)
-- Robust Soft Learning Vector Quantization (RSLVQ)
 - Probabilistic Learning Vector Quantization (PLVQ)
 - Self-Incremental Learning Vector Quantization (SILVQ)
 
