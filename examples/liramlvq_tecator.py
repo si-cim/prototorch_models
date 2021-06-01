@@ -2,10 +2,21 @@
 
 import argparse
 
+import matplotlib.pyplot as plt
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
 
-import prototorch as pt
+
+def plot_matrix(matrix):
+    title = "Lambda matrix"
+    plt.figure(title)
+    plt.title(title)
+    plt.imshow(matrix, cmap="gray")
+    plt.axis("off")
+    plt.colorbar()
+    plt.show(block=True)
+
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -18,7 +29,7 @@ if __name__ == "__main__":
     test_ds = pt.datasets.Tecator(root="~/datasets/", train=False)
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=42)
+    pl.utilities.seed.seed_everything(seed=10)
 
     # Dataloaders
     train_loader = torch.utils.data.DataLoader(train_ds, batch_size=32)
@@ -28,23 +39,30 @@ if __name__ == "__main__":
     hparams = dict(
         distribution={
             "num_classes": 2,
-            "prototypes_per_class": 2
+            "prototypes_per_class": 1
         },
         input_dim=100,
         latent_dim=2,
-        proto_lr=0.001,
-        bb_lr=0.001,
+        proto_lr=0.0001,
+        bb_lr=0.0001,
     )
 
     # Initialize the model
-    model = pt.models.GMLVQ(hparams,
-                            prototype_initializer=pt.components.SMI(train_ds))
+    model = pt.models.SiameseGMLVQ(
+        hparams,
+        # optimizer=torch.optim.SGD,
+        optimizer=torch.optim.Adam,
+        prototype_initializer=pt.components.SMI(train_ds),
+    )
+
+    # Summary
+    print(model)
 
     # Callbacks
     vis = pt.models.VisSiameseGLVQ2D(train_ds, border=0.1)
     es = pl.callbacks.EarlyStopping(monitor="val_loss",
                                     min_delta=0.001,
-                                    patience=3,
+                                    patience=50,
                                     verbose=False,
                                     mode="min")
 
@@ -52,6 +70,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(
         args,
         callbacks=[vis, es],
+        weights_summary=None,
     )
 
     # Training loop
@@ -64,7 +83,7 @@ if __name__ == "__main__":
     saved_model = torch.load("liramlvq_tecator.pt")
 
     # Display the Lambda matrix
-    saved_model.show_lambda()
+    plot_matrix(saved_model.lambda_matrix)
 
     # Testing
     trainer.test(model, test_dataloaders=test_loader)
