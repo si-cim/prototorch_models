@@ -3,6 +3,7 @@
 import logging
 import warnings
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
 import torchmetrics
