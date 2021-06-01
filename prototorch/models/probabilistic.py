@@ -1,11 +1,27 @@
 """Probabilistic GLVQ methods"""
 
 import torch
-from prototorch.functions.competitions import stratified_sum
+from prototorch.functions.competitions import stratified_min, stratified_sum
 from prototorch.functions.losses import log_likelihood_ratio_loss, robust_soft_loss
 from prototorch.functions.transforms import gaussian
 
 from .glvq import GLVQ
+
+
+class CELVQ(GLVQ):
+    """Cross-Entropy Learning Vector Quantization."""
+    def __init__(self, hparams, **kwargs):
+        super().__init__(hparams, **kwargs)
+        self.loss = torch.nn.CrossEntropyLoss()
+
+    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+        x, y = batch
+        out = self._forward(x)  # [None, num_protos]
+        plabels = self.proto_layer.component_labels
+        probs = -1.0 * stratified_min(out, plabels)  # [None, num_classes]
+        batch_loss = self.loss(probs, y.long())
+        loss = batch_loss.sum(dim=0)
+        return out, loss
 
 
 class ProbabilisticLVQ(GLVQ):
