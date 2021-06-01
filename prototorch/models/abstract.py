@@ -5,6 +5,10 @@ from torch.optim.lr_scheduler import ExponentialLR
 
 class AbstractPrototypeModel(pl.LightningModule):
     @property
+    def num_prototypes(self):
+        return len(self.proto_layer.components)
+
+    @property
     def prototypes(self):
         return self.proto_layer.components.detach().cpu()
 
