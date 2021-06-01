@@ -14,6 +14,8 @@ Unsupervised Methods
 .. autoclass:: prototorch.models.unsupervised.NeuralGas
    :members:
 
+.. autoclass:: prototorch.models.unsupervised.GrowingNeuralGas
+   :members:
 
 Classical Learning Vector Quantization
 -----------------------------------------

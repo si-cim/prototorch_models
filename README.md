@@ -31,6 +31,7 @@ The plugin should then be available for use in your Python environment as
 - Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
 - Neural Gas (NG)
+- Growing Neural Gas (GNG)
 
 ## Work in Progress
 
