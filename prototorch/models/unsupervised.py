@@ -126,7 +126,7 @@ class ConnectionTopology(torch.nn.Module):
         self.age[b][a] = 0
 
     def extra_repr(self):
-        return f"agelimit: {self.agelimit}"
+        return f"(agelimit): ({self.agelimit})"
 
 
 class KNN(AbstractPrototypeModel):
