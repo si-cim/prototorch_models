@@ -10,15 +10,11 @@ from prototorch.components import Components, LabeledComponents
 from prototorch.components.initializers import ZerosInitializer, parse_data_arg
 from prototorch.functions.competitions import knnc
 from prototorch.functions.distances import euclidean_distance
+from prototorch.modules import LambdaLayer
 from prototorch.modules.losses import NeuralGasEnergy
 from pytorch_lightning.callbacks import Callback
 
 from .abstract import AbstractPrototypeModel
-
-
-class EuclideanDistance(torch.nn.Module):
-    def forward(self, x, y):
-        return euclidean_distance(x, y)
 
 
 class GNGCallback(Callback):
@@ -201,7 +197,7 @@ class NeuralGas(AbstractPrototypeModel):
             self.hparams.num_prototypes,
             initializer=self.hparams.prototype_initializer)
 
-        self.distance_layer = EuclideanDistance()
+        self.distance_layer = LambdaLayer(euclidean_distance)
         self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
         self.topology_layer = ConnectionTopology(
             agelimit=self.hparams.agelimit,
@@ -212,8 +208,7 @@ class NeuralGas(AbstractPrototypeModel):
         x = train_batch[0]
         protos = self.proto_layer()
         d = self.distance_layer(x, protos)
-        cost, order = self.energy_layer(d)
-
+        cost, _ = self.energy_layer(d)
         self.topology_layer(d)
         return cost
 
@@ -235,9 +230,7 @@ class GrowingNeuralGas(NeuralGas):
         protos = self.proto_layer()
         d = self.distance_layer(x, protos)
         cost, order = self.energy_layer(d)
-
         winner = order[:, 0]
-
         mask = torch.zeros_like(d)
         mask[torch.arange(len(mask)), winner] = 1.0
         winner_distances = d * mask
