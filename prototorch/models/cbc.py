@@ -1,11 +1,8 @@
-import pytorch_lightning as pl
 import torch
 import torchmetrics
-from prototorch.components.components import Components
 from prototorch.functions.distances import euclidean_distance
 from prototorch.functions.similarities import cosine_similarity
 
-from .abstract import AbstractPrototypeModel, PrototypeImageModel
 from .glvq import SiameseGLVQ
 
 
