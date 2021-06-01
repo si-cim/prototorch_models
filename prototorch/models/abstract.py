@@ -1,5 +1,4 @@
 import pytorch_lightning as pl
-import torch
 from torch.optim.lr_scheduler import ExponentialLR
 
 
