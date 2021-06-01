@@ -78,7 +78,6 @@ class ReasoningLayer(torch.nn.Module):
     def forward(self, detections):
         pk = self.reasoning_probabilities[0].clamp(0, 1)
         nk = (1 - pk) * self.reasoning_probabilities[1].clamp(0, 1)
-        epsilon = torch.finfo(pk.dtype).eps
         numerator = (detections @ (pk - nk)) + nk.sum(1)
         probs = numerator / (pk + nk).sum(1)
         probs = probs.squeeze(0)
