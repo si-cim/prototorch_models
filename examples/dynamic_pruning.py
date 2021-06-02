@@ -1,4 +1,4 @@
-"""Dynamically prune prototypes in GLVQ-type models."""
+"""Dynamically prune 'loser' prototypes in GLVQ-type models."""
 
 import argparse
 
