@@ -1,12 +1,12 @@
-"""GLVQ example using the MNIST dataset."""
+"""GMLVQ example using the MNIST dataset."""
 
-from prototorch.models import ImageGLVQ
+from prototorch.models import ImageGMLVQ
 from prototorch.models.data import train_on_mnist
 from pytorch_lightning.utilities.cli import LightningCLI
 
 
-class GLVQMNIST(train_on_mnist(batch_size=64), ImageGLVQ):
+class GMLVQMNIST(train_on_mnist(batch_size=64), ImageGMLVQ):
     """Model Definition."""
 
 
-cli = LightningCLI(GLVQMNIST)
+cli = LightningCLI(GMLVQMNIST)
