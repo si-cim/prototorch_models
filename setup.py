@@ -20,9 +20,12 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 INSTALL_REQUIRES = [
-    "prototorch>=0.4.4",
+    "prototorch>=0.5.0",
     "pytorch_lightning",
     "torchmetrics",
+]
+CLI = [
+    "jsonargparse",
 ]
 DEV = [
     "bumpversion",
@@ -43,7 +46,7 @@ TESTS = [
     "codecov",
     "pytest",
 ]
-ALL = DEV + DOCS + EXAMPLES + TESTS
+ALL = CLI + DEV + DOCS + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
