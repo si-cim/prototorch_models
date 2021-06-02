@@ -46,19 +46,27 @@ if __name__ == "__main__":
     vis = pt.models.VisGLVQ2D(train_ds)
     pruning = pt.models.PruneLoserPrototypes(
         threshold=0.01,  # prune prototype if it wins less than 1%
-        prune_after_epochs=30,  # pruning too early may cause problems
+        idle_epochs=30,  # pruning too early may cause problems
         prune_quota_per_epoch=1,  # prune at most 1 prototype per epoch
         frequency=5,  # prune every fifth epoch
+        verbose=True,
+    )
+    es = pt.models.EarlyStopWithoutVal(
+        monitor="loss",
+        min_delta=0.1,
+        patience=3,
+        mode="min",
         verbose=True,
     )
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
         args,
-        max_epochs=100,
+        max_epochs=250,
         callbacks=[
             vis,
             pruning,
+            es,
         ],
         terminate_on_nan=True,
         weights_summary=None,
