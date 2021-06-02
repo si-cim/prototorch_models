@@ -2,6 +2,7 @@
 
 from importlib.metadata import PackageNotFoundError, version
 
+from .callbacks import PruneLoserPrototypes
 from .cbc import CBC, ImageCBC
 from .glvq import (
     GLVQ,
