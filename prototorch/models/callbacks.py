@@ -4,22 +4,6 @@ import pytorch_lightning as pl
 import torch
 
 
-class EarlyStopWithoutVal(pl.callbacks.EarlyStopping):
-    """Run early stopping at the end of training loop.
-
-    See:
-    https://pytorch-lightning.readthedocs.io/en/latest/common/early_stopping.html
-
-    """
-    def on_validation_end(self, trainer, pl_module):
-        # override this to disable early stopping at the end of val loop
-        pass
-
-    def on_train_end(self, trainer, pl_module):
-        # instead, do it at the end of training loop
-        self._run_early_stopping_check(trainer, pl_module)
-
-
 class PruneLoserPrototypes(pl.Callback):
     def __init__(self,
                  threshold=0.01,
