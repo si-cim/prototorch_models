@@ -2,12 +2,11 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -31,7 +30,8 @@ if __name__ == "__main__":
     hparams = dict(num_prototypes=30, lr=0.03)
 
     # Initialize the model
-    model = pt.models.NeuralGas(hparams)
+    model = pt.models.NeuralGas(hparams,
+                                prototype_initializer=pt.components.Zeros(2))
 
     # Model summary
     print(model)
