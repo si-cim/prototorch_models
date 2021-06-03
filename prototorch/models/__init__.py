@@ -11,4 +11,6 @@ from .probabilistic import CELVQ, RSLVQ, LikelihoodRatioLVQ
 from .unsupervised import KNN, GrowingNeuralGas, NeuralGas
 from .vis import *
 
+from .oneclass import *
+
 __version__ = "0.1.7"
