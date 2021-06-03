@@ -17,9 +17,6 @@ class PruneLoserPrototypes(pl.Callback):
         self.frequency = frequency
         self.verbose = verbose
 
-    def on_epoch_start(self, trainer, pl_module):
-        pl_module.initialize_prototype_win_ratios()
-
     def on_epoch_end(self, trainer, pl_module):
         if (trainer.current_epoch + 1) < self.idle_epochs:
             return None
