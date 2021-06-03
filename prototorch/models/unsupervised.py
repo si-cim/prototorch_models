@@ -54,7 +54,7 @@ class GNGCallback(Callback):
 
             # Add component
             pl_module.proto_layer.add_components(
-                initialized_components=new_component)
+                initialized_components=new_component.unsqueeze(0))
 
             # Adjust Topology
             topology.add_prototype()
@@ -191,12 +191,10 @@ class NeuralGas(AbstractPrototypeModel):
         self.hparams.setdefault("input_dim", 2)
         self.hparams.setdefault("agelimit", 10)
         self.hparams.setdefault("lm", 1)
-        self.hparams.setdefault("prototype_initializer",
-                                ZerosInitializer(self.hparams.input_dim))
 
         self.proto_layer = Components(
             self.hparams.num_prototypes,
-            initializer=self.hparams.prototype_initializer)
+            initializer=kwargs.get("prototype_initializer"))
 
         self.distance_layer = LambdaLayer(euclidean_distance)
         self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
@@ -223,8 +221,9 @@ class GrowingNeuralGas(NeuralGas):
         self.hparams.setdefault("insert_reduction", 0.1)
         self.hparams.setdefault("insert_freq", 10)
 
-        self.register_buffer("errors",
-                             torch.zeros(self.hparams.num_prototypes))
+        self.register_buffer(
+            "errors",
+            torch.zeros(self.hparams.num_prototypes, device=self.device))
 
     def training_step(self, train_batch, _batch_idx):
         x = train_batch[0]

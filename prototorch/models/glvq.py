@@ -5,12 +5,9 @@ import torchmetrics
 from prototorch.components import LabeledComponents
 from prototorch.functions.activations import get_activation
 from prototorch.functions.competitions import wtac
-from prototorch.functions.distances import (
-    euclidean_distance,
-    lomega_distance,
-    omega_distance,
-    squared_euclidean_distance,
-)
+from prototorch.functions.distances import (euclidean_distance,
+                                            lomega_distance, omega_distance,
+                                            squared_euclidean_distance)
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 from prototorch.modules import LambdaLayer
@@ -37,9 +34,10 @@ class GLVQ(AbstractPrototypeModel):
         transfer_fn = get_activation(self.hparams.transfer_fn)
 
         # Layers
+        prototype_initializer = kwargs.get("prototype_initializer", None)
         self.proto_layer = LabeledComponents(
             distribution=self.hparams.distribution,
-            initializer=self.prototype_initializer(**kwargs))
+            initializer=prototype_initializer)
 
         self.distance_layer = LambdaLayer(distance_fn)
         self.transfer_layer = LambdaLayer(transfer_fn)
@@ -49,9 +47,6 @@ class GLVQ(AbstractPrototypeModel):
         self.initialize_prototype_win_ratios()
 
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
-
-    def prototype_initializer(self, **kwargs):
-        return kwargs.get("prototype_initializer", None)
 
     @property
     def prototype_labels(self):
@@ -69,7 +64,7 @@ class GLVQ(AbstractPrototypeModel):
     def forward(self, x):
         distances = self._forward(x)
         y_pred = self.predict_from_distances(distances)
-        y_pred = torch.eye(self.num_classes, device=self.device)[y_pred.int()]
+        y_pred = torch.eye(self.num_classes, device=self.device)[y_pred.long()]
         return y_pred
 
     def predict_from_distances(self, distances):
@@ -97,8 +92,12 @@ class GLVQ(AbstractPrototypeModel):
                  logger=True)
 
     def initialize_prototype_win_ratios(self):
-        self.prototype_win_ratios = torch.zeros(self.num_prototypes,
-                                                device=self.device)
+        self.register_buffer(
+            "prototype_win_ratios",
+            torch.zeros(self.num_prototypes, device=self.device))
+
+    def on_epoch_start(self):
+        self.initialize_prototype_win_ratios()
 
     def log_prototype_win_ratios(self, distances):
         batch_size = len(distances)

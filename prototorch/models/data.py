@@ -53,7 +53,11 @@ def train_on_mnist(batch_size=256) -> type:
     class DataClass(pl.LightningModule):
         datamodule = MNISTDataModule(batch_size=batch_size)
 
-        def prototype_initializer(self, **kwargs):
-            return pt.components.Zeros((28, 28, 1))
+        def __init__(self, *args, **kwargs):
+            prototype_initializer = kwargs.pop(
+                "prototype_initializer", pt.components.Zeros((28, 28, 1)))
+            super().__init__(*args,
+                             prototype_initializer=prototype_initializer,
+                             **kwargs)
 
     return DataClass

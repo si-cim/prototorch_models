@@ -8,7 +8,7 @@ from .glvq import (GLVQ, GLVQ1, GLVQ21, GMLVQ, GRLVQ, LGMLVQ, LVQMLN,
                    ImageGLVQ, ImageGMLVQ, SiameseGLVQ, SiameseGMLVQ)
 from .lvq import LVQ1, LVQ21, MedianLVQ
 from .probabilistic import CELVQ, RSLVQ, LikelihoodRatioLVQ
-from .unsupervised import KNN, NeuralGas
+from .unsupervised import KNN, GrowingNeuralGas, NeuralGas
 from .vis import *
 
 __version__ = "0.1.7"
