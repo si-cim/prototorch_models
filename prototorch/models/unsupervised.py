@@ -191,12 +191,10 @@ class NeuralGas(AbstractPrototypeModel):
         self.hparams.setdefault("input_dim", 2)
         self.hparams.setdefault("agelimit", 10)
         self.hparams.setdefault("lm", 1)
-        self.hparams.setdefault("prototype_initializer",
-                                ZerosInitializer(self.hparams.input_dim))
 
         self.proto_layer = Components(
             self.hparams.num_prototypes,
-            initializer=self.hparams.prototype_initializer)
+            initializer=kwargs.get("prototype_initializer"))
 
         self.distance_layer = LambdaLayer(euclidean_distance)
         self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
