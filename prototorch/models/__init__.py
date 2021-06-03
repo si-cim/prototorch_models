@@ -8,4 +8,6 @@ from .lvq import LVQ1, LVQ21, MedianLVQ
 from .unsupervised import KNN, NeuralGas
 from .vis import *
 
+from .oneclass import *
+
 __version__ = "0.1.7"
