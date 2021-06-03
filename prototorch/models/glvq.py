@@ -34,9 +34,10 @@ class GLVQ(AbstractPrototypeModel):
         transfer_fn = get_activation(self.hparams.transfer_fn)
 
         # Layers
+        prototype_initializer = kwargs.get("prototype_initializer", None)
         self.proto_layer = LabeledComponents(
             distribution=self.hparams.distribution,
-            initializer=self.prototype_initializer(**kwargs))
+            initializer=prototype_initializer)
 
         self.distance_layer = LambdaLayer(distance_fn)
         self.transfer_layer = LambdaLayer(transfer_fn)
@@ -46,9 +47,6 @@ class GLVQ(AbstractPrototypeModel):
         self.initialize_prototype_win_ratios()
 
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
-
-    def prototype_initializer(self, **kwargs):
-        return kwargs.get("prototype_initializer", None)
 
     @property
     def prototype_labels(self):
