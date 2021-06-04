@@ -44,7 +44,7 @@ class PruneLoserPrototypes(pl.Callback):
             if self.verbose:
                 print(f"\nPrototype win ratios: {ratios}")
                 print(f"Pruning prototypes at: {to_prune}")
-                print(f"Corresponding labels are: {prune_labels}")
+                print(f"Corresponding labels are: {prune_labels.tolist()}")
             cur_num_protos = pl_module.num_prototypes
             pl_module.remove_prototypes(indices=to_prune)
             if self.replace:
