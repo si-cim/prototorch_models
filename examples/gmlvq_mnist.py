@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     # Hyperparameters
     num_classes = 10
-    prototypes_per_class = 2
+    prototypes_per_class = 10
     hparams = dict(
         input_dim=28 * 28,
         latent_dim=28 * 28,
@@ -62,19 +62,40 @@ if __name__ == "__main__":
     # Callbacks
     vis = pt.models.VisImgComp(
         data=train_ds,
-        num_columns=5,
+        num_columns=10,
         show=False,
         tensorboard=True,
-        random_data=20,
+        random_data=100,
         add_embedding=True,
-        embedding_data=100,
+        embedding_data=200,
         flatten_data=False,
+    )
+    pruning = pt.models.PruneLoserPrototypes(
+        threshold=0.01,
+        idle_epochs=1,
+        prune_quota_per_epoch=10,
+        frequency=1,
+        verbose=True,
+    )
+    es = pl.callbacks.EarlyStopping(
+        monitor="train_loss",
+        min_delta=0.001,
+        patience=15,
+        mode="min",
+        check_on_train_epoch_end=True,
     )
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
         args,
-        callbacks=[vis],
+        callbacks=[
+            vis,
+            pruning,
+            # es,
+        ],
+        terminate_on_nan=True,
+        weights_summary=None,
+        accelerator="ddp",
     )
 
     # Training loop

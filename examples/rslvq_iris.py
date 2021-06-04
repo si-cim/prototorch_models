@@ -1,11 +1,10 @@
-"""Probabilistic-LVQ example using the Iris dataset."""
+"""RSLVQ example using the Iris dataset."""
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -26,16 +25,23 @@ if __name__ == "__main__":
     hparams = dict(
         distribution=[2, 2, 3],
         lr=0.05,
-        variance=0.3,
+        variance=0.1,
     )
 
     # Initialize the model
     model = pt.models.probabilistic.RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
+        # prototype_initializer=pt.components.SMI(train_ds),
         prototype_initializer=pt.components.SSI(train_ds, noise=0.2),
+        # prototype_initializer=pt.components.Zeros(2),
+        # prototype_initializer=pt.components.Ones(2, scale=2.0),
     )
 
+    # Compute intermediate input and output sizes
+    model.example_input_array = torch.zeros(4, 2)
+
+    # Summary
     print(model)
 
     # Callbacks
@@ -46,8 +52,8 @@ if __name__ == "__main__":
         args,
         callbacks=[vis],
         terminate_on_nan=True,
-        weights_summary=None,
-        # accelerator="ddp",
+        weights_summary="full",
+        accelerator="ddp",
     )
 
     # Training loop
