@@ -1,34 +1,24 @@
 """LVQ models that are optimized using non-gradient methods."""
 
-from prototorch.functions.competitions import wtac
 from prototorch.functions.losses import _get_dp_dm
 
+from .abstract import NonGradientMixin
 from .glvq import GLVQ
 
 
-class NonGradientLVQ(GLVQ):
-    """Abstract Model for Models that do not use gradients in their update phase."""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.automatic_optimization = False
-
-    def training_step(self, train_batch, batch_idx, optimizer_idx=None):
-        raise NotImplementedError
-
-
-class LVQ1(NonGradientLVQ):
+class LVQ1(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
         plabels = self.proto_layer.component_labels
 
         x, y = train_batch
-        dis = self._forward(x)
+        dis = self.compute_distances(x)
         # TODO Vectorized implementation
 
         for xi, yi in zip(x, y):
-            d = self._forward(xi.view(1, -1))
-            preds = wtac(d, plabels)
+            d = self.compute_distances(xi.view(1, -1))
+            preds = self.competition_layer(d, plabels)
             w = d.argmin(1)
             if yi == preds:
                 shift = xi - protos[w]
@@ -45,20 +35,20 @@ class LVQ1(NonGradientLVQ):
         return None
 
 
-class LVQ21(NonGradientLVQ):
+class LVQ21(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 2.1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
         plabels = self.proto_layer.component_labels
 
         x, y = train_batch
-        dis = self._forward(x)
+        dis = self.compute_distances(x)
         # TODO Vectorized implementation
 
         for xi, yi in zip(x, y):
             xi = xi.view(1, -1)
             yi = yi.view(1, )
-            d = self._forward(xi)
+            d = self.compute_distances(xi)
             (_, wp), (_, wn) = _get_dp_dm(d, yi, plabels, with_indices=True)
             shiftp = xi - protos[wp]
             shiftn = protos[wn] - xi
@@ -74,5 +64,5 @@ class LVQ21(NonGradientLVQ):
         return None
 
 
-class MedianLVQ(NonGradientLVQ):
+class MedianLVQ(NonGradientMixin, GLVQ):
     """Median LVQ"""

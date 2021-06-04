@@ -140,7 +140,7 @@ class VisGLVQ2D(Vis2DAbstract):
         x = np.vstack((x_train, protos))
         mesh_input, xx, yy = self.get_mesh_input(x)
         _components = pl_module.proto_layer._components
-        mesh_input = torch.Tensor(mesh_input).type_as(_components)
+        mesh_input = torch.from_numpy(mesh_input).type_as(_components)
         y_pred = pl_module.predict(mesh_input)
         y_pred = y_pred.cpu().reshape(xx.shape)
         ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
