@@ -5,9 +5,12 @@ import torchmetrics
 from prototorch.components import LabeledComponents
 from prototorch.functions.activations import get_activation
 from prototorch.functions.competitions import wtac
-from prototorch.functions.distances import (euclidean_distance,
-                                            lomega_distance, omega_distance,
-                                            squared_euclidean_distance)
+from prototorch.functions.distances import (
+    euclidean_distance,
+    lomega_distance,
+    omega_distance,
+    squared_euclidean_distance,
+)
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 from prototorch.modules import LambdaLayer
@@ -47,6 +50,8 @@ class GLVQ(AbstractPrototypeModel):
         self.initialize_prototype_win_ratios()
 
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
+        self.lr_scheduler = kwargs.get("lr_scheduler", None)
+        self.lr_scheduler_kwargs = kwargs.get("lr_scheduler_kwargs", dict())
 
     @property
     def prototype_labels(self):
@@ -187,14 +192,25 @@ class SiameseGLVQ(GLVQ):
     def configure_optimizers(self):
         proto_opt = self.optimizer(self.proto_layer.parameters(),
                                    lr=self.hparams.proto_lr)
+        optimizer = None
         if list(self.backbone.parameters()):
             # only add an optimizer is the backbone has trainable parameters
             # otherwise, the next line fails
             bb_opt = self.optimizer(self.backbone.parameters(),
                                     lr=self.hparams.bb_lr)
-            return proto_opt, bb_opt
+            optimizer = [proto_opt, bb_opt]
         else:
-            return proto_opt
+            optimizer = proto_opt
+        if self.lr_scheduler is not None:
+            scheduler = self.lr_scheduler(optimizer,
+                                          **self.lr_scheduler_kwargs)
+            sch = {
+                "scheduler": scheduler,
+                "interval": "step",
+            }  # called after each training step
+            return optimizer, [sch]
+        else:
+            return optimizer
 
     def _forward(self, x):
         protos, _ = self.proto_layer()
