@@ -4,10 +4,7 @@ import argparse
 
 import prototorch as pt
 import pytorch_lightning as pl
-from prototorch.components.initializers import Zeros
-from prototorch.datasets import Iris
-from prototorch.models.unsupervised import GrowingNeuralGas
-from torch.utils.data import DataLoader
+import torch
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -19,8 +16,8 @@ if __name__ == "__main__":
     pl.utilities.seed.seed_everything(seed=42)
 
     # Prepare the data
-    train_ds = Iris(dims=[0, 2])
-    train_loader = DataLoader(train_ds, batch_size=8)
+    train_ds = pt.datasets.Iris(dims=[0, 2])
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=8)
 
     # Hyperparameters
     hparams = dict(
@@ -29,10 +26,13 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = GrowingNeuralGas(
+    model = pt.models.GrowingNeuralGas(
         hparams,
-        prototype_initializer=Zeros(2),
+        prototype_initializer=pt.components.Zeros(2),
     )
+
+    # Compute intermediate input and output sizes
+    model.example_input_array = torch.zeros(4, 2)
 
     # Model summary
     print(model)
@@ -45,6 +45,7 @@ if __name__ == "__main__":
         args,
         max_epochs=100,
         callbacks=[vis],
+        weights_summary="full",
     )
 
     # Training loop

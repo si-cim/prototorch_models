@@ -17,8 +17,8 @@ pip install prototorch_models
 The plugin should then be available for use in your Python environment as
 `prototorch.models`.
 
-**Note: Installing the models plugin should automatically install a suitable version of
-[ProtoTorch](https://github.com/si-cim/prototorch).**
+**Note: Installing the models plugin should automatically install a suitable
+version of** [ProtoTorch](https://github.com/si-cim/prototorch).
 
 ## Available models
 

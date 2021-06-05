@@ -30,7 +30,7 @@ if __name__ == "__main__":
     prototypes_per_class = num_clusters * 5
     hparams = dict(
         distribution=(num_classes, prototypes_per_class),
-        lr=0.3,
+        lr=0.2,
     )
 
     # Initialize the model
@@ -39,6 +39,9 @@ if __name__ == "__main__":
         prototype_initializer=pt.components.Ones(2, scale=3),
     )
 
+    # Compute intermediate input and output sizes
+    model.example_input_array = torch.zeros(4, 2)
+
     # Summary
     print(model)
 
@@ -46,17 +49,17 @@ if __name__ == "__main__":
     vis = pt.models.VisGLVQ2D(train_ds)
     pruning = pt.models.PruneLoserPrototypes(
         threshold=0.01,  # prune prototype if it wins less than 1%
-        idle_epochs=10,  # pruning too early may cause problems
-        prune_quota_per_epoch=5,  # prune at most 5 prototypes per epoch
-        frequency=2,  # prune every second epoch
+        idle_epochs=20,  # pruning too early may cause problems
+        prune_quota_per_epoch=2,  # prune at most 2 prototypes per epoch
+        frequency=1,  # prune every epoch
         verbose=True,
     )
-
     es = pl.callbacks.EarlyStopping(
         monitor="train_loss",
         min_delta=0.001,
-        patience=15,
+        patience=20,
         mode="min",
+        verbose=True,
         check_on_train_epoch_end=True,
     )
 
@@ -68,8 +71,9 @@ if __name__ == "__main__":
             pruning,
             es,
         ],
+        progress_bar_refresh_rate=0,
         terminate_on_nan=True,
-        weights_summary=None,
+        weights_summary="full",
         accelerator="ddp",
     )
 
