@@ -28,7 +28,6 @@ class NeuralGas(UnsupervisedPrototypeModel):
         self.save_hyperparameters(hparams)
 
         # Default hparams
-        self.hparams.setdefault("input_dim", 2)
         self.hparams.setdefault("agelimit", 10)
         self.hparams.setdefault("lm", 1)
 

@@ -17,11 +17,12 @@ if __name__ == "__main__":
 
     # Prepare the data
     train_ds = pt.datasets.Iris(dims=[0, 2])
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=8)
+    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
 
     # Hyperparameters
     hparams = dict(
         num_prototypes=5,
+        input_dim=2,
         lr=0.1,
     )
 
@@ -50,6 +51,3 @@ if __name__ == "__main__":
 
     # Training loop
     trainer.fit(model, train_loader)
-
-    # Model summary
-    print(model)
