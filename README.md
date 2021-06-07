@@ -14,11 +14,9 @@ To install this plugin, simply run the following command:
 pip install prototorch_models
 ```
 
-The plugin should then be available for use in your Python environment as
-`prototorch.models`.
-
-**Note: Installing the models plugin should automatically install a suitable
-version of** [ProtoTorch](https://github.com/si-cim/prototorch).
+**Installing the models plugin should automatically install a suitable version
+of** [ProtoTorch](https://github.com/si-cim/prototorch). The plugin should then
+be available for use in your Python environment as `prototorch.models`.
 
 ## Available models
 
@@ -79,10 +77,10 @@ git checkout dev
 pip install -e .[all]  # \[all\] if you are using zsh or MacOS
 ```
 
-**Note: Please avoid installing Tensorflow in this environment.**
-
 To assist in the development process, you may also find it useful to install
-`yapf`, `isort` and `autoflake`. You can install them easily with `pip`.
+`yapf`, `isort` and `autoflake`. You can install them easily with `pip`. **Also,
+please avoid installing Tensorflow in this environment. It is known to cause
+problems with PyTorch-Lightning.**
 
 ## FAQ
 
