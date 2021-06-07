@@ -20,7 +20,7 @@ from .glvq import (
 from .knn import KNN
 from .lvq import LVQ1, LVQ21, MedianLVQ
 from .probabilistic import CELVQ, RSLVQ, LikelihoodRatioLVQ
-from .unsupervised import GrowingNeuralGas, NeuralGas
+from .unsupervised import GrowingNeuralGas, HeskesSOM, KohonenSOM, NeuralGas
 from .vis import *
 
 from .oneclass import *

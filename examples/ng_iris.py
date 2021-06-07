@@ -28,7 +28,11 @@ if __name__ == "__main__":
     train_loader = torch.utils.data.DataLoader(train_ds, batch_size=150)
 
     # Hyperparameters
-    hparams = dict(num_prototypes=30, lr=0.03)
+    hparams = dict(
+        num_prototypes=30,
+        input_dim=2,
+        lr=0.03,
+    )
 
     # Initialize the model
     model = pt.models.NeuralGas(
