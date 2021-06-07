@@ -36,7 +36,7 @@ class OneClassGLVQ(GLVQ):
 
     def shared_step(self, batch, batch_idx, optimizer_idx=None):
         x, y = batch
-        out = self._forward(x)
+        out = self.compute_distances(x)
         plabels = self.proto_layer.component_labels
         mu = self.loss(out, y, prototype_labels=plabels, theta_boundary=self.theta_boundary)
         batch_loss = self.transfer_layer(mu, beta=self.hparams.transfer_beta)
