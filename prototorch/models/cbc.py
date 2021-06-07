@@ -2,24 +2,15 @@ import torch
 import torchmetrics
 
 from .abstract import ImagePrototypesMixin
-from .extras import (
-    CosineSimilarity,
-    MarginLoss,
-    ReasoningLayer,
-    euclidean_similarity,
-    rescaled_cosine_similarity,
-    shift_activation,
-)
+from .extras import (CosineSimilarity, MarginLoss, ReasoningLayer,
+                     euclidean_similarity, rescaled_cosine_similarity,
+                     shift_activation)
 from .glvq import SiameseGLVQ
 
 
 class CBC(SiameseGLVQ):
     """Classification-By-Components."""
-    def __init__(self,
-                 hparams,
-                 margin=0.1,
-                 similarity=euclidean_similarity,
-                 **kwargs):
+    def __init__(self, hparams, margin=0.1, **kwargs):
         super().__init__(hparams, **kwargs)
         self.margin = margin
         self.similarity_fn = kwargs.get("similarity_fn", euclidean_similarity)
