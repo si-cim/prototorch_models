@@ -12,8 +12,10 @@ from prototorch.modules import WTAC, LambdaLayer
 
 class ProtoTorchBolt(pl.LightningModule):
     def __repr__(self):
-        super_repr = super().__repr__()
-        return f"ProtoTorch Bolt:\n{super_repr}"
+        surep = super().__repr__()
+        indented = "".join([f"\t{line}\n" for line in surep.splitlines()])
+        wrapped = f"ProtoTorch Bolt(\n{indented})"
+        return wrapped
 
 
 class PrototypeModel(ProtoTorchBolt):
