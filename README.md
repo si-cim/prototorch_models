@@ -26,8 +26,8 @@ be available for use in your Python environment as `prototorch.models`.
 - Generalized Learning Vector Quantization (GLVQ)
 - Generalized Relevance Learning Vector Quantization (GRLVQ)
 - Generalized Matrix Learning Vector Quantization (GMLVQ)
-- Localized and Generalized Matrix Learning Vector Quantization (LGMLVQ)
 - Limited-Rank Matrix Learning Vector Quantization (LiRaMLVQ)
+- Localized and Generalized Matrix Learning Vector Quantization (LGMLVQ)
 - Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
 - Cross-Entropy Learning Vector Quantization (CELVQ)
@@ -43,6 +43,7 @@ be available for use in your Python environment as `prototorch.models`.
 
 - Classification-By-Components Network (CBC)
 - Learning Vector Quantization 2.1 (LVQ2.1)
+- Self-Organizing-Map (SOM)
 
 ## Planned models
 

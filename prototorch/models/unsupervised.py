@@ -1,23 +1,74 @@
 """Unsupervised prototype learning algorithms."""
 
-import logging
-import warnings
-
-import prototorch as pt
-import pytorch_lightning as pl
 import torch
-import torchmetrics
-from prototorch.components import Components, LabeledComponents
-from prototorch.components.initializers import ZerosInitializer
-from prototorch.functions.competitions import knnc
-from prototorch.functions.distances import euclidean_distance
+from prototorch.functions.competitions import wtac
+from prototorch.functions.distances import squared_euclidean_distance
+from prototorch.functions.helper import get_flat
 from prototorch.modules import LambdaLayer
 from prototorch.modules.losses import NeuralGasEnergy
-from pytorch_lightning.callbacks import Callback
 
-from .abstract import UnsupervisedPrototypeModel
+from .abstract import NonGradientMixin, UnsupervisedPrototypeModel
 from .callbacks import GNGCallback
 from .extras import ConnectionTopology
+
+
+class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
+    """Kohonen Self-Organizing-Map.
+
+    TODO Allow non-2D grids
+
+    """
+    def __init__(self, hparams, **kwargs):
+        h, w = hparams.get("shape")
+        # Ignore `num_prototypes`
+        hparams["num_prototypes"] = h * w
+        distance_fn = kwargs.pop("distance_fn", squared_euclidean_distance)
+        super().__init__(hparams, distance_fn=distance_fn, **kwargs)
+
+        # Hyperparameters
+        self.save_hyperparameters(hparams)
+
+        # Default hparams
+        self.hparams.setdefault("alpha", 0.3)
+        self.hparams.setdefault("sigma", max(h, w) / 2.0)
+
+        # Additional parameters
+        x, y = torch.arange(h), torch.arange(w)
+        grid = torch.stack(torch.meshgrid(x, y), dim=-1)
+        self.register_buffer("_grid", grid)
+
+    def predict_from_distances(self, distances):
+        grid = self._grid.view(-1, 2)
+        wp = wtac(distances, grid)
+        return wp
+
+    def training_step(self, train_batch, batch_idx):
+        # x = train_batch
+        # TODO Check if the batch has labels
+        x = train_batch[0]
+        d = self.compute_distances(x)
+        wp = self.predict_from_distances(d)
+        grid = self._grid.view(-1, 2)
+        gd = squared_euclidean_distance(wp, grid)
+        nh = torch.exp(-gd / self.hparams.sigma**2)
+        protos = self.proto_layer.components
+        diff = x.unsqueeze(dim=1) - protos
+        delta = self.hparams.lr * self.hparams.alpha * nh.unsqueeze(-1) * diff
+        updated_protos = protos + delta.sum(dim=0)
+        self.proto_layer.load_state_dict({"_components": updated_protos},
+                                         strict=False)
+
+    def extra_repr(self):
+        return f"(grid): (shape: {tuple(self._grid.shape)})"
+
+
+class HeskesSOM(UnsupervisedPrototypeModel):
+    def __init__(self, hparams, **kwargs):
+        super().__init__(hparams, **kwargs)
+
+    def training_step(self, train_batch, batch_idx):
+        # TODO Implement me!
+        raise NotImplementedError()
 
 
 class NeuralGas(UnsupervisedPrototypeModel):
