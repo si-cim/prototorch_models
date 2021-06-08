@@ -74,7 +74,7 @@ For a test sample they return a distribution instead of a class assignment.
 The following two algorihms were presented by :cite:t:`seo2003` . 
 Every prototypes is a center of a gaussian distribution of its class, generating a mixture model.
 
-.. autoclass:: prototorch.models.probabilistic.LikelihoodRatioLVQ
+.. autoclass:: prototorch.models.probabilistic.SLVQ
    :members:
 
 .. autoclass:: prototorch.models.probabilistic.RSLVQ

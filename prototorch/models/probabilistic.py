@@ -61,8 +61,8 @@ class ProbabilisticLVQ(GLVQ):
         return loss
 
 
-class LikelihoodRatioLVQ(ProbabilisticLVQ):
-    """Learning Vector Quantization based on Likelihood Ratios."""
+class SLVQ(ProbabilisticLVQ):
+    """Soft Learning Vector Quantization."""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss = LossLayer(nllr_loss)
