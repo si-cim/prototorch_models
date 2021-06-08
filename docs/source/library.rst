@@ -8,7 +8,7 @@ Models
 
 Unsupervised Methods
 -----------------------------------------
-.. autoclass:: prototorch.models.unsupervised.KNN
+.. autoclass:: prototorch.models.knn.KNN
    :members:
 
 .. autoclass:: prototorch.models.unsupervised.NeuralGas
@@ -80,9 +80,11 @@ Every prototypes is a center of a gaussian distribution of its class, generating
 .. autoclass:: prototorch.models.probabilistic.RSLVQ
    :members:
 
-Missing:
+:cite:t:`villmann2018` proposed two changes to RSLVQ: First incooperate the winning rank into the prior probability calculation.
+And second use divergence as loss function.
 
-- PLVQ
+.. autoclass:: prototorch.models.probabilistic.PLVQ
+   :members:
 
 Classification by Component
 --------------------------------------------

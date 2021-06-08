@@ -2,8 +2,6 @@
 
 Abstract Models
 ========================================
-.. autoclass:: prototorch.models.abstract.AbstractPrototypeModel
+.. automodule:: prototorch.models.abstract
    :members:
-
-.. autoclass:: prototorch.models.abstract.PrototypeImageModel
-   :members:
+   :undoc-members:

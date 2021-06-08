@@ -31,7 +31,9 @@ be available for use in your Python environment as `prototorch.models`.
 - Learning Vector Quantization Multi-Layer Network (LVQMLN)
 - Siamese GLVQ
 - Cross-Entropy Learning Vector Quantization (CELVQ)
+- Soft Learning Vector Quantization (SLVQ)
 - Robust Soft Learning Vector Quantization (RSLVQ)
+- Probabilistic Learning Vector Quantization (PLVQ)
 
 ### Other
 
@@ -49,7 +51,6 @@ be available for use in your Python environment as `prototorch.models`.
 
 - Median-LVQ
 - Generalized Tangent Learning Vector Quantization (GTLVQ)
-- Probabilistic Learning Vector Quantization (PLVQ)
 - Self-Incremental Learning Vector Quantization (SILVQ)
 
 ## Development setup
