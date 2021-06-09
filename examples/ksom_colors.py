@@ -81,7 +81,7 @@ if __name__ == "__main__":
     hparams = dict(
         shape=(18, 32),
         alpha=1.0,
-        sigma=3,
+        sigma=8,
         lr=0.1,
     )
 

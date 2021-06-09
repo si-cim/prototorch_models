@@ -1,9 +1,9 @@
 """Unsupervised prototype learning algorithms."""
 
+import numpy as np
 import torch
 from prototorch.functions.competitions import wtac
 from prototorch.functions.distances import squared_euclidean_distance
-from prototorch.functions.helper import get_flat
 from prototorch.modules import LambdaLayer
 from prototorch.modules.losses import NeuralGasEnergy
 
@@ -36,6 +36,8 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
         x, y = torch.arange(h), torch.arange(w)
         grid = torch.stack(torch.meshgrid(x, y), dim=-1)
         self.register_buffer("_grid", grid)
+        self._sigma = self.hparams.sigma
+        self._lr = self.hparams.lr
 
     def predict_from_distances(self, distances):
         grid = self._grid.view(-1, 2)
@@ -50,13 +52,17 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
         wp = self.predict_from_distances(d)
         grid = self._grid.view(-1, 2)
         gd = squared_euclidean_distance(wp, grid)
-        nh = torch.exp(-gd / self.hparams.sigma**2)
+        nh = torch.exp(-gd / self._sigma**2)
         protos = self.proto_layer.components
         diff = x.unsqueeze(dim=1) - protos
-        delta = self.hparams.lr * self.hparams.alpha * nh.unsqueeze(-1) * diff
+        delta = self._lr * self.hparams.alpha * nh.unsqueeze(-1) * diff
         updated_protos = protos + delta.sum(dim=0)
         self.proto_layer.load_state_dict({"_components": updated_protos},
                                          strict=False)
+
+    def training_epoch_end(self, training_step_outputs):
+        self._sigma = self.hparams.sigma * np.exp(
+            -self.current_epoch / self.trainer.max_epochs)
 
     def extra_repr(self):
         return f"(grid): (shape: {tuple(self._grid.shape)})"
