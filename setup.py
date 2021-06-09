@@ -21,7 +21,7 @@ with open("README.md", "r") as fh:
 
 INSTALL_REQUIRES = [
     "prototorch>=0.5.0",
-    "pytorch_lightning",
+    "pytorch_lightning>=1.3.5",
     "torchmetrics",
 ]
 CLI = [
