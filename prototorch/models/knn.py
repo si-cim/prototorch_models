@@ -2,9 +2,10 @@
 
 import warnings
 
-from prototorch.components import LabeledComponents
-from prototorch.modules import KNNC
-
+from ..core.competitions import KNNC
+from ..core.components import LabeledComponents
+from ..core.initializers import LiteralCompInitializer, LiteralLabelsInitializer
+from ..utils.utils import parse_data_arg
 from .abstract import SupervisedPrototypeModel
 
 

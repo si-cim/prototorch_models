@@ -2,11 +2,11 @@
 
 import numpy as np
 import torch
-from prototorch.functions.competitions import wtac
-from prototorch.functions.distances import squared_euclidean_distance
-from prototorch.modules import LambdaLayer
-from prototorch.modules.losses import NeuralGasEnergy
 
+from ..core.competitions import wtac
+from ..core.distances import squared_euclidean_distance
+from ..core.losses import NeuralGasEnergy
+from ..nn.wrappers import LambdaLayer
 from .abstract import NonGradientMixin, UnsupervisedPrototypeModel
 from .callbacks import GNGCallback
 from .extras import ConnectionTopology

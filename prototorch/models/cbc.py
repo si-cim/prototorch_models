@@ -1,10 +1,16 @@
 import torch
 import torchmetrics
 
+from ..core.components import ReasoningComponents
 from .abstract import ImagePrototypesMixin
-from .extras import (CosineSimilarity, MarginLoss, ReasoningLayer,
-                     euclidean_similarity, rescaled_cosine_similarity,
-                     shift_activation)
+from .extras import (
+    CosineSimilarity,
+    MarginLoss,
+    ReasoningLayer,
+    euclidean_similarity,
+    rescaled_cosine_similarity,
+    shift_activation,
+)
 from .glvq import SiameseGLVQ
 
 

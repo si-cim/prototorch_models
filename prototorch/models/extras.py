@@ -5,8 +5,9 @@ Modules not yet available in prototorch go here temporarily.
 """
 
 import torch
-from prototorch.functions.distances import euclidean_distance
-from prototorch.functions.similarities import cosine_similarity
+
+from ..core.distances import euclidean_distance
+from ..core.similarities import cosine_similarity
 
 
 def rescaled_cosine_similarity(x, y):
@@ -22,6 +23,35 @@ def shift_activation(x):
 def euclidean_similarity(x, y, variance=1.0):
     d = euclidean_distance(x, y)
     return torch.exp(-(d * d) / (2 * variance))
+
+
+def gaussian(distances, variance):
+    return torch.exp(-(distances * distances) / (2 * variance))
+
+
+def rank_scaled_gaussian(distances, lambd):
+    order = torch.argsort(distances, dim=1)
+    ranks = torch.argsort(order, dim=1)
+
+    return torch.exp(-torch.exp(-ranks / lambd) * distances)
+
+
+class GaussianPrior(torch.nn.Module):
+    def __init__(self, variance):
+        super().__init__()
+        self.variance = variance
+
+    def forward(self, distances):
+        return gaussian(distances, self.variance)
+
+
+class RankScaledGaussianPrior(torch.nn.Module):
+    def __init__(self, lambd):
+        super().__init__()
+        self.lambd = lambd
+
+    def forward(self, distances):
+        return rank_scaled_gaussian(distances, self.lambd)
 
 
 class ConnectionTopology(torch.nn.Module):

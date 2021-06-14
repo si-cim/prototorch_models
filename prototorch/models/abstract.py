@@ -5,9 +5,12 @@ from typing import Final, final
 import pytorch_lightning as pl
 import torch
 import torchmetrics
-from prototorch.components import Components, LabeledComponents
-from prototorch.functions.distances import euclidean_distance
-from prototorch.modules import WTAC, LambdaLayer
+
+from ..core.competitions import WTAC
+from ..core.components import Components, LabeledComponents
+from ..core.distances import euclidean_distance
+from ..core.pooling import stratified_min_pooling
+from ..nn.wrappers import LambdaLayer
 
 
 class ProtoTorchMixin(object):
