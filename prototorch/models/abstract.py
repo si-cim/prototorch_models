@@ -9,6 +9,7 @@ import torchmetrics
 from ..core.competitions import WTAC
 from ..core.components import Components, LabeledComponents
 from ..core.distances import euclidean_distance
+from ..core.initializers import LabelsInitializer
 from ..core.pooling import stratified_min_pooling
 from ..nn.wrappers import LambdaLayer
 
@@ -111,10 +112,13 @@ class SupervisedPrototypeModel(PrototypeModel):
 
         # Layers
         prototypes_initializer = kwargs.get("prototypes_initializer", None)
+        labels_initializer = kwargs.get("labels_initializer",
+                                        LabelsInitializer())
         if prototypes_initializer is not None:
             self.proto_layer = LabeledComponents(
                 distribution=self.hparams.distribution,
                 components_initializer=prototypes_initializer,
+                labels_initializer=labels_initializer,
             )
         self.competition_layer = WTAC()
 
