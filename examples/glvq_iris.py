@@ -23,7 +23,7 @@ if __name__ == "__main__":
     hparams = dict(
         distribution={
             "num_classes": 3,
-            "prototypes_per_class": 4
+            "per_class": 4
         },
         lr=0.01,
     )
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     model = pt.models.GLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        prototype_initializer=pt.components.SMI(train_ds),
+        prototypes_initializer=pt.initializers.SMCI(train_ds),
         lr_scheduler=ExponentialLR,
         lr_scheduler_kwargs=dict(gamma=0.99, verbose=False),
     )
