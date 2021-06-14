@@ -20,7 +20,7 @@ class CELVQ(GLVQ):
     def shared_step(self, batch, batch_idx, optimizer_idx=None):
         x, y = batch
         out = self.compute_distances(x)  # [None, num_protos]
-        plabels = self.proto_layer.component_labels
+        plabels = self.proto_layer.labels
         winning = stratified_min_pooling(out, plabels)  # [None, num_classes]
         probs = -1.0 * winning
         batch_loss = self.loss(probs, y.long())

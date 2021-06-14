@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.CELVQ(
         hparams,
-        prototype_initializer=pt.components.Ones(2, scale=3),
+        prototypes_initializer=pt.initializers.FVCI(2, 3.0),
     )
 
     # Compute intermediate input and output sizes
