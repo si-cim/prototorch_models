@@ -88,13 +88,11 @@ class UnsupervisedPrototypeModel(PrototypeModel):
         super().__init__(hparams, **kwargs)
 
         # Layers
-        prototype_initializer = kwargs.get("prototype_initializer", None)
-        initialized_prototypes = kwargs.get("initialized_prototypes", None)
-        if prototype_initializer is not None or initialized_prototypes is not None:
+        prototypes_initializer = kwargs.get("prototypes_initializer", None)
+        if prototypes_initializer is not None:
             self.proto_layer = Components(
                 self.hparams.num_prototypes,
-                initializer=prototype_initializer,
-                initialized_components=initialized_prototypes,
+                initializer=prototypes_initializer,
             )
 
     def compute_distances(self, x):
@@ -112,19 +110,17 @@ class SupervisedPrototypeModel(PrototypeModel):
         super().__init__(hparams, **kwargs)
 
         # Layers
-        prototype_initializer = kwargs.get("prototype_initializer", None)
-        initialized_prototypes = kwargs.get("initialized_prototypes", None)
-        if prototype_initializer is not None or initialized_prototypes is not None:
+        prototypes_initializer = kwargs.get("prototypes_initializer", None)
+        if prototypes_initializer is not None:
             self.proto_layer = LabeledComponents(
                 distribution=self.hparams.distribution,
-                initializer=prototype_initializer,
-                initialized_components=initialized_prototypes,
+                components_initializer=prototypes_initializer,
             )
         self.competition_layer = WTAC()
 
     @property
     def prototype_labels(self):
-        return self.proto_layer.component_labels.detach().cpu()
+        return self.proto_layer.labels.detach().cpu()
 
     @property
     def num_classes(self):
@@ -137,15 +133,14 @@ class SupervisedPrototypeModel(PrototypeModel):
 
     def forward(self, x):
         distances = self.compute_distances(x)
-        y_pred = self.predict_from_distances(distances)
-        # TODO
-        y_pred = torch.eye(self.num_classes, device=self.device)[
-            y_pred.long()]  # depends on labels {0,...,num_classes}
+        plabels = self.proto_layer.labels
+        winning = stratified_min_pooling(distances, plabels)
+        y_pred = torch.nn.functional.softmin(winning)
         return y_pred
 
     def predict_from_distances(self, distances):
         with torch.no_grad():
-            plabels = self.proto_layer.component_labels
+            plabels = self.proto_layer.labels
             y_pred = self.competition_layer(distances, plabels)
         return y_pred
 

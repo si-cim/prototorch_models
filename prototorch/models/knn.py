@@ -20,9 +20,13 @@ class KNN(SupervisedPrototypeModel):
         data = kwargs.get("data", None)
         if data is None:
             raise ValueError("KNN requires data, but was not provided!")
+        data, targets = parse_data_arg(data)
 
         # Layers
-        self.proto_layer = LabeledComponents(initialized_components=data)
+        self.proto_layer = LabeledComponents(
+            distribution=[],
+            components_initializer=LiteralCompInitializer(data),
+            labels_initializer=LiteralLabelsInitializer(targets))
         self.competition_layer = KNNC(k=self.hparams.k)
 
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
