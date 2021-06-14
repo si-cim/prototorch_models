@@ -2,10 +2,9 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-import prototorch as pt
 
 
 class Backbone(torch.nn.Module):
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.SiameseGLVQ(
         hparams,
-        prototype_initializer=pt.components.SMI(train_ds),
+        prototypes_initializer=pt.initializers.SMCI(train_ds),
         backbone=backbone,
         both_path_gradients=False,
     )
