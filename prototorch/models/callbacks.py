@@ -6,6 +6,7 @@ import pytorch_lightning as pl
 import torch
 
 from ..core.components import Components
+from ..core.initializers import LiteralCompInitializer
 from .extras import ConnectionTopology
 
 
@@ -117,7 +118,7 @@ class GNGCallback(pl.Callback):
 
             # Add component
             pl_module.proto_layer.add_components(
-                initialized_components=new_component.unsqueeze(0))
+                initializer=LiteralCompInitializer(new_component.unsqueeze(0)))
 
             # Adjust Topology
             topology.add_prototype()
