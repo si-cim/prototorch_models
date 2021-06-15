@@ -10,6 +10,7 @@ from prototorch.functions.distances import (
 )
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
+from prototorch.components import LinearMapping
 from prototorch.modules import LambdaLayer, LossLayer
 from torch.nn.parameter import Parameter
 
@@ -242,12 +243,18 @@ class GMLVQ(GLVQ):
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
 
         # Additional parameters
-        omega = torch.randn(self.hparams.input_dim,
-                            self.hparams.latent_dim,
-                            device=self.device)
-        self.register_parameter("_omega", Parameter(omega))
-        self.backbone = LambdaLayer(lambda x: x @ self._omega, name = "omega matrix")
+        omega_initializer = kwargs.get("omega_initializer", None)
+        initialized_omega = kwargs.get("initialized_omega", None)
+        if omega_initializer is not None or initialized_omega is not None:
+            self.omega_layer = LinearMapping(
+                mapping_shape=(self.hparams.input_dim, self.hparams.latent_dim),
+                initializer=omega_initializer,
+                initialized_linearmapping=initialized_omega,
+            )
 
+        self.register_parameter("_omega", Parameter(self.omega_layer.mapping))
+        self.backbone = LambdaLayer(lambda x: x @ self._omega, name = "omega matrix")
+       
     @property
     def omega_matrix(self):
         return self._omega.detach().cpu()
@@ -272,10 +279,10 @@ class GMLVQ(GLVQ):
             protos, plabels = self.proto_layer()
             if map_protos:
                 protos = self.backbone(protos)
-            print(x, protos)
             d = squared_euclidean_distance(x, protos)
             y_pred = wtac(d, plabels)
         return y_pred
+
 
 
 
