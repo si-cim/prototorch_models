@@ -246,6 +246,7 @@ class GMLVQ(GLVQ):
                             self.hparams.latent_dim,
                             device=self.device)
         self.register_parameter("_omega", Parameter(omega))
+        self.backbone = LambdaLayer(lambda x: x @ self._omega, name = "omega matrix")
 
     @property
     def omega_matrix(self):
@@ -258,6 +259,24 @@ class GMLVQ(GLVQ):
 
     def extra_repr(self):
         return f"(omega): (shape: {tuple(self._omega.shape)})"
+
+    def predict_latent(self, x, map_protos=True):
+        """Predict `x` assuming it is already embedded in the latent space.
+
+        Only the prototypes are embedded in the latent space using the
+        backbone.
+ 
+        """
+        self.eval()
+        with torch.no_grad():
+            protos, plabels = self.proto_layer()
+            if map_protos:
+                protos = self.backbone(protos)
+            print(x, protos)
+            d = squared_euclidean_distance(x, protos)
+            y_pred = wtac(d, plabels)
+        return y_pred
+
 
 
 class LGMLVQ(GMLVQ):
