@@ -128,7 +128,7 @@ class SupervisedPrototypeModel(PrototypeModel):
 
     @property
     def num_classes(self):
-        return len(self.proto_layer.distribution)
+        return self.proto_layer.num_classes
 
     def compute_distances(self, x):
         protos, _ = self.proto_layer()

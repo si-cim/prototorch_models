@@ -4,7 +4,8 @@ import torch
 from torch.nn.parameter import Parameter
 
 from ..core.competitions import wtac
-from ..core.distances import lomega_distance, omega_distance, squared_euclidean_distance
+from ..core.distances import (lomega_distance, omega_distance,
+                              squared_euclidean_distance)
 from ..core.losses import glvq_loss, lvq1_loss, lvq21_loss
 from ..nn.activations import get_activation
 from ..nn.wrappers import LambdaLayer, LossLayer
@@ -26,9 +27,6 @@ class GLVQ(SupervisedPrototypeModel):
 
         # Loss
         self.loss = LossLayer(glvq_loss)
-
-        # Prototype metrics
-        self.initialize_prototype_win_ratios()
 
     def initialize_prototype_win_ratios(self):
         self.register_buffer(

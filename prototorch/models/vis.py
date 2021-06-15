@@ -199,7 +199,7 @@ class VisCBC2D(Vis2DAbstract):
         self.plot_protos(ax, protos, "w")
         x = np.vstack((x_train, protos))
         mesh_input, xx, yy = self.get_mesh_input(x)
-        _components = pl_module.component_layer._components
+        _components = pl_module.components_layer._components
         y_pred = pl_module.predict(
             torch.Tensor(mesh_input).type_as(_components))
         y_pred = y_pred.cpu().reshape(xx.shape)
