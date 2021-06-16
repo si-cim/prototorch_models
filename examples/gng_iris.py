@@ -2,9 +2,10 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments

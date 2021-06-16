@@ -71,7 +71,7 @@ Probabilistic Models
 Probabilistic variants assume, that the prototypes generate a probability distribution over the classes.
 For a test sample they return a distribution instead of a class assignment.
 
-The following two algorihms were presented by :cite:t:`seo2003` . 
+The following two algorihms were presented by :cite:t:`seo2003` .
 Every prototypes is a center of a gaussian distribution of its class, generating a mixture model.
 
 .. autoclass:: prototorch.models.probabilistic.SLVQ

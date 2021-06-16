@@ -2,10 +2,11 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from torch.optim.lr_scheduler import ExponentialLR
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments

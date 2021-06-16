@@ -2,10 +2,11 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+
+import prototorch as pt
 
 
 def hex_to_rgb(hex_values):

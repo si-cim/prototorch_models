@@ -2,10 +2,11 @@
 
 import argparse
 
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from sklearn.datasets import load_iris
+
+import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments

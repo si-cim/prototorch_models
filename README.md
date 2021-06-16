@@ -18,6 +18,19 @@ pip install prototorch_models
 of** [ProtoTorch](https://github.com/si-cim/prototorch). The plugin should then
 be available for use in your Python environment as `prototorch.models`.
 
+## Contribution
+
+This repository contains definition for [git hooks](https://githooks.com).
+[Pre-commit](https://pre-commit.com) gets installed as development dependency with prototorch.
+Please install the hooks by running
+```bash
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+before creating the first commit.
+
+
+
 ## Available models
 
 ### LVQ Family

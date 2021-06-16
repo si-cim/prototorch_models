@@ -3,11 +3,8 @@
 import torch
 from prototorch.functions.activations import get_activation
 from prototorch.functions.competitions import wtac
-from prototorch.functions.distances import (
-    lomega_distance,
-    omega_distance,
-    squared_euclidean_distance,
-)
+from prototorch.functions.distances import (lomega_distance, omega_distance,
+                                            squared_euclidean_distance)
 from prototorch.functions.helper import get_flat
 from prototorch.functions.losses import glvq_loss, lvq1_loss, lvq21_loss
 from prototorch.modules import LambdaLayer, LossLayer

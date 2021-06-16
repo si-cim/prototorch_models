@@ -3,9 +3,10 @@
 import argparse
 
 import matplotlib.pyplot as plt
-import prototorch as pt
 import pytorch_lightning as pl
 import torch
+
+import prototorch as pt
 
 
 def plot_matrix(matrix):
