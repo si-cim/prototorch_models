@@ -1,7 +1,9 @@
 # ProtoTorch Models
 
-[![Build Status](https://travis-ci.org/si-cim/prototorch_models.svg?branch=main)](https://travis-ci.org/si-cim/prototorch_models)
+[![Build Status](https://api.travis-ci.com/si-cim/prototorch_models.svg?branch=main)](https://travis-ci.com/github/si-cim/prototorch_models)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/si-cim/prototorch_models?color=yellow&label=version)](https://github.com/si-cim/prototorch_models/releases)
 [![PyPI](https://img.shields.io/pypi/v/prototorch_models)](https://pypi.org/project/prototorch_models/)
+[![GitHub license](https://img.shields.io/github/license/si-cim/prototorch_models)](https://github.com/si-cim/prototorch_models/blob/master/LICENSE)
 
 Pre-packaged prototype-based machine learning models using ProtoTorch and
 PyTorch-Lightning.
