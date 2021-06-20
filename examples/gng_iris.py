@@ -2,10 +2,9 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -30,7 +29,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.GrowingNeuralGas(
         hparams,
-        prototype_initializer=pt.components.Zeros(2),
+        prototypes_initializer=pt.initializers.ZCI(2),
     )
 
     # Compute intermediate input and output sizes

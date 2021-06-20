@@ -20,23 +20,6 @@ pip install prototorch_models
 of** [ProtoTorch](https://github.com/si-cim/prototorch). The plugin should then
 be available for use in your Python environment as `prototorch.models`.
 
-## Contribution
-
-This repository contains definition for [git hooks](https://githooks.com).
-[Pre-commit](https://pre-commit.com) is automatically installed as development
-dependency with prototorch or you can install it manually with `pip install
-pre-commit`.
-
-Please install the hooks by running:
-```bash
-pre-commit install
-pre-commit install --hook-type commit-msg
-```
-before creating the first commit.
-
-The commit will fail if the commit message does not follow the specification
-provided [here](https://www.conventionalcommits.org/en/v1.0.0/#specification).
-
 ## Available models
 
 ### LVQ Family
@@ -102,6 +85,23 @@ To assist in the development process, you may also find it useful to install
 `yapf`, `isort` and `autoflake`. You can install them easily with `pip`. **Also,
 please avoid installing Tensorflow in this environment. It is known to cause
 problems with PyTorch-Lightning.**
+
+## Contribution
+
+This repository contains definition for [git hooks](https://githooks.com).
+[Pre-commit](https://pre-commit.com) is automatically installed as development
+dependency with prototorch or you can install it manually with `pip install
+pre-commit`.
+
+Please install the hooks by running:
+```bash
+pre-commit install
+pre-commit install --hook-type commit-msg
+```
+before creating the first commit.
+
+The commit will fail if the commit message does not follow the specification
+provided [here](https://www.conventionalcommits.org/en/v1.0.0/#specification).
 
 ## FAQ
 

@@ -128,14 +128,19 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Datasets
-datasets/
-
-# PyTorch-Lightning
-lightning_logs/
-
 .vscode/
+
+# Vim
+*~
+*.swp
+*.swo
 
 #  Pytorch Models or Weights
 #  If necessary make exceptions for single pretrained models
 *.pt
+
+# Artifacts created by ProtoTorch Models
+datasets/
+lightning_logs/
+examples/_*.py
+examples/_*.ipynb

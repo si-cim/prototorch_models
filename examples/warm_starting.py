@@ -1,4 +1,4 @@
-"""GLVQ example using the Iris dataset."""
+"""Warm-starting GLVQ with prototypes from Growing Neural Gas."""
 
 import argparse
 
@@ -13,26 +13,55 @@ if __name__ == "__main__":
     parser = pl.Trainer.add_argparse_args(parser)
     args = parser.parse_args()
 
-    # Dataset
+    # Prepare the data
     train_ds = pt.datasets.Iris(dims=[0, 2])
-
-    # Dataloaders
     train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
+
+    # Initialize the gng
+    gng = pt.models.GrowingNeuralGas(
+        hparams=dict(num_prototypes=5, insert_freq=2, lr=0.1),
+        prototypes_initializer=pt.initializers.ZCI(2),
+        lr_scheduler=ExponentialLR,
+        lr_scheduler_kwargs=dict(gamma=0.99, verbose=False),
+    )
+
+    # Callbacks
+    es = pl.callbacks.EarlyStopping(
+        monitor="loss",
+        min_delta=0.001,
+        patience=20,
+        mode="min",
+        verbose=False,
+        check_on_train_epoch_end=True,
+    )
+
+    # Setup trainer for GNG
+    trainer = pl.Trainer(
+        max_epochs=200,
+        callbacks=[es],
+        weights_summary=None,
+    )
+
+    # Training loop
+    trainer.fit(gng, train_loader)
 
     # Hyperparameters
     hparams = dict(
-        distribution={
-            "num_classes": 3,
-            "per_class": 4
-        },
+        distribution=[],
         lr=0.01,
     )
+
+    # Warm-start prototypes
+    knn = pt.models.KNN(dict(k=1), data=train_ds)
+    prototypes = gng.prototypes
+    plabels = knn.predict(prototypes)
 
     # Initialize the model
     model = pt.models.GLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        prototypes_initializer=pt.initializers.SMCI(train_ds),
+        prototypes_initializer=pt.initializers.LCI(prototypes),
+        labels_initializer=pt.initializers.LLI(plabels),
         lr_scheduler=ExponentialLR,
         lr_scheduler_kwargs=dict(gamma=0.99, verbose=False),
     )

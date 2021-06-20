@@ -2,25 +2,11 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
-
-import prototorch as pt
-
-
-def hex_to_rgb(hex_values):
-    for v in hex_values:
-        v = v.lstrip('#')
-        lv = len(v)
-        c = [int(v[i:i + lv // 3], 16) for i in range(0, lv, lv // 3)]
-        yield c
-
-
-def rgb_to_hex(rgb_values):
-    for v in rgb_values:
-        c = "%02x%02x%02x" % tuple(v)
-        yield c
+from prototorch.utils.colors import hex_to_rgb
 
 
 class Vis2DColorSOM(pl.Callback):
@@ -93,7 +79,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.KohonenSOM(
         hparams,
-        prototype_initializer=pt.components.Random(3),
+        prototypes_initializer=pt.initializers.RNCI(3),
     )
 
     # Compute intermediate input and output sizes

@@ -2,11 +2,9 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from torchvision.transforms import Lambda
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -28,19 +26,17 @@ if __name__ == "__main__":
         distribution=[2, 2, 3],
         proto_lr=0.05,
         lambd=0.1,
+        variance=1.0,
         input_dim=2,
         latent_dim=2,
         bb_lr=0.01,
     )
 
     # Initialize the model
-    model = pt.models.probabilistic.PLVQ(
+    model = pt.models.RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        # prototype_initializer=pt.components.SMI(train_ds),
-        prototype_initializer=pt.components.SSI(train_ds, noise=0.2),
-        # prototype_initializer=pt.components.Zeros(2),
-        # prototype_initializer=pt.components.Ones(2, scale=2.0),
+        prototypes_initializer=pt.initializers.SSCI(train_ds, noise=0.2),
     )
 
     # Compute intermediate input and output sizes
@@ -50,7 +46,7 @@ if __name__ == "__main__":
     print(model)
 
     # Callbacks
-    vis = pt.models.VisSiameseGLVQ2D(data=train_ds)
+    vis = pt.models.VisGLVQ2D(data=train_ds)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(

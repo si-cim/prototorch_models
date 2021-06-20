@@ -1,7 +1,6 @@
 """LVQ models that are optimized using non-gradient methods."""
 
-from prototorch.functions.losses import _get_dp_dm
-
+from ..core.losses import _get_dp_dm
 from .abstract import NonGradientMixin
 from .glvq import GLVQ
 
@@ -10,7 +9,7 @@ class LVQ1(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
-        plabels = self.proto_layer.component_labels
+        plabels = self.proto_layer.labels
 
         x, y = train_batch
         dis = self.compute_distances(x)
@@ -29,6 +28,8 @@ class LVQ1(NonGradientMixin, GLVQ):
             self.proto_layer.load_state_dict({"_components": updated_protos},
                                              strict=False)
 
+        print(f"{dis=}")
+        print(f"{y=}")
         # Logging
         self.log_acc(dis, y, tag="train_acc")
 
@@ -39,7 +40,7 @@ class LVQ21(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 2.1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos = self.proto_layer.components
-        plabels = self.proto_layer.component_labels
+        plabels = self.proto_layer.labels
 
         x, y = train_batch
         dis = self.compute_distances(x)

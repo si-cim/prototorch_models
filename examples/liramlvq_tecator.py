@@ -3,10 +3,9 @@
 import argparse
 
 import matplotlib.pyplot as plt
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-import prototorch as pt
 
 
 def plot_matrix(matrix):
@@ -40,20 +39,19 @@ if __name__ == "__main__":
     hparams = dict(
         distribution={
             "num_classes": 2,
-            "prototypes_per_class": 1
+            "per_class": 1,
         },
         input_dim=100,
         latent_dim=2,
-        proto_lr=0.0001,
-        bb_lr=0.0001,
+        proto_lr=0.001,
+        bb_lr=0.001,
     )
 
     # Initialize the model
     model = pt.models.SiameseGMLVQ(
         hparams,
-        # optimizer=torch.optim.SGD,
         optimizer=torch.optim.Adam,
-        prototype_initializer=pt.components.SMI(train_ds),
+        prototypes_initializer=pt.initializers.SMCI(train_ds),
     )
 
     # Summary

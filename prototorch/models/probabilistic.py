@@ -1,13 +1,11 @@
 """Probabilistic GLVQ methods"""
 
 import torch
-from prototorch.functions.losses import nllr_loss, rslvq_loss
-from prototorch.functions.pooling import (stratified_min_pooling,
-                                          stratified_sum_pooling)
-from prototorch.functions.transforms import (GaussianPrior,
-                                             RankScaledGaussianPrior)
-from prototorch.modules import LambdaLayer, LossLayer
 
+from ..core.losses import nllr_loss, rslvq_loss
+from ..core.pooling import stratified_min_pooling, stratified_sum_pooling
+from ..nn.wrappers import LambdaLayer, LossLayer
+from .extras import GaussianPrior, RankScaledGaussianPrior
 from .glvq import GLVQ, SiameseGMLVQ
 
 
@@ -22,7 +20,7 @@ class CELVQ(GLVQ):
     def shared_step(self, batch, batch_idx, optimizer_idx=None):
         x, y = batch
         out = self.compute_distances(x)  # [None, num_protos]
-        plabels = self.proto_layer.component_labels
+        plabels = self.proto_layer.labels
         winning = stratified_min_pooling(out, plabels)  # [None, num_classes]
         probs = -1.0 * winning
         batch_loss = self.loss(probs, y.long())
@@ -56,7 +54,7 @@ class ProbabilisticLVQ(GLVQ):
     def training_step(self, batch, batch_idx, optimizer_idx=None):
         x, y = batch
         out = self.forward(x)
-        plabels = self.proto_layer.component_labels
+        plabels = self.proto_layer.labels
         batch_loss = self.loss(out, y, plabels)
         loss = batch_loss.sum(dim=0)
         return loss
@@ -89,11 +87,10 @@ class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
             self.hparams.lambd)
         self.loss = torch.nn.KLDivLoss()
 
-    def training_step(self, batch, batch_idx, optimizer_idx=None):
-        x, y = batch
-        out = self.forward(x)
-        y_dist = torch.nn.functional.one_hot(
-            y.long(), num_classes=self.num_classes).float()
-        batch_loss = self.loss(out, y_dist)
-        loss = batch_loss.sum(dim=0)
-        return loss
+    # FIXME
+    # def training_step(self, batch, batch_idx, optimizer_idx=None):
+    #     x, y = batch
+    #     y_pred = self(x)
+    #     batch_loss = self.loss(y_pred, y)
+    #     loss = batch_loss.sum(dim=0)
+    #     return loss

@@ -7,6 +7,8 @@ import torchvision
 from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader, Dataset
 
+from ..utils.utils import mesh2d
+
 
 class Vis2DAbstract(pl.Callback):
     def __init__(self,
@@ -73,23 +75,7 @@ class Vis2DAbstract(pl.Callback):
             ax.axis("off")
         return ax
 
-    def get_mesh_input(self, x):
-        x_shift = self.border * np.ptp(x[:, 0])
-        y_shift = self.border * np.ptp(x[:, 1])
-        x_min, x_max = x[:, 0].min() - x_shift, x[:, 0].max() + x_shift
-        y_min, y_max = x[:, 1].min() - y_shift, x[:, 1].max() + y_shift
-        xx, yy = np.meshgrid(np.linspace(x_min, x_max, self.resolution),
-                             np.linspace(y_min, y_max, self.resolution))
-        mesh_input = np.c_[xx.ravel(), yy.ravel()]
-        return mesh_input, xx, yy
-
-    def perform_pca_2D(self, data):
-        (_, eigVal, eigVec) = torch.pca_lowrank(data, q=2)
-        return data @ eigVec
-
-    def plot_data(self, ax, x, y, pca=False):
-        if pca:
-            x = self.perform_pca_2D(x)
+    def plot_data(self, ax, x, y):
         ax.scatter(
             x[:, 0],
             x[:, 1],
@@ -100,9 +86,7 @@ class Vis2DAbstract(pl.Callback):
             s=30,
         )
 
-    def plot_protos(self, ax, protos, plabels, pca=False):
-        if pca:
-            protos = self.perform_pca_2D(protos)
+    def plot_protos(self, ax, protos, plabels):
         ax.scatter(
             protos[:, 0],
             protos[:, 1],
@@ -146,7 +130,7 @@ class VisGLVQ2D(Vis2DAbstract):
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, plabels)
         x = np.vstack((x_train, protos))
-        mesh_input, xx, yy = self.get_mesh_input(x)
+        mesh_input, xx, yy = mesh2d(x, self.border, self.resolution)
         _components = pl_module.proto_layer._components
         mesh_input = torch.from_numpy(mesh_input).type_as(_components)
         y_pred = pl_module.predict(mesh_input)
@@ -181,9 +165,9 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
         if self.show_protos:
             self.plot_protos(ax, protos, plabels)
             x = np.vstack((x_train, protos))
-            mesh_input, xx, yy = self.get_mesh_input(x)
+            mesh_input, xx, yy = mesh2d(x, self.border, self.resolution)
         else:
-            mesh_input, xx, yy = self.get_mesh_input(x_train)
+            mesh_input, xx, yy = mesh2d(x_train, self.border, self.resolution)
         _components = pl_module.proto_layer._components
         mesh_input = torch.Tensor(mesh_input).type_as(_components)
         y_pred = pl_module.predict_latent(mesh_input,
@@ -191,50 +175,6 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
         y_pred = y_pred.cpu().reshape(xx.shape)
         ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
 
-        self.log_and_display(trainer, pl_module)
-
-
-class VisGMLVQ2D(Vis2DAbstract):
-    def __init__(self, *args, map_protos=True, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.map_protos = map_protos
-
-    def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
-            return True
-
-        protos = pl_module.prototypes
-        plabels = pl_module.prototype_labels
-        x_train, y_train = self.x_train, self.y_train
-        device = pl_module.device
-        with torch.no_grad():
-            x_train = pl_module.backbone(torch.Tensor(x_train).to(device))
-            x_train = x_train.cpu().detach()
-        if self.map_protos:
-            with torch.no_grad():
-                protos = pl_module.backbone(torch.Tensor(protos).to(device))
-                protos = protos.cpu().detach()
-        ax = self.setup_ax()
-        if x_train.shape[1] > 2:
-            self.plot_data(ax, x_train, y_train, pca=True)
-        else:
-            self.plot_data(ax, x_train, y_train, pca=False)
-        if self.show_protos:
-            if protos.shape[1] > 2:
-                self.plot_protos(ax, protos, plabels, pca=True)
-            else:
-                self.plot_protos(ax, protos, plabels, pca=False)
-        ### something to work on: meshgrid with pca
-        #    x = np.vstack((x_train, protos))
-        #    mesh_input, xx, yy = self.get_mesh_input(x)
-        #else:
-        #    mesh_input, xx, yy = self.get_mesh_input(x_train)
-        #_components = pl_module.proto_layer._components
-        #mesh_input = torch.Tensor(mesh_input).type_as(_components)
-        #y_pred = pl_module.predict_latent(mesh_input,
-        #                                  map_protos=self.map_protos)
-        #y_pred = y_pred.cpu().reshape(xx.shape)
-        #ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
         self.log_and_display(trainer, pl_module)
 
 
@@ -250,8 +190,8 @@ class VisCBC2D(Vis2DAbstract):
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, "w")
         x = np.vstack((x_train, protos))
-        mesh_input, xx, yy = self.get_mesh_input(x)
-        _components = pl_module.component_layer._components
+        mesh_input, xx, yy = mesh2d(x, self.border, self.resolution)
+        _components = pl_module.components_layer._components
         y_pred = pl_module.predict(
             torch.Tensor(mesh_input).type_as(_components))
         y_pred = y_pred.cpu().reshape(xx.shape)

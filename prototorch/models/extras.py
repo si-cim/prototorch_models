@@ -5,23 +5,32 @@ Modules not yet available in prototorch go here temporarily.
 """
 
 import torch
-from prototorch.functions.distances import euclidean_distance
-from prototorch.functions.similarities import cosine_similarity
+
+from ..core.similarities import gaussian
 
 
-def rescaled_cosine_similarity(x, y):
-    """Cosine Similarity rescaled to [0, 1]."""
-    similarities = cosine_similarity(x, y)
-    return (similarities + 1.0) / 2.0
+def rank_scaled_gaussian(distances, lambd):
+    order = torch.argsort(distances, dim=1)
+    ranks = torch.argsort(order, dim=1)
+    return torch.exp(-torch.exp(-ranks / lambd) * distances)
 
 
-def shift_activation(x):
-    return (x + 1.0) / 2.0
+class GaussianPrior(torch.nn.Module):
+    def __init__(self, variance):
+        super().__init__()
+        self.variance = variance
+
+    def forward(self, distances):
+        return gaussian(distances, self.variance)
 
 
-def euclidean_similarity(x, y, variance=1.0):
-    d = euclidean_distance(x, y)
-    return torch.exp(-(d * d) / (2 * variance))
+class RankScaledGaussianPrior(torch.nn.Module):
+    def __init__(self, lambd):
+        super().__init__()
+        self.lambd = lambd
+
+    def forward(self, distances):
+        return rank_scaled_gaussian(distances, self.lambd)
 
 
 class ConnectionTopology(torch.nn.Module):
@@ -79,64 +88,3 @@ class ConnectionTopology(torch.nn.Module):
 
     def extra_repr(self):
         return f"(agelimit): ({self.agelimit})"
-
-
-class CosineSimilarity(torch.nn.Module):
-    def __init__(self, activation=shift_activation):
-        super().__init__()
-        self.activation = activation
-
-    def forward(self, x, y):
-        epsilon = torch.finfo(x.dtype).eps
-        normed_x = (x / x.pow(2).sum(dim=tuple(range(
-            1, x.ndim)), keepdim=True).clamp(min=epsilon).sqrt()).flatten(
-                start_dim=1)
-        normed_y = (y / y.pow(2).sum(dim=tuple(range(
-            1, y.ndim)), keepdim=True).clamp(min=epsilon).sqrt()).flatten(
-                start_dim=1)
-        # normed_x = (x / torch.linalg.norm(x, dim=1))
-        diss = torch.inner(normed_x, normed_y)
-        return self.activation(diss)
-
-
-class MarginLoss(torch.nn.modules.loss._Loss):
-    def __init__(self,
-                 margin=0.3,
-                 size_average=None,
-                 reduce=None,
-                 reduction="mean"):
-        super().__init__(size_average, reduce, reduction)
-        self.margin = margin
-
-    def forward(self, input_, target):
-        dp = torch.sum(target * input_, dim=-1)
-        dm = torch.max(input_ - target, dim=-1).values
-        return torch.nn.functional.relu(dm - dp + self.margin)
-
-
-class ReasoningLayer(torch.nn.Module):
-    def __init__(self, num_components, num_classes, num_replicas=1):
-        super().__init__()
-        self.num_replicas = num_replicas
-        self.num_classes = num_classes
-        probabilities_init = torch.zeros(2, 1, num_components,
-                                         self.num_classes)
-        probabilities_init.uniform_(0.4, 0.6)
-        # TODO Use `self.register_parameter("param", Paramater(param))` instead
-        self.reasoning_probabilities = torch.nn.Parameter(probabilities_init)
-
-    @property
-    def reasonings(self):
-        pk = self.reasoning_probabilities[0]
-        nk = (1 - pk) * self.reasoning_probabilities[1]
-        ik = 1 - pk - nk
-        img = torch.cat([pk, nk, ik], dim=0).permute(1, 0, 2)
-        return img.unsqueeze(1)
-
-    def forward(self, detections):
-        pk = self.reasoning_probabilities[0].clamp(0, 1)
-        nk = (1 - pk) * self.reasoning_probabilities[1].clamp(0, 1)
-        numerator = (detections @ (pk - nk)) + nk.sum(1)
-        probs = numerator / (pk + nk).sum(1)
-        probs = probs.squeeze(0)
-        return probs

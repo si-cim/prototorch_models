@@ -2,9 +2,10 @@
 
 import warnings
 
-from prototorch.components import LabeledComponents
-from prototorch.modules import KNNC
-
+from ..core.competitions import KNNC
+from ..core.components import LabeledComponents
+from ..core.initializers import LiteralCompInitializer, LiteralLabelsInitializer
+from ..utils.utils import parse_data_arg
 from .abstract import SupervisedPrototypeModel
 
 
@@ -19,9 +20,13 @@ class KNN(SupervisedPrototypeModel):
         data = kwargs.get("data", None)
         if data is None:
             raise ValueError("KNN requires data, but was not provided!")
+        data, targets = parse_data_arg(data)
 
         # Layers
-        self.proto_layer = LabeledComponents(initialized_components=data)
+        self.proto_layer = LabeledComponents(
+            distribution=[],
+            components_initializer=LiteralCompInitializer(data),
+            labels_initializer=LiteralLabelsInitializer(targets))
         self.competition_layer = KNNC(k=self.hparams.k)
 
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):

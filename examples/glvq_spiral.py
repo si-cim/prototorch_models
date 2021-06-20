@@ -2,10 +2,9 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -26,7 +25,6 @@ if __name__ == "__main__":
         distribution=(num_classes, prototypes_per_class),
         transfer_function="swish_beta",
         transfer_beta=10.0,
-        # lr=0.1,
         proto_lr=0.1,
         bb_lr=0.1,
         input_dim=2,
@@ -37,7 +35,7 @@ if __name__ == "__main__":
     model = pt.models.GMLVQ(
         hparams,
         optimizer=torch.optim.Adam,
-        prototype_initializer=pt.components.SSI(train_ds, noise=1e-2),
+        prototypes_initializer=pt.initializers.SSCI(train_ds, noise=1e-2),
     )
 
     # Callbacks
@@ -47,12 +45,12 @@ if __name__ == "__main__":
         block=False,
     )
     pruning = pt.models.PruneLoserPrototypes(
-        threshold=0.02,
+        threshold=0.01,
         idle_epochs=10,
         prune_quota_per_epoch=5,
-        frequency=2,
+        frequency=5,
         replace=True,
-        initializer=pt.components.SSI(train_ds, noise=1e-2),
+        prototypes_initializer=pt.initializers.SSCI(train_ds, noise=1e-1),
         verbose=True,
     )
     es = pl.callbacks.EarlyStopping(
@@ -68,7 +66,7 @@ if __name__ == "__main__":
         args,
         callbacks=[
             vis,
-            # es,
+            # es, # FIXME
             pruning,
         ],
         terminate_on_nan=True,
