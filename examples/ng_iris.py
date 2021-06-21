@@ -2,13 +2,12 @@
 
 import argparse
 
+import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
 from torch.optim.lr_scheduler import ExponentialLR
-
-import prototorch as pt
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -38,7 +37,7 @@ if __name__ == "__main__":
     # Initialize the model
     model = pt.models.NeuralGas(
         hparams,
-        prototype_initializer=pt.components.Zeros(2),
+        prototypes_initializer=pt.core.ZCI(2),
         lr_scheduler=ExponentialLR,
         lr_scheduler_kwargs=dict(gamma=0.99, verbose=False),
     )
