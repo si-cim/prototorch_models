@@ -58,7 +58,7 @@ class GLVQ(SupervisedPrototypeModel):
         plabels = self.proto_layer.labels
         mu = self.loss(out, y, prototype_labels=plabels)
         batch_loss = self.transfer_layer(mu, beta=self.hparams.transfer_beta)
-        loss = batch_loss.sum(dim=0)
+        loss = batch_loss.sum()
         return out, loss
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):

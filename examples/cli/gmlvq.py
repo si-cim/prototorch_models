@@ -1,12 +1,11 @@
 """GMLVQ example using the MNIST dataset."""
 
-import torch
-from pytorch_lightning.utilities.cli import LightningCLI
-
 import prototorch as pt
+import torch
 from prototorch.models import ImageGMLVQ
 from prototorch.models.abstract import PrototypeModel
 from prototorch.models.data import MNISTDataModule
+from pytorch_lightning.utilities.cli import LightningCLI
 
 
 class ExperimentClass(ImageGMLVQ):

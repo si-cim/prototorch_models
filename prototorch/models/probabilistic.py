@@ -24,7 +24,7 @@ class CELVQ(GLVQ):
         winning = stratified_min_pooling(out, plabels)  # [None, num_classes]
         probs = -1.0 * winning
         batch_loss = self.loss(probs, y.long())
-        loss = batch_loss.sum(dim=0)
+        loss = batch_loss.sum()
         return out, loss
 
 
@@ -56,7 +56,7 @@ class ProbabilisticLVQ(GLVQ):
         out = self.forward(x)
         plabels = self.proto_layer.labels
         batch_loss = self.loss(out, y, plabels)
-        loss = batch_loss.sum(dim=0)
+        loss = batch_loss.sum()
         return loss
 
 
@@ -92,5 +92,5 @@ class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
     #     x, y = batch
     #     y_pred = self(x)
     #     batch_loss = self.loss(y_pred, y)
-    #     loss = batch_loss.sum(dim=0)
+    #     loss = batch_loss.sum()
     #     return loss

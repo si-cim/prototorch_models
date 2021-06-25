@@ -48,7 +48,7 @@ class CBC(SiameseGLVQ):
         y_pred = self(x)
         num_classes = self.num_classes
         y_true = torch.nn.functional.one_hot(y.long(), num_classes=num_classes)
-        loss = self.loss(y_pred, y_true).mean(dim=0)
+        loss = self.loss(y_pred, y_true).mean()
         return y_pred, loss
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):

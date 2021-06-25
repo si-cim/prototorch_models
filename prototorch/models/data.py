@@ -5,12 +5,11 @@ Mainly used for PytorchLightningCLI configurations.
 """
 from typing import Any, Optional, Type
 
+import prototorch as pt
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
-
-import prototorch as pt
 
 
 # MNIST
