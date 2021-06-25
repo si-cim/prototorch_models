@@ -132,7 +132,7 @@ class GrowingNeuralGas(NeuralGas):
         mask[torch.arange(len(mask)), winner] = 1.0
         dp = d * mask
 
-        self.errors += torch.sum(dp * dp, dim=0)
+        self.errors += torch.sum(dp * dp)
         self.errors *= self.hparams.step_reduction
 
         self.topology_layer(d)
