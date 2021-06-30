@@ -73,7 +73,7 @@ class PrototypeModel(ProtoTorchBolt):
 
     @final
     def reconfigure_optimizers(self):
-        self.trainer.accelerator_backend.setup_optimizers(self.trainer)
+        self.trainer.accelerator.setup_optimizers(self.trainer)
 
     def add_prototypes(self, *args, **kwargs):
         self.proto_layer.add_components(*args, **kwargs)
