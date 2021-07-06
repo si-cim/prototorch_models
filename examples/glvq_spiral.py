@@ -66,7 +66,7 @@ if __name__ == "__main__":
         args,
         callbacks=[
             vis,
-            # es, # FIXME
+            es,
             pruning,
         ],
         terminate_on_nan=True,
