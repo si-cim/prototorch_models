@@ -14,20 +14,8 @@ from ..core.pooling import stratified_min_pooling
 from ..nn.wrappers import LambdaLayer
 
 
-class ProtoTorchMixin(object):
-    pass
-
-
 class ProtoTorchBolt(pl.LightningModule):
     """All ProtoTorch models are ProtoTorch Bolts."""
-    def __repr__(self):
-        surep = super().__repr__()
-        indented = "".join([f"\t{line}\n" for line in surep.splitlines()])
-        wrapped = f"ProtoTorch Bolt(\n{indented})"
-        return wrapped
-
-
-class PrototypeModel(ProtoTorchBolt):
     def __init__(self, hparams, **kwargs):
         super().__init__()
 
@@ -41,22 +29,6 @@ class PrototypeModel(ProtoTorchBolt):
         self.optimizer = kwargs.get("optimizer", torch.optim.Adam)
         self.lr_scheduler = kwargs.get("lr_scheduler", None)
         self.lr_scheduler_kwargs = kwargs.get("lr_scheduler_kwargs", dict())
-
-        distance_fn = kwargs.get("distance_fn", euclidean_distance)
-        self.distance_layer = LambdaLayer(distance_fn)
-
-    @property
-    def num_prototypes(self):
-        return len(self.proto_layer.components)
-
-    @property
-    def prototypes(self):
-        return self.proto_layer.components.detach().cpu()
-
-    @property
-    def components(self):
-        """Only an alias for the prototypes."""
-        return self.prototypes
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.hparams.lr)
@@ -74,6 +46,33 @@ class PrototypeModel(ProtoTorchBolt):
     @final
     def reconfigure_optimizers(self):
         self.trainer.accelerator.setup_optimizers(self.trainer)
+
+    def __repr__(self):
+        surep = super().__repr__()
+        indented = "".join([f"\t{line}\n" for line in surep.splitlines()])
+        wrapped = f"ProtoTorch Bolt(\n{indented})"
+        return wrapped
+
+
+class PrototypeModel(ProtoTorchBolt):
+    def __init__(self, hparams, **kwargs):
+        super().__init__(hparams, **kwargs)
+
+        distance_fn = kwargs.get("distance_fn", euclidean_distance)
+        self.distance_layer = LambdaLayer(distance_fn)
+
+    @property
+    def num_prototypes(self):
+        return len(self.proto_layer.components)
+
+    @property
+    def prototypes(self):
+        return self.proto_layer.components.detach().cpu()
+
+    @property
+    def components(self):
+        """Only an alias for the prototypes."""
+        return self.prototypes
 
     def add_prototypes(self, *args, **kwargs):
         self.proto_layer.add_components(*args, **kwargs)
@@ -165,6 +164,11 @@ class SupervisedPrototypeModel(PrototypeModel):
                  on_epoch=True,
                  prog_bar=True,
                  logger=True)
+
+
+class ProtoTorchMixin(object):
+    """All mixins are ProtoTorchMixins."""
+    pass
 
 
 class NonGradientMixin(ProtoTorchMixin):
