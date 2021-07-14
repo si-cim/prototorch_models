@@ -19,6 +19,7 @@ from .glvq import (
 )
 from .knn import KNN
 from .lvq import LVQ1, LVQ21, MedianLVQ
+from .nam import BinaryNAM
 from .probabilistic import CELVQ, PLVQ, RSLVQ, SLVQ
 from .unsupervised import GrowingNeuralGas, HeskesSOM, KohonenSOM, NeuralGas
 from .vis import *
