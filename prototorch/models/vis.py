@@ -117,6 +117,24 @@ class Vis2DAbstract(pl.Callback):
         plt.close()
 
 
+class Vis2D(Vis2DAbstract):
+    def on_epoch_end(self, trainer, pl_module):
+        if not self.precheck(trainer):
+            return True
+
+        x_train, y_train = self.x_train, self.y_train
+        ax = self.setup_ax(xlabel="Data dimension 1",
+                           ylabel="Data dimension 2")
+        self.plot_data(ax, x_train, y_train)
+        mesh_input, xx, yy = mesh2d(x_train, self.border, self.resolution)
+        mesh_input = torch.from_numpy(mesh_input).type_as(x_train)
+        y_pred = pl_module.predict(mesh_input)
+        y_pred = y_pred.cpu().reshape(xx.shape)
+        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
+
+        self.log_and_display(trainer, pl_module)
+
+
 class VisGLVQ2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):
