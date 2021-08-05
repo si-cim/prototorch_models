@@ -96,8 +96,7 @@ class MedianLVQ(NonGradientMixin, GLVQ):
         return lower_bound
 
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
-        protos = self.proto_layer.components
-        plabels = self.proto_layer.labels
+        protos, plabels = self.proto_layer()
 
         x, y = train_batch
         dis = self.compute_distances(x)

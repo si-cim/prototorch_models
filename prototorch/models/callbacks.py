@@ -134,4 +134,4 @@ class GNGCallback(pl.Callback):
             pl_module.errors[
                 worst_neighbor] = errors[worst_neighbor] * self.reduction
 
-            trainer.accelerator_backend.setup_optimizers(trainer)
+            trainer.accelerator.setup_optimizers(trainer)

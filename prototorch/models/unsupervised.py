@@ -53,7 +53,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
         grid = self._grid.view(-1, 2)
         gd = squared_euclidean_distance(wp, grid)
         nh = torch.exp(-gd / self._sigma**2)
-        protos = self.proto_layer.components
+        protos = self.proto_layer()
         diff = x.unsqueeze(dim=1) - protos
         delta = self._lr * self.hparams.alpha * nh.unsqueeze(-1) * diff
         updated_protos = protos + delta.sum(dim=0)
