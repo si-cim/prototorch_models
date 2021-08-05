@@ -55,7 +55,7 @@ class GLVQ(SupervisedPrototypeModel):
     def shared_step(self, batch, batch_idx, optimizer_idx=None):
         x, y = batch
         out = self.compute_distances(x)
-        plabels = self.proto_layer.labels
+        _, plabels = self.proto_layer()
         loss = self.loss(out, y, plabels)
         return out, loss
 

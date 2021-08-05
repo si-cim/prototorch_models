@@ -10,9 +10,7 @@ from .glvq import GLVQ
 class LVQ1(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
-        protos = self.proto_layer.components
-        plabels = self.proto_layer.labels
-
+        protos, plables = self.proto_layer()
         x, y = train_batch
         dis = self.compute_distances(x)
         # TODO Vectorized implementation
@@ -41,8 +39,7 @@ class LVQ1(NonGradientMixin, GLVQ):
 class LVQ21(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 2.1."""
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
-        protos = self.proto_layer.components
-        plabels = self.proto_layer.labels
+        protos, plabels = self.proto_layer()
 
         x, y = train_batch
         dis = self.compute_distances(x)
