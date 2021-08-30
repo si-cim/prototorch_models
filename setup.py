@@ -63,7 +63,7 @@ setup(
     url=PROJECT_URL,
     download_url=DOWNLOAD_URL,
     license="MIT",
-    python_requires=">=3.9",
+    python_requires=">=3.6",
     install_requires=INSTALL_REQUIRES,
     extras_require={
         "dev": DEV,
@@ -80,6 +80,9 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.6",
         "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries",

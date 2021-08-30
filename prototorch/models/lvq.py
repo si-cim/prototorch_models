@@ -28,8 +28,8 @@ class LVQ1(NonGradientMixin, GLVQ):
             self.proto_layer.load_state_dict({"_components": updated_protos},
                                              strict=False)
 
-        print(f"{dis=}")
-        print(f"{y=}")
+        print(f"dis={dis}")
+        print(f"y={y}")
         # Logging
         self.log_acc(dis, y, tag="train_acc")
 

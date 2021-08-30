@@ -55,7 +55,7 @@ class PruneLoserPrototypes(pl.Callback):
                 distribution = dict(zip(labels.tolist(), counts.tolist()))
                 if self.verbose:
                     print(f"Re-adding pruned prototypes...")
-                    print(f"{distribution=}")
+                    print(f"distribution={distribution}")
                 pl_module.add_prototypes(
                     distribution=distribution,
                     components_initializer=self.prototypes_initializer)

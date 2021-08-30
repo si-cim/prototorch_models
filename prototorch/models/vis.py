@@ -251,8 +251,6 @@ class VisImgComp(Vis2DAbstract):
                                    size=self.embedding_data,
                                    replace=False)
             data = self.x_train[ind]
-            # print(f"{data.shape=}")
-            # print(f"{self.y_train[ind].shape=}")
             tb.add_embedding(data.view(len(ind), -1),
                              label_img=data,
                              global_step=None,

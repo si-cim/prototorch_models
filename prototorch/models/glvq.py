@@ -112,7 +112,8 @@ class SiameseGLVQ(GLVQ):
         proto_opt = self.optimizer(self.proto_layer.parameters(),
                                    lr=self.hparams.proto_lr)
         # Only add a backbone optimizer if backbone has trainable parameters
-        if (bb_params := list(self.backbone.parameters())):
+        bb_params = list(self.backbone.parameters())
+        if (bb_params):
             bb_opt = self.optimizer(bb_params, lr=self.hparams.bb_lr)
             optimizers = [proto_opt, bb_opt]
         else:

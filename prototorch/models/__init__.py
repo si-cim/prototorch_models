@@ -1,7 +1,5 @@
 """`models` plugin for the `prototorch` package."""
 
-from importlib.metadata import PackageNotFoundError, version
-
 from .callbacks import PrototypeConvergence, PruneLoserPrototypes
 from .cbc import CBC, ImageCBC
 from .glvq import (
