@@ -178,6 +178,39 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
         self.log_and_display(trainer, pl_module)
 
 
+class VisGMLVQ2D(Vis2DAbstract):
+    def __init__(self, *args, ev_proj=True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ev_proj = ev_proj
+
+    def on_epoch_end(self, trainer, pl_module):
+        if not self.precheck(trainer):
+            return True
+
+        protos = pl_module.prototypes
+        plabels = pl_module.prototype_labels
+        x_train, y_train = self.x_train, self.y_train
+        device = pl_module.device
+        omega = pl_module._omega.detach()
+        lam = omega @ omega.T
+        u, _, _ = torch.pca_lowrank(lam, q=2)
+        with torch.no_grad():
+            x_train = torch.Tensor(x_train).to(device)
+            x_train = x_train @ u
+            x_train = x_train.cpu().detach()
+        if self.show_protos:
+            with torch.no_grad():
+                protos = torch.Tensor(protos).to(device)
+                protos = protos @ u
+                protos = protos.cpu().detach()
+        ax = self.setup_ax()
+        self.plot_data(ax, x_train, y_train)
+        if self.show_protos:
+            self.plot_protos(ax, protos, plabels)
+
+        self.log_and_display(trainer, pl_module)
+
+
 class VisCBC2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):

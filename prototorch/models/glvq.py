@@ -251,6 +251,12 @@ class GMLVQ(GLVQ):
     def omega_matrix(self):
         return self._omega.detach().cpu()
 
+    @property
+    def lambda_matrix(self):
+        omega = self._omega.detach()  # (input_dim, latent_dim)
+        lam = omega @ omega.T
+        return lam.detach().cpu()
+
     def compute_distances(self, x):
         protos, _ = self.proto_layer()
         distances = self.distance_layer(x, protos, self._omega)
