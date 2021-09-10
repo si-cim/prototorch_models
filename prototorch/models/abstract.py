@@ -162,6 +162,14 @@ class SupervisedPrototypeModel(PrototypeModel):
                  prog_bar=True,
                  logger=True)
 
+    def test_step(self, batch, batch_idx):
+        x, targets = batch
+
+        preds = self.predict(x)
+        accuracy = torchmetrics.functional.accuracy(preds.int(), targets.int())
+
+        self.log("test_acc", accuracy)
+
 
 class ProtoTorchMixin(object):
     """All mixins are ProtoTorchMixins."""
