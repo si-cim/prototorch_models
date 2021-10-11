@@ -1,12 +1,12 @@
 import torch
 import torchmetrics
+from prototorch.core.competitions import CBCC
+from prototorch.core.components import ReasoningComponents
+from prototorch.core.initializers import RandomReasoningsInitializer
+from prototorch.core.losses import MarginLoss
+from prototorch.core.similarities import euclidean_similarity
+from prototorch.nn.wrappers import LambdaLayer
 
-from ..core.competitions import CBCC
-from ..core.components import ReasoningComponents
-from ..core.initializers import RandomReasoningsInitializer
-from ..core.losses import MarginLoss
-from ..core.similarities import euclidean_similarity
-from ..nn.wrappers import LambdaLayer
 from .abstract import ImagePrototypesMixin
 from .glvq import SiameseGLVQ
 

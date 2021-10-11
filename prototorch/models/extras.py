@@ -5,8 +5,7 @@ Modules not yet available in prototorch go here temporarily.
 """
 
 import torch
-
-from ..core.similarities import gaussian
+from prototorch.core.similarities import gaussian
 
 
 def rank_scaled_gaussian(distances, lambd):

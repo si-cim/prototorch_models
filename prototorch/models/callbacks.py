@@ -4,9 +4,9 @@ import logging
 
 import pytorch_lightning as pl
 import torch
+from prototorch.core.components import Components
+from prototorch.core.initializers import LiteralCompInitializer
 
-from ..core.components import Components
-from ..core.initializers import LiteralCompInitializer
 from .extras import ConnectionTopology
 
 

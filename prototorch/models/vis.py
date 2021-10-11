@@ -5,9 +5,8 @@ import pytorch_lightning as pl
 import torch
 import torchvision
 from matplotlib import pyplot as plt
+from prototorch.utils.utils import mesh2d
 from torch.utils.data import DataLoader, Dataset
-
-from ..utils.utils import mesh2d
 
 
 class Vis2DAbstract(pl.Callback):
