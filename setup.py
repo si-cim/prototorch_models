@@ -37,6 +37,7 @@ DOCS = [
     "recommonmark",
     "sphinx",
     "nbsphinx",
+    "ipykernel",
     "sphinx_rtd_theme",
     "sphinxcontrib-katex",
     "sphinxcontrib-bibtex",
