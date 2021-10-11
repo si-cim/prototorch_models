@@ -4,8 +4,8 @@ from prototorch.core.losses import _get_dp_dm
 from prototorch.nn.activations import get_activation
 from prototorch.nn.wrappers import LambdaLayer
 
-from .abstract import NonGradientMixin
 from .glvq import GLVQ
+from .mixin import NonGradientMixin
 
 
 class LVQ1(NonGradientMixin, GLVQ):

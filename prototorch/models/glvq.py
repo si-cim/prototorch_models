@@ -9,7 +9,8 @@ from prototorch.core.transforms import LinearTransform
 from prototorch.nn.wrappers import LambdaLayer, LossLayer
 from torch.nn.parameter import Parameter
 
-from .abstract import ImagePrototypesMixin, SupervisedPrototypeModel
+from .abstract import SupervisedPrototypeModel
+from .mixin import ImagePrototypesMixin
 
 
 class GLVQ(SupervisedPrototypeModel):

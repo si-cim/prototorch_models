@@ -7,8 +7,8 @@ from prototorch.core.losses import MarginLoss
 from prototorch.core.similarities import euclidean_similarity
 from prototorch.nn.wrappers import LambdaLayer
 
-from .abstract import ImagePrototypesMixin
 from .glvq import SiameseGLVQ
+from .mixin import ImagePrototypesMixin
 
 
 class CBC(SiameseGLVQ):
