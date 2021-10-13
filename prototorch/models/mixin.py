@@ -1,4 +1,4 @@
-class ProtoTorchMixin(object):
+class ProtoTorchMixin:
     """All mixins are ProtoTorchMixins."""
     pass
 

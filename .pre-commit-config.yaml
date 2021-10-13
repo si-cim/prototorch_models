@@ -18,12 +18,12 @@ repos:
   - id: autoflake
 
 - repo: http://github.com/PyCQA/isort
-  rev: 5.8.0
+  rev: 5.9.3
   hooks:
   - id: isort
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.902
+  rev: v0.910-1
   hooks:
   - id: mypy
     files: prototorch
@@ -42,9 +42,10 @@ repos:
   - id: python-check-blanket-noqa
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.19.4
+  rev: v2.29.0
   hooks:
   - id: pyupgrade
+    args: [--py36-plus]
 
 - repo: https://github.com/si-cim/gitlint
   rev: v0.15.2-unofficial
