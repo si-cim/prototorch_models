@@ -1,0 +1,1 @@
+from .glvq import GLVQ

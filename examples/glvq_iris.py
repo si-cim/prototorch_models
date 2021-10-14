@@ -3,6 +3,7 @@
 import argparse
 
 import prototorch as pt
+import prototorch.models.expanded
 import pytorch_lightning as pl
 import torch
 from torch.optim.lr_scheduler import ExponentialLR
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.GLVQ(
+    model = prototorch.models.expanded.GLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SMCI(train_ds),

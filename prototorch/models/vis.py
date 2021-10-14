@@ -129,12 +129,14 @@ class VisGLVQ2D(Vis2DAbstract):
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, plabels)
         x = np.vstack((x_train, protos))
-        mesh_input, xx, yy = mesh2d(x, self.border, self.resolution)
-        _components = pl_module.proto_layer._components
-        mesh_input = torch.from_numpy(mesh_input).type_as(_components)
-        y_pred = pl_module.predict(mesh_input)
+        mesh_input, xx, yy = mesh2d(x,
+                                    self.border,
+                                    self.resolution,
+                                    device=pl_module.device)
+        mesh_input = (mesh_input, None)
+        y_pred = pl_module(mesh_input)
         y_pred = y_pred.cpu().reshape(xx.shape)
-        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
+        ax.contourf(xx.cpu(), yy.cpu(), y_pred, cmap=self.cmap, alpha=0.35)
 
         self.log_and_display(trainer, pl_module)
 
