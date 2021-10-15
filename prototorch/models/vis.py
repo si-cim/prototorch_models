@@ -5,14 +5,18 @@ import pytorch_lightning as pl
 import torch
 import torchvision
 from matplotlib import pyplot as plt
-from prototorch.utils.utils import mesh2d
+from prototorch.utils.utils import generate_mesh, mesh2d
 from torch.utils.data import DataLoader, Dataset
+
+COLOR_UNLABELED = 'w'
 
 
 class Vis2DAbstract(pl.Callback):
     def __init__(self,
                  data,
-                 title="Prototype Visualization",
+                 title=None,
+                 x_label=None,
+                 y_label=None,
                  cmap="viridis",
                  border=0.1,
                  resolution=100,
@@ -44,6 +48,8 @@ class Vis2DAbstract(pl.Callback):
         self.y_train = y
 
         self.title = title
+        self.x_label = x_label
+        self.y_label = y_label
         self.fig = plt.figure(self.title)
         self.cmap = cmap
         self.border = border
@@ -56,20 +62,19 @@ class Vis2DAbstract(pl.Callback):
         self.pause_time = pause_time
         self.block = block
 
-    def precheck(self, trainer):
-        if self.show_last_only:
-            if trainer.current_epoch != trainer.max_epochs - 1:
-                return False
+    def show_on_current_epoch(self, trainer):
+        if self.show_last_only and trainer.current_epoch != trainer.max_epochs - 1:
+            return False
         return True
 
-    def setup_ax(self, xlabel=None, ylabel=None):
+    def setup_ax(self):
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
-        if xlabel:
-            ax.set_xlabel("Data dimension 1")
-        if ylabel:
-            ax.set_ylabel("Data dimension 2")
+        if self.x_label:
+            ax.set_xlabel(self.x_label)
+        if self.x_label:
+            ax.set_ylabel(self.y_label)
         if self.axis_off:
             ax.axis("off")
         return ax
@@ -116,27 +121,64 @@ class Vis2DAbstract(pl.Callback):
         plt.close()
 
 
-class VisGLVQ2D(Vis2DAbstract):
+class Visualize2DVoronoiCallback(Vis2DAbstract):
+    def __init__(self, data, **kwargs):
+        super().__init__(data, **kwargs)
+
+        self.data_min = torch.min(self.x_train, axis=0).values
+        self.data_max = torch.max(self.x_train, axis=0).values
+
+    def current_span(self, proto_values):
+        proto_min = torch.min(proto_values, axis=0).values
+        proto_max = torch.max(proto_values, axis=0).values
+
+        overall_min = torch.minimum(proto_min, self.data_min)
+        overall_max = torch.maximum(proto_max, self.data_max)
+
+        return overall_min, overall_max
+
+    def get_voronoi_diagram(self, min, max, model):
+        mesh_input, (xx, yy) = generate_mesh(
+            min,
+            max,
+            border=self.border,
+            resolution=self.resolution,
+            device=model.device,
+        )
+
+        y_pred = model.predict(mesh_input)
+        return xx, yy, y_pred.reshape(xx.shape)
+
     def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
+        if not self.show_on_current_epoch(trainer):
             return True
 
-        protos = pl_module.prototypes
-        plabels = pl_module.prototype_labels
-        x_train, y_train = self.x_train, self.y_train
-        ax = self.setup_ax(xlabel="Data dimension 1",
-                           ylabel="Data dimension 2")
-        self.plot_data(ax, x_train, y_train)
-        self.plot_protos(ax, protos, plabels)
-        x = np.vstack((x_train, protos))
-        mesh_input, xx, yy = mesh2d(x,
-                                    self.border,
-                                    self.resolution,
-                                    device=pl_module.device)
-        mesh_input = (mesh_input, None)
-        y_pred = pl_module(mesh_input)
-        y_pred = y_pred.cpu().reshape(xx.shape)
-        ax.contourf(xx.cpu(), yy.cpu(), y_pred, cmap=self.cmap, alpha=0.35)
+        # Extract Prototypes
+        proto_values = pl_module.prototypes
+        if hasattr(pl_module, "prototype_labels"):
+            proto_labels = pl_module.prototype_labels
+        else:
+            proto_labels = COLOR_UNLABELED
+
+        # Calculate Voronoi Diagram
+        overall_min, overall_max = self.current_span(proto_values)
+        xx, yy, y_pred = self.get_voronoi_diagram(
+            overall_min,
+            overall_max,
+            pl_module,
+        )
+
+        ax = self.setup_ax()
+        ax.contourf(
+            xx.cpu(),
+            yy.cpu(),
+            y_pred.cpu(),
+            cmap=self.cmap,
+            alpha=0.35,
+        )
+
+        self.plot_data(ax, self.x_train, self.y_train)
+        self.plot_protos(ax, proto_values, proto_labels)
 
         self.log_and_display(trainer, pl_module)
 
@@ -147,7 +189,7 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
         self.map_protos = map_protos
 
     def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
+        if not self.show_on_current_epoch(trainer):
             return True
 
         protos = pl_module.prototypes
@@ -185,7 +227,7 @@ class VisGMLVQ2D(Vis2DAbstract):
         self.ev_proj = ev_proj
 
     def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
+        if not self.show_on_current_epoch(trainer):
             return True
 
         protos = pl_module.prototypes
@@ -212,40 +254,16 @@ class VisGMLVQ2D(Vis2DAbstract):
         self.log_and_display(trainer, pl_module)
 
 
-class VisCBC2D(Vis2DAbstract):
-    def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
-            return True
-
-        x_train, y_train = self.x_train, self.y_train
-        protos = pl_module.components
-        ax = self.setup_ax(xlabel="Data dimension 1",
-                           ylabel="Data dimension 2")
-        self.plot_data(ax, x_train, y_train)
-        self.plot_protos(ax, protos, "w")
-        x = np.vstack((x_train, protos))
-        mesh_input, xx, yy = mesh2d(x, self.border, self.resolution)
-        _components = pl_module.components_layer._components
-        y_pred = pl_module.predict(
-            torch.Tensor(mesh_input).type_as(_components))
-        y_pred = y_pred.cpu().reshape(xx.shape)
-
-        ax.contourf(xx, yy, y_pred, cmap=self.cmap, alpha=0.35)
-
-        self.log_and_display(trainer, pl_module)
-
-
 class VisNG2D(Vis2DAbstract):
     def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
+        if not self.show_on_current_epoch(trainer):
             return True
 
         x_train, y_train = self.x_train, self.y_train
         protos = pl_module.prototypes
         cmat = pl_module.topology_layer.cmat.cpu().numpy()
 
-        ax = self.setup_ax(xlabel="Data dimension 1",
-                           ylabel="Data dimension 2")
+        ax = self.setup_ax()
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, "w")
 
@@ -316,7 +334,7 @@ class VisImgComp(Vis2DAbstract):
         )
 
     def on_epoch_end(self, trainer, pl_module):
-        if not self.precheck(trainer):
+        if not self.show_on_current_epoch(trainer):
             return True
 
         if self.show:

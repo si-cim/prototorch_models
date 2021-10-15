@@ -38,10 +38,12 @@ if __name__ == "__main__":
     )
 
     # Callbacks
-    vis = pt.models.VisCBC2D(data=train_ds,
-                             title="CBC Iris Example",
-                             resolution=100,
-                             axis_off=True)
+    vis = pt.models.Visualize2DVoronoiCallback(
+        data=train_ds,
+        title="CBC Iris Example",
+        resolution=100,
+        axis_off=True,
+    )
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(

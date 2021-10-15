@@ -9,6 +9,7 @@ CLCC is a LVQ scheme containing 4 steps
 
 """
 import pytorch_lightning as pl
+import torch
 
 
 class CLCCScheme(pl.LightningModule):
@@ -36,12 +37,20 @@ class CLCCScheme(pl.LightningModule):
         return comparison_tensor
 
     def forward(self, batch):
+        if isinstance(batch, torch.Tensor):
+            batch = (batch, None)
         # TODO: manage different datatypes?
         components = self.components_layer()
         # TODO: => Component Hook
         comparison_tensor = self.get_competion(batch, components)
         # TODO: => Competition Hook
         return self.inference(comparison_tensor, components)
+
+    def predict(self, batch):
+        """
+        Alias for forward
+        """
+        return self.forward(batch)
 
     def loss_forward(self, batch):
         # TODO: manage different datatypes?

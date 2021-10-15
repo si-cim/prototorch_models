@@ -3,12 +3,12 @@ import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from prototorch.core.initializers import SMCI, RandomNormalCompInitializer
-from prototorch.models.expanded.clcc_glvq import GLVQ, GLVQhparams
-from torch.utils.data import DataLoader, Dataset
-from torchvision import datasets
-from torchvision.transforms import Compose, Lambda, ToTensor
+from prototorch.models.clcc.clcc_glvq import GLVQ, GLVQhparams
+from prototorch.models.vis import Visualize2DVoronoiCallback
 
-plt.gray()
+# NEW STUFF
+# ##############################################################################
+# ##############################################################################
 
 if __name__ == "__main__":
     # Dataset
@@ -29,7 +29,8 @@ if __name__ == "__main__":
 
     print(model)
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=train_ds)
+    vis = Visualize2DVoronoiCallback(data=train_ds, resolution=500)
+
     # Train
-    trainer = pl.Trainer(callbacks=[vis], gpus=1)
+    trainer = pl.Trainer(callbacks=[vis], gpus=1, max_epochs=100)
     trainer.fit(model, train_loader)

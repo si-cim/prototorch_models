@@ -7,7 +7,7 @@ from prototorch.core.components import LabeledComponents
 from prototorch.core.distances import euclidean_distance
 from prototorch.core.initializers import AbstractComponentsInitializer, LabelsInitializer
 from prototorch.core.losses import GLVQLoss
-from prototorch.models.expanded.clcc_scheme import CLCCScheme
+from prototorch.models.clcc.clcc_scheme import CLCCScheme
 from prototorch.nn.wrappers import LambdaLayer
 
 
