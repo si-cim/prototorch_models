@@ -8,11 +8,18 @@ CLCC is a LVQ scheme containing 4 steps
 - Competition
 
 """
+from typing import Dict, Set, Type
+
 import pytorch_lightning as pl
 import torch
+import torchmetrics
 
 
 class CLCCScheme(pl.LightningModule):
+    registered_metrics: Dict[Type[torchmetrics.Metric],
+                             torchmetrics.Metric] = {}
+    registered_metric_names: Dict[Type[torchmetrics.Metric], Set[str]] = {}
+
     def __init__(self, hparams) -> None:
         super().__init__()
 
@@ -28,7 +35,18 @@ class CLCCScheme(pl.LightningModule):
         # Inference Steps
         self.init_inference(hparams)
 
-    # API
+        # Initialize Model Metrics
+        self.init_model_metrics()
+
+    # internal API, called by models and callbacks
+    def register_torchmetric(self, name: str, metric: torchmetrics.Metric):
+        if metric not in self.registered_metrics:
+            self.registered_metrics[metric] = metric()
+            self.registered_metric_names[metric] = {name}
+        else:
+            self.registered_metric_names[metric].add(name)
+
+    # external API
     def get_competion(self, batch, components):
         latent_batch, latent_components = self.latent(batch, components)
         # TODO: => Latent Hook
@@ -80,6 +98,9 @@ class CLCCScheme(pl.LightningModule):
 
     def init_inference(self, hparams):
         ...
+
+    def init_model_metrics(self):
+        self.register_torchmetric('train_accuracy', torchmetrics.Accuracy)
 
     # Empty Steps
     # TODO: Type hints
@@ -136,9 +157,33 @@ class CLCCScheme(pl.LightningModule):
         raise NotImplementedError(
             "The inference step has no reasonable default.")
 
+    def update_metrics_step(self, batch):
+        x, y = batch
+        preds = self(x)
+
+        for metric in self.registered_metrics:
+            instance = self.registered_metrics[metric].to(self.device)
+            value = instance(y, preds)
+
+            for name in self.registered_metric_names[metric]:
+                self.log(name, value)
+
+    def update_metrics_epoch(self):
+        for metric in self.registered_metrics:
+            instance = self.registered_metrics[metric].to(self.device)
+            value = instance.compute()
+
+            for name in self.registered_metric_names[metric]:
+                self.log(name, value)
+
     # Lightning Hooks
     def training_step(self, batch, batch_idx, optimizer_idx=None):
+        self.update_metrics_step(batch)
+
         return self.loss_forward(batch)
+
+    def train_epoch_end(self, outs) -> None:
+        self.update_metrics_epoch()
 
     def validation_step(self, batch, batch_idx):
         return self.loss_forward(batch)
