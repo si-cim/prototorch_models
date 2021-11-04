@@ -5,9 +5,9 @@ pipeline {
       parallel {
         stage('3.9'){
           agent {
-            docker {
-              image 'python:3.9'
-              args '--user 0:0'
+            dockerfile {
+              filename 'python39.Dockerfile'
+              dir '.ci'
             }
           }
           steps {
@@ -18,9 +18,9 @@ pipeline {
         }
         stage('3.8'){
           agent {
-            docker {
-              image 'python:3.8'
-              args '--user 0:0'
+            dockerfile {
+              filename 'python38.Dockerfile'
+              dir '.ci'
             }
           }
           steps {
