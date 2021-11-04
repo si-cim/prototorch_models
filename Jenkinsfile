@@ -29,6 +29,32 @@ pipeline {
             sh './tests/test_examples.sh examples'
           }
         }
+        stage('3.7'){
+          agent {
+            dockerfile {
+              filename 'python37.Dockerfile'
+              dir '.ci'
+            }
+          }
+          steps {
+            sh 'pip install pip --upgrade --progress-bar off'
+            sh 'pip install .[all] --progress-bar off'
+            sh './tests/test_examples.sh examples'
+          }
+        }
+        stage('3.6'){
+          agent {
+            dockerfile {
+              filename 'python36.Dockerfile'
+              dir '.ci'
+            }
+          }
+          steps {
+            sh 'pip install pip --upgrade --progress-bar off'
+            sh 'pip install .[all] --progress-bar off'
+            sh './tests/test_examples.sh examples'
+          }
+        }
       }
     }
   }
