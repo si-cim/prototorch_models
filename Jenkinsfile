@@ -3,6 +3,19 @@ pipeline {
   stages {
     stage('CPU') {
       parallel {
+        stage('3.10'){
+          agent {
+            dockerfile {
+              filename 'python310.Dockerfile'
+              dir '.ci'
+            }
+          }
+          steps {
+            sh 'pip install pip --upgrade --progress-bar off'
+            sh 'pip install .[all] --progress-bar off'
+            sh './tests/test_examples.sh examples'
+          }
+        }
         stage('3.9'){
           agent {
             dockerfile {
