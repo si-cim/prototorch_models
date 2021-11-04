@@ -1,6 +1,23 @@
 pipeline {
   agent none
   stages {
+    
+    stage('GPU') {
+      agent {
+        dockerfile {
+          filename 'gpu.Dockerfile'
+          dir '.ci'
+          args '--gpus 1'
+        }
+
+      }
+      steps {
+        sh 'pip install -U pip --progress-bar off'
+        sh 'pip install .[all] --progress-bar off'
+        sh './tests/test_examples.sh examples --gpu'
+      }
+    }
+    
     stage('CPU') {
       parallel {
         stage('3.10') {
@@ -81,20 +98,7 @@ pipeline {
       }
     }
 
-    stage('GPU') {
-      agent {
-        docker {
-          image 'nvcr.io/nvidia/pytorch:21.10-py3'
-          args '--gpus 1'
-        }
-
-      }
-      steps {
-        sh 'pip install -U pip --progress-bar off'
-        sh 'pip install .[all] --progress-bar off'
-        sh './tests/test_examples.sh examples --gpu'
-      }
-    }
+    
 
   }
 }
