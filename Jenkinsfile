@@ -12,11 +12,9 @@ pipeline {
           steps {
             sh 'pip install pip --upgrade --progress-bar off'
             sh 'pip install .[all] --progress-bar off'
-            sh '~/.local/bin/pytest -v --junitxml=reports/result.xml'
-          }
-        post {
-          always {
-              junit 'reports/**/*.xml'
+            sh '~/.local/bin/pytest -v --junitxml=reports/result.xml --cov=prototorch/ --cov-report=xml:reports/coverage.xml'
+            cobertura coberturaReportFile: 'reports/coverage.xml'
+            junit 'reports/**/*.xml'
           }
         }
     }
