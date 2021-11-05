@@ -9,13 +9,10 @@ pipeline {
             }
 
           }
-          environment {
-            PATH = "/home/jenkins/.local/bin:${env.PATH}"
-          }
           steps {
             sh 'pip install pip --upgrade --progress-bar off'
             sh 'pip install .[all] --progress-bar off'
-            sh 'pytest -v --junitxml=reports/result.xml'
+            sh '~/.local/bin/pytest -v --junitxml=reports/result.xml'
           }
         post {
           always {
