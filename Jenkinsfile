@@ -2,7 +2,6 @@ pipeline {
   agent none
   stages {
     stage('Unit Tests') {
-        stage('3.10') {
           agent {
             dockerfile {
               filename 'python310.Dockerfile'
@@ -15,7 +14,6 @@ pipeline {
             sh 'pip install .[all] --progress-bar off'
             sh 'pytest -v --junitxml=reports/result.xml'
           }
-        }
         post {
           always {
               junit 'reports/**/*.xml'
