@@ -16,7 +16,6 @@ pipeline {
             cobertura coberturaReportFile: 'reports/coverage.xml'
             junit 'reports/**/*.xml'
           }
-        }
     }
 
     stage('CPU Examples') {
