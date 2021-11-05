@@ -1,24 +1,29 @@
 pipeline {
   agent none
   stages {
-    
-    stage('GPU') {
-      agent {
-        dockerfile {
-          filename 'gpu.Dockerfile'
-          dir '.ci'
-          args '--gpus 1'
-        }
+    stage('Unit Tests') {
+        stage('3.10') {
+          agent {
+            dockerfile {
+              filename 'python310.Dockerfile'
+              dir '.ci'
+            }
 
-      }
-      steps {
-        sh 'pip install -U pip --progress-bar off'
-        sh 'pip install .[all] --progress-bar off'
-        sh './tests/test_examples.sh examples --gpu'
-      }
+          }
+          steps {
+            sh 'pip install pip --upgrade --progress-bar off'
+            sh 'pip install .[all] --progress-bar off'
+            sh 'pytest -v --junitxml=reports/result.xml'
+          }
+        }
+        post {
+          always {
+              junit 'reports/**/*.xml'
+          }
+        }
     }
-    
-    stage('CPU') {
+
+    stage('CPU Examples') {
       parallel {
         stage('3.10') {
           agent {
@@ -98,7 +103,21 @@ pipeline {
       }
     }
 
-    
+    stage('GPU Examples') {
+      agent {
+        dockerfile {
+          filename 'gpu.Dockerfile'
+          dir '.ci'
+          args '--gpus 1'
+        }
+
+      }
+      steps {
+        sh 'pip install -U pip --progress-bar off'
+        sh 'pip install .[all] --progress-bar off'
+        sh './tests/test_examples.sh examples --gpu'
+      }
+    }
 
   }
 }
