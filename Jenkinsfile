@@ -9,8 +9,10 @@ pipeline {
             }
 
           }
+          environment {
+            PATH = "/home/jenkins/.local/bin:${env.PATH}"
+          }
           steps {
-            sh 'export PATH=~/.local/bin:$PATH'
             sh 'pip install pip --upgrade --progress-bar off'
             sh 'pip install .[all] --progress-bar off'
             sh 'pytest -v --junitxml=reports/result.xml'
