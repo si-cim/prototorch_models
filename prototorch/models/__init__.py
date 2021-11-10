@@ -8,6 +8,7 @@ from .glvq import (
     GLVQ21,
     GMLVQ,
     GRLVQ,
+    GTLVQ,
     LGMLVQ,
     LVQMLN,
     ImageGLVQ,
