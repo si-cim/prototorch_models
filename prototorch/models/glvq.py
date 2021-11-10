@@ -10,6 +10,7 @@ from ..core.losses import GLVQLoss, lvq1_loss, lvq21_loss
 from ..core.transforms import LinearTransform
 from ..nn.wrappers import LambdaLayer, LossLayer
 from .abstract import ImagePrototypesMixin, SupervisedPrototypeModel
+from .extras import ltangent_distance, orthogonalization
 
 
 class GLVQ(SupervisedPrototypeModel):
@@ -280,6 +281,30 @@ class LGMLVQ(GMLVQ):
             device=self.device,
         )
         self.register_parameter("_omega", Parameter(omega))
+
+
+class GTLVQ(LGMLVQ):
+    """Localized and Generalized Matrix Learning Vector Quantization."""
+    def __init__(self, hparams, **kwargs):
+        distance_fn = kwargs.pop("distance_fn", ltangent_distance)
+        super().__init__(hparams, distance_fn=distance_fn, **kwargs)
+
+        omega_initializer = kwargs.get("omega_initializer")
+        omega = omega_initializer.generate(self.hparams.input_dim,
+                                           self.hparams.latent_dim)
+
+        # Re-register `_omega` to override the one from the super class.
+        omega = torch.rand(
+            self.num_prototypes,
+            self.hparams.input_dim,
+            self.hparams.latent_dim,
+            device=self.device,
+        )
+        self.register_parameter("_omega", Parameter(omega))
+
+    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+        with torch.no_grad():
+            self._omega.copy_(orthogonalization(self._omega))
 
 
 class GLVQ1(GLVQ):
