@@ -1,4 +1,4 @@
-"""Localized-GMLVQ example using the Moons dataset."""
+"""Localized-GTLVQ example using the Moons dataset."""
 
 import argparse
 

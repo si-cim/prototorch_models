@@ -1,4 +1,4 @@
-"""Siamese GLVQ example using all four dimensions of the Iris dataset."""
+"""Siamese GTLVQ example using all four dimensions of the Iris dataset."""
 
 import argparse
 
