@@ -13,8 +13,10 @@ from .glvq import (
     LVQMLN,
     ImageGLVQ,
     ImageGMLVQ,
+    ImageGTLVQ,
     SiameseGLVQ,
     SiameseGMLVQ,
+    SiameseGTLVQ,
 )
 from .knn import KNN
 from .lvq import LVQ1, LVQ21, MedianLVQ
