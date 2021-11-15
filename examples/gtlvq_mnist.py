@@ -1,4 +1,4 @@
-"""GMLVQ example using the MNIST dataset."""
+"""GTLVQ example using the MNIST dataset."""
 
 import argparse
 
@@ -56,9 +56,9 @@ if __name__ == "__main__":
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SMCI(train_ds),
-        # Use one batch of data for subspace initiator.
-        # omega_initializer=pt.initializers.PCALinearTransformInitializer(next(iter(train_loader))[0].reshape(256,28*28))
-    )
+        #Use one batch of data for subspace initiator.
+        omega_initializer=pt.initializers.PCALinearTransformInitializer(
+            next(iter(train_loader))[0].reshape(256, 28 * 28)))
 
     # Callbacks
     vis = pt.models.VisImgComp(
