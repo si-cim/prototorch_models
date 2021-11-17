@@ -1,4 +1,4 @@
-"""GLVQ example using the spiral dataset."""
+"""GMLVQ example using the spiral dataset."""
 
 import argparse
 
