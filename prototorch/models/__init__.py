@@ -21,4 +21,4 @@ from .probabilistic import CELVQ, PLVQ, RSLVQ, SLVQ
 from .unsupervised import GrowingNeuralGas, HeskesSOM, KohonenSOM, NeuralGas
 from .vis import *
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

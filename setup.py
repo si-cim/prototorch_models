@@ -54,7 +54,7 @@ ALL = CLI + DEV + DOCS + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
-    version="0.3.0",
+    version="0.4.0",
     description="Pre-packaged prototype-based "
     "machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
