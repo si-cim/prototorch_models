@@ -4,13 +4,17 @@ import warnings
 
 from ..core.competitions import KNNC
 from ..core.components import LabeledComponents
-from ..core.initializers import LiteralCompInitializer, LiteralLabelsInitializer
+from ..core.initializers import (
+    LiteralCompInitializer,
+    LiteralLabelsInitializer,
+)
 from ..utils.utils import parse_data_arg
 from .abstract import SupervisedPrototypeModel
 
 
 class KNN(SupervisedPrototypeModel):
     """K-Nearest-Neighbors classification algorithm."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 

@@ -11,6 +11,7 @@ from .glvq import GLVQ, SiameseGMLVQ
 
 class CELVQ(GLVQ):
     """Cross-Entropy Learning Vector Quantization."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -29,6 +30,7 @@ class CELVQ(GLVQ):
 
 
 class ProbabilisticLVQ(GLVQ):
+
     def __init__(self, hparams, rejection_confidence=0.0, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -62,6 +64,7 @@ class ProbabilisticLVQ(GLVQ):
 
 class SLVQ(ProbabilisticLVQ):
     """Soft Learning Vector Quantization."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss = LossLayer(nllr_loss)
@@ -70,6 +73,7 @@ class SLVQ(ProbabilisticLVQ):
 
 class RSLVQ(ProbabilisticLVQ):
     """Robust Soft Learning Vector Quantization."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.loss = LossLayer(rslvq_loss)
@@ -81,6 +85,7 @@ class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
 
     TODO: Use Backbone LVQ instead
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.conditional_distribution = RankScaledGaussianPrior(
