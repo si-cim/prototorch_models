@@ -8,7 +8,7 @@ import prototorch as pt
 import pytorch_lightning as pl
 import torch
 
-sys.exit(42)
+sys.exit(1)
 
 if __name__ == "__main__":
     # Command-line arguments
