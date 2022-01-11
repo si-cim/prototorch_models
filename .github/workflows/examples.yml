@@ -9,7 +9,6 @@ on:
       - 'examples/**.py'
 jobs:
   cpu:
-    needs: style
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
