@@ -1,14 +1,10 @@
 """CBC example using the Iris dataset."""
 
 import argparse
-# Fail test for ci
-import sys
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
-
-sys.exit(42)
 
 if __name__ == "__main__":
     # Command-line arguments
