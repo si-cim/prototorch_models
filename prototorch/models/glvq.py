@@ -4,16 +4,26 @@ import torch
 from torch.nn.parameter import Parameter
 
 from ..core.competitions import wtac
-from ..core.distances import lomega_distance, omega_distance, squared_euclidean_distance
+from ..core.distances import (
+    lomega_distance,
+    omega_distance,
+    squared_euclidean_distance,
+)
 from ..core.initializers import EyeTransformInitializer
-from ..core.losses import GLVQLoss, lvq1_loss, lvq21_loss
+from ..core.losses import (
+    GLVQLoss,
+    lvq1_loss,
+    lvq21_loss,
+)
 from ..core.transforms import LinearTransform
 from ..nn.wrappers import LambdaLayer, LossLayer
 from .abstract import ImagePrototypesMixin, SupervisedPrototypeModel
+from .extras import ltangent_distance, orthogonalization
 
 
 class GLVQ(SupervisedPrototypeModel):
     """Generalized Learning Vector Quantization."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -98,6 +108,7 @@ class SiameseGLVQ(GLVQ):
     transformation pipeline are only learned from the inputs.
 
     """
+
     def __init__(self,
                  hparams,
                  backbone=torch.nn.Identity(),
@@ -164,6 +175,7 @@ class LVQMLN(SiameseGLVQ):
     rather in the embedding space.
 
     """
+
     def compute_distances(self, x):
         latent_protos, _ = self.proto_layer()
         latent_x = self.backbone(x)
@@ -179,6 +191,7 @@ class GRLVQ(SiameseGLVQ):
     TODO Make a RelevanceLayer. `bb_lr` is ignored otherwise.
 
     """
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -204,6 +217,7 @@ class SiameseGMLVQ(SiameseGLVQ):
     Implemented as a Siamese network with a linear transformation backbone.
 
     """
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -234,6 +248,7 @@ class GMLVQ(GLVQ):
     function. This makes it easier to implement a localized variant.
 
     """
+
     def __init__(self, hparams, **kwargs):
         distance_fn = kwargs.pop("distance_fn", omega_distance)
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
@@ -268,6 +283,7 @@ class GMLVQ(GLVQ):
 
 class LGMLVQ(GMLVQ):
     """Localized and Generalized Matrix Learning Vector Quantization."""
+
     def __init__(self, hparams, **kwargs):
         distance_fn = kwargs.pop("distance_fn", lomega_distance)
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
@@ -282,8 +298,48 @@ class LGMLVQ(GMLVQ):
         self.register_parameter("_omega", Parameter(omega))
 
 
+class GTLVQ(LGMLVQ):
+    """Localized and Generalized Tangent Learning Vector Quantization."""
+
+    def __init__(self, hparams, **kwargs):
+        distance_fn = kwargs.pop("distance_fn", ltangent_distance)
+        super().__init__(hparams, distance_fn=distance_fn, **kwargs)
+
+        omega_initializer = kwargs.get("omega_initializer")
+
+        if omega_initializer is not None:
+            subspace = omega_initializer.generate(self.hparams.input_dim,
+                                                  self.hparams.latent_dim)
+            omega = torch.repeat_interleave(subspace.unsqueeze(0),
+                                            self.num_prototypes,
+                                            dim=0)
+        else:
+            omega = torch.rand(
+                self.num_prototypes,
+                self.hparams.input_dim,
+                self.hparams.latent_dim,
+                device=self.device,
+            )
+
+        # Re-register `_omega` to override the one from the super class.
+        self.register_parameter("_omega", Parameter(omega))
+
+    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+        with torch.no_grad():
+            self._omega.copy_(orthogonalization(self._omega))
+
+
+class SiameseGTLVQ(SiameseGLVQ, GTLVQ):
+    """Generalized Tangent Learning Vector Quantization.
+
+    Implemented as a Siamese network with a linear transformation backbone.
+
+    """
+
+
 class GLVQ1(GLVQ):
     """Generalized Learning Vector Quantization 1."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = LossLayer(lvq1_loss)
@@ -292,6 +348,7 @@ class GLVQ1(GLVQ):
 
 class GLVQ21(GLVQ):
     """Generalized Learning Vector Quantization 2.1."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
         self.loss = LossLayer(lvq21_loss)
@@ -314,3 +371,18 @@ class ImageGMLVQ(ImagePrototypesMixin, GMLVQ):
     after updates.
 
     """
+
+
+class ImageGTLVQ(ImagePrototypesMixin, GTLVQ):
+    """GTLVQ for training on image data.
+
+    GTLVQ model that constrains the prototypes to the range [0, 1] by clamping
+    after updates.
+
+    """
+
+    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+        """Constrain the components to the range [0, 1] by clamping after updates."""
+        self.proto_layer.components.data.clamp_(0.0, 1.0)
+        with torch.no_grad():
+            self._omega.copy_(orthogonalization(self._omega))

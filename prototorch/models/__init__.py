@@ -8,17 +8,34 @@ from .glvq import (
     GLVQ21,
     GMLVQ,
     GRLVQ,
+    GTLVQ,
     LGMLVQ,
     LVQMLN,
     ImageGLVQ,
     ImageGMLVQ,
+    ImageGTLVQ,
     SiameseGLVQ,
     SiameseGMLVQ,
+    SiameseGTLVQ,
 )
 from .knn import KNN
-from .lvq import LVQ1, LVQ21, MedianLVQ
-from .probabilistic import CELVQ, PLVQ, RSLVQ, SLVQ
-from .unsupervised import GrowingNeuralGas, HeskesSOM, KohonenSOM, NeuralGas
+from .lvq import (
+    LVQ1,
+    LVQ21,
+    MedianLVQ,
+)
+from .probabilistic import (
+    CELVQ,
+    PLVQ,
+    RSLVQ,
+    SLVQ,
+)
+from .unsupervised import (
+    GrowingNeuralGas,
+    HeskesSOM,
+    KohonenSOM,
+    NeuralGas,
+)
 from .vis import *
 
 __version__ = "0.4.0"

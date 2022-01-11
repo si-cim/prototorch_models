@@ -11,6 +11,7 @@ from ..utils.utils import mesh2d
 
 
 class Vis2DAbstract(pl.Callback):
+
     def __init__(self,
                  data,
                  title="Prototype Visualization",
@@ -118,6 +119,7 @@ class Vis2DAbstract(pl.Callback):
 
 
 class VisGLVQ2D(Vis2DAbstract):
+
     def on_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):
             return True
@@ -141,6 +143,7 @@ class VisGLVQ2D(Vis2DAbstract):
 
 
 class VisSiameseGLVQ2D(Vis2DAbstract):
+
     def __init__(self, *args, map_protos=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.map_protos = map_protos
@@ -179,6 +182,7 @@ class VisSiameseGLVQ2D(Vis2DAbstract):
 
 
 class VisGMLVQ2D(Vis2DAbstract):
+
     def __init__(self, *args, ev_proj=True, **kwargs):
         super().__init__(*args, **kwargs)
         self.ev_proj = ev_proj
@@ -212,6 +216,7 @@ class VisGMLVQ2D(Vis2DAbstract):
 
 
 class VisCBC2D(Vis2DAbstract):
+
     def on_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):
             return True
@@ -235,6 +240,7 @@ class VisCBC2D(Vis2DAbstract):
 
 
 class VisNG2D(Vis2DAbstract):
+
     def on_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):
             return True
@@ -262,6 +268,7 @@ class VisNG2D(Vis2DAbstract):
 
 
 class VisImgComp(Vis2DAbstract):
+
     def __init__(self,
                  *args,
                  random_data=0,

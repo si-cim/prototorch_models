@@ -13,6 +13,7 @@ from .glvq import SiameseGLVQ
 
 class CBC(SiameseGLVQ):
     """Classification-By-Components."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 

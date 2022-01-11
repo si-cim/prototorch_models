@@ -8,6 +8,7 @@ import torch
 
 
 class Backbone(torch.nn.Module):
+
     def __init__(self, input_size=4, hidden_size=10, latent_size=2):
         super().__init__()
         self.input_size = input_size

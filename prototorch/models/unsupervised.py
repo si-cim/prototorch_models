@@ -18,6 +18,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
     TODO Allow non-2D grids
 
     """
+
     def __init__(self, hparams, **kwargs):
         h, w = hparams.get("shape")
         # Ignore `num_prototypes`
@@ -69,6 +70,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
 
 
 class HeskesSOM(UnsupervisedPrototypeModel):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -78,6 +80,7 @@ class HeskesSOM(UnsupervisedPrototypeModel):
 
 
 class NeuralGas(UnsupervisedPrototypeModel):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -110,6 +113,7 @@ class NeuralGas(UnsupervisedPrototypeModel):
 
 
 class GrowingNeuralGas(NeuralGas):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 

@@ -14,6 +14,7 @@ from ..nn.wrappers import LambdaLayer
 
 class ProtoTorchBolt(pl.LightningModule):
     """All ProtoTorch models are ProtoTorch Bolts."""
+
     def __init__(self, hparams, **kwargs):
         super().__init__()
 
@@ -52,6 +53,7 @@ class ProtoTorchBolt(pl.LightningModule):
 
 
 class PrototypeModel(ProtoTorchBolt):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -81,6 +83,7 @@ class PrototypeModel(ProtoTorchBolt):
 
 
 class UnsupervisedPrototypeModel(PrototypeModel):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -103,6 +106,7 @@ class UnsupervisedPrototypeModel(PrototypeModel):
 
 
 class SupervisedPrototypeModel(PrototypeModel):
+
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
@@ -135,7 +139,7 @@ class SupervisedPrototypeModel(PrototypeModel):
         distances = self.compute_distances(x)
         _, plabels = self.proto_layer()
         winning = stratified_min_pooling(distances, plabels)
-        y_pred = torch.nn.functional.softmin(winning)
+        y_pred = torch.nn.functional.softmin(winning, dim=1)
         return y_pred
 
     def predict_from_distances(self, distances):
@@ -178,6 +182,7 @@ class ProtoTorchMixin(object):
 
 class NonGradientMixin(ProtoTorchMixin):
     """Mixin for custom non-gradient optimization."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.automatic_optimization = False
@@ -188,6 +193,7 @@ class NonGradientMixin(ProtoTorchMixin):
 
 class ImagePrototypesMixin(ProtoTorchMixin):
     """Mixin for models with image prototypes."""
+
     def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
         """Constrain the components to the range [0, 1] by clamping after updates."""
         self.proto_layer.components.data.clamp_(0.0, 1.0)
