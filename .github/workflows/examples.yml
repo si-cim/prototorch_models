@@ -22,4 +22,4 @@ jobs:
         pip install .[all]
     - name: Test with pytest
       run: |
-        ./tests/test_examples.sh
+        ./tests/test_examples.sh examples/
