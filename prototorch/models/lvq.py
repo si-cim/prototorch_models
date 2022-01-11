@@ -9,6 +9,7 @@ from .glvq import GLVQ
 
 class LVQ1(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 1."""
+
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos, plables = self.proto_layer()
         x, y = train_batch
@@ -38,6 +39,7 @@ class LVQ1(NonGradientMixin, GLVQ):
 
 class LVQ21(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 2.1."""
+
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         protos, plabels = self.proto_layer()
 
@@ -70,6 +72,7 @@ class MedianLVQ(NonGradientMixin, GLVQ):
     # TODO Avoid computing distances over and over
 
     """
+
     def __init__(self, hparams, verbose=True, **kwargs):
         self.verbose = verbose
         super().__init__(hparams, **kwargs)

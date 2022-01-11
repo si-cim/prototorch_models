@@ -54,6 +54,7 @@ def ltangent_distance(x, y, omegas):
 
 
 class GaussianPrior(torch.nn.Module):
+
     def __init__(self, variance):
         super().__init__()
         self.variance = variance
@@ -63,6 +64,7 @@ class GaussianPrior(torch.nn.Module):
 
 
 class RankScaledGaussianPrior(torch.nn.Module):
+
     def __init__(self, lambd):
         super().__init__()
         self.lambd = lambd
@@ -72,6 +74,7 @@ class RankScaledGaussianPrior(torch.nn.Module):
 
 
 class ConnectionTopology(torch.nn.Module):
+
     def __init__(self, agelimit, num_prototypes):
         super().__init__()
         self.agelimit = agelimit

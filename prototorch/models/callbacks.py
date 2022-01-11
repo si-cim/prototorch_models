@@ -11,6 +11,7 @@ from .extras import ConnectionTopology
 
 
 class PruneLoserPrototypes(pl.Callback):
+
     def __init__(self,
                  threshold=0.01,
                  idle_epochs=10,
@@ -67,6 +68,7 @@ class PruneLoserPrototypes(pl.Callback):
 
 
 class PrototypeConvergence(pl.Callback):
+
     def __init__(self, min_delta=0.01, idle_epochs=10, verbose=False):
         self.min_delta = min_delta
         self.idle_epochs = idle_epochs  # epochs to wait
@@ -89,6 +91,7 @@ class GNGCallback(pl.Callback):
     Based on "A Growing Neural Gas Network Learns Topologies" by Bernd Fritzke.
 
     """
+
     def __init__(self, reduction=0.1, freq=10):
         self.reduction = reduction
         self.freq = freq

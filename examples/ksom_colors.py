@@ -10,6 +10,7 @@ from prototorch.utils.colors import hex_to_rgb
 
 
 class Vis2DColorSOM(pl.Callback):
+
     def __init__(self, data, title="ColorSOMe", pause_time=0.1):
         super().__init__()
         self.title = title
