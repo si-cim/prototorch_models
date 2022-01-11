@@ -10,7 +10,6 @@ on:
 jobs:
   cpu:
     needs: style
-    strategy:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
