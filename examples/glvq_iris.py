@@ -53,3 +53,11 @@ if __name__ == "__main__":
 
     # Training loop
     trainer.fit(model, train_loader)
+
+    # Manual save
+    trainer.save_checkpoint("./glvq_iris.ckpt")
+
+    # Load saved model
+    new_model = pt.models.GLVQ.load_from_checkpoint(
+        checkpoint_path="./glvq_iris.ckpt")
+    print(new_model)
