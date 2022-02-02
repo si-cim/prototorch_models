@@ -3,6 +3,7 @@
 import pytorch_lightning as pl
 import torch
 import torchmetrics
+from prototorch.core.initializers import ZerosCompInitializer
 
 from ..core.competitions import WTAC
 from ..core.components import Components, LabeledComponents
@@ -120,6 +121,13 @@ class SupervisedPrototypeModel(PrototypeModel):
                 components_initializer=prototypes_initializer,
                 labels_initializer=labels_initializer,
             )
+            self.hparams.initialized_proto_dims = self.proto_layer.components.shape[
+                1:]
+        else:
+            self.proto_layer = LabeledComponents(
+                self.hparams.distribution,
+                ZerosCompInitializer(self.hparams.initialized_proto_dims),
+            )
         self.competition_layer = WTAC()
 
     @property
@@ -177,7 +185,6 @@ class SupervisedPrototypeModel(PrototypeModel):
 
 class ProtoTorchMixin(object):
     """All mixins are ProtoTorchMixins."""
-    pass
 
 
 class NonGradientMixin(ProtoTorchMixin):
