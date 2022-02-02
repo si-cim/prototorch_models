@@ -59,5 +59,7 @@ if __name__ == "__main__":
 
     # Load saved model
     new_model = pt.models.GLVQ.load_from_checkpoint(
-        checkpoint_path="./glvq_iris.ckpt")
+        checkpoint_path="./glvq_iris.ckpt",
+        strict=False,
+    )
     print(new_model)

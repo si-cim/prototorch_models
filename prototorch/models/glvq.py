@@ -39,9 +39,9 @@ class GLVQ(SupervisedPrototypeModel):
             beta=self.hparams.transfer_beta,
         )
 
-    def on_save_checkpoint(self, checkpoint):
-        if "prototype_win_ratios" in checkpoint["state_dict"]:
-            del checkpoint["state_dict"]["prototype_win_ratios"]
+    # def on_save_checkpoint(self, checkpoint):
+    #     if "prototype_win_ratios" in checkpoint["state_dict"]:
+    #         del checkpoint["state_dict"]["prototype_win_ratios"]
 
     def initialize_prototype_win_ratios(self):
         self.register_buffer(
