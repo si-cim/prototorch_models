@@ -230,7 +230,7 @@ class SiameseGMLVQ(SiameseGLVQ):
                                        EyeTransformInitializer())
         self.backbone = LinearTransform(
             self.hparams.input_dim,
-            self.hparams.output_dim,
+            self.hparams.latent_dim,
             initializer=omega_initializer,
         )
 
