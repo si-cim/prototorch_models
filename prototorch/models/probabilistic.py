@@ -67,8 +67,13 @@ class SLVQ(ProbabilisticLVQ):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Default hparams
+        self.hparams.setdefault("variance", 1.0)
+        variance = self.hparams.get("variance")
+
+        self.conditional_distribution = GaussianPrior(variance)
         self.loss = LossLayer(nllr_loss)
-        self.conditional_distribution = GaussianPrior(self.hparams.variance)
 
 
 class RSLVQ(ProbabilisticLVQ):
@@ -76,8 +81,13 @@ class RSLVQ(ProbabilisticLVQ):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Default hparams
+        self.hparams.setdefault("variance", 1.0)
+        variance = self.hparams.get("variance")
+
+        self.conditional_distribution = GaussianPrior(variance)
         self.loss = LossLayer(rslvq_loss)
-        self.conditional_distribution = GaussianPrior(self.hparams.variance)
 
 
 class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
@@ -88,8 +98,12 @@ class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.conditional_distribution = RankScaledGaussianPrior(
-            self.hparams.lambd)
+
+        # Default hparams
+        self.hparams.setdefault("lambda", 1.0)
+        lam = self.hparams.get("lambda", 1.0)
+
+        self.conditional_distribution = RankScaledGaussianPrior(lam)
         self.loss = torch.nn.KLDivLoss()
 
     # FIXME

@@ -16,7 +16,7 @@ class KNN(SupervisedPrototypeModel):
     """K-Nearest-Neighbors classification algorithm."""
 
     def __init__(self, hparams, **kwargs):
-        super().__init__(hparams, **kwargs)
+        super().__init__(hparams, skip_proto_layer=True, **kwargs)
 
         # Default hparams
         self.hparams.setdefault("k", 1)
@@ -28,7 +28,7 @@ class KNN(SupervisedPrototypeModel):
 
         # Layers
         self.proto_layer = LabeledComponents(
-            distribution=[],
+            distribution=len(data) * [1],
             components_initializer=LiteralCompInitializer(data),
             labels_initializer=LiteralLabelsInitializer(targets))
         self.competition_layer = KNNC(k=self.hparams.k)

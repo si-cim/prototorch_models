@@ -26,13 +26,11 @@ from .lvq import (
 )
 from .probabilistic import (
     CELVQ,
-    PLVQ,
     RSLVQ,
     SLVQ,
 )
 from .unsupervised import (
     GrowingNeuralGas,
-    HeskesSOM,
     KohonenSOM,
     NeuralGas,
 )

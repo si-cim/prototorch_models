@@ -35,7 +35,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
 
         # Additional parameters
         x, y = torch.arange(h), torch.arange(w)
-        grid = torch.stack(torch.meshgrid(x, y), dim=-1)
+        grid = torch.stack(torch.meshgrid(x, y, indexing="ij"), dim=-1)
         self.register_buffer("_grid", grid)
         self._sigma = self.hparams.sigma
         self._lr = self.hparams.lr
@@ -88,12 +88,12 @@ class NeuralGas(UnsupervisedPrototypeModel):
         self.save_hyperparameters(hparams)
 
         # Default hparams
-        self.hparams.setdefault("agelimit", 10)
+        self.hparams.setdefault("age_limit", 10)
         self.hparams.setdefault("lm", 1)
 
         self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
         self.topology_layer = ConnectionTopology(
-            agelimit=self.hparams.agelimit,
+            agelimit=self.hparams.age_limit,
             num_prototypes=self.hparams.num_prototypes,
         )
 
