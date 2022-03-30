@@ -222,8 +222,7 @@ class VisCBC2D(Vis2DAbstract):
     def visualize(self, pl_module):
         x_train, y_train = self.x_train, self.y_train
         protos = pl_module.components
-        ax = self.setup_ax(xlabel="Data dimension 1",
-                           ylabel="Data dimension 2")
+        ax = self.setup_ax()
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, "w")
         x = np.vstack((x_train, protos))
@@ -243,8 +242,7 @@ class VisNG2D(Vis2DAbstract):
         protos = pl_module.prototypes
         cmat = pl_module.topology_layer.cmat.cpu().numpy()
 
-        ax = self.setup_ax(xlabel="Data dimension 1",
-                           ylabel="Data dimension 2")
+        ax = self.setup_ax()
         self.plot_data(ax, x_train, y_train)
         self.plot_protos(ax, protos, "w")
 

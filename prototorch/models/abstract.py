@@ -109,26 +109,32 @@ class UnsupervisedPrototypeModel(PrototypeModel):
 
 class SupervisedPrototypeModel(PrototypeModel):
 
-    def __init__(self, hparams, **kwargs):
+    def __init__(self, hparams, skip_proto_layer=False, **kwargs):
         super().__init__(hparams, **kwargs)
 
         # Layers
+        distribution = hparams.get("distribution", None)
         prototypes_initializer = kwargs.get("prototypes_initializer", None)
         labels_initializer = kwargs.get("labels_initializer",
                                         LabelsInitializer())
-        if prototypes_initializer is not None:
-            self.proto_layer = LabeledComponents(
-                distribution=self.hparams.distribution,
-                components_initializer=prototypes_initializer,
-                labels_initializer=labels_initializer,
-            )
-            self.hparams.initialized_proto_dims = self.proto_layer.components.shape[
-                1:]
-        else:
-            self.proto_layer = LabeledComponents(
-                self.hparams.distribution,
-                ZerosCompInitializer(self.hparams.initialized_proto_dims),
-            )
+        if not skip_proto_layer:
+            # when subclasses do not need a customized prototype layer
+            if prototypes_initializer is not None:
+                # when building a new model
+                self.proto_layer = LabeledComponents(
+                    distribution=distribution,
+                    components_initializer=prototypes_initializer,
+                    labels_initializer=labels_initializer,
+                )
+                proto_shape = self.proto_layer.components.shape[1:]
+                self.hparams.initialized_proto_shape = proto_shape
+            else:
+                # when restoring a checkpointed model
+                self.proto_layer = LabeledComponents(
+                    distribution=distribution,
+                    components_initializer=ZerosCompInitializer(
+                        self.hparams.initialized_proto_shape),
+                )
         self.competition_layer = WTAC()
 
     @property

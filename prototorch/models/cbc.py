@@ -15,7 +15,7 @@ class CBC(SiameseGLVQ):
     """Classification-By-Components."""
 
     def __init__(self, hparams, **kwargs):
-        super().__init__(hparams, **kwargs)
+        super().__init__(hparams, skip_proto_layer=True, **kwargs)
 
         similarity_fn = kwargs.get("similarity_fn", euclidean_similarity)
         components_initializer = kwargs.get("components_initializer", None)
