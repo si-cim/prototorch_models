@@ -23,7 +23,7 @@ with open("README.md", "r") as fh:
 
 INSTALL_REQUIRES = [
     "prototorch>=0.7.0",
-    "pytorch_lightning>=1.3.5",
+    "pytorch_lightning>=1.6.0",
     "torchmetrics",
 ]
 CLI = [
@@ -80,6 +80,7 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.7",
