@@ -58,8 +58,10 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
         diff = x.unsqueeze(dim=1) - protos
         delta = self._lr * self.hparams.alpha * nh.unsqueeze(-1) * diff
         updated_protos = protos + delta.sum(dim=0)
-        self.proto_layer.load_state_dict({"_components": updated_protos},
-                                         strict=False)
+        self.proto_layer.load_state_dict(
+            {"_components": updated_protos},
+            strict=False,
+        )
 
     def training_epoch_end(self, training_step_outputs):
         self._sigma = self.hparams.sigma * np.exp(
@@ -145,6 +147,8 @@ class GrowingNeuralGas(NeuralGas):
 
     def configure_callbacks(self):
         return [
-            GNGCallback(reduction=self.hparams.insert_reduction,
-                        freq=self.hparams.insert_freq)
+            GNGCallback(
+                reduction=self.hparams.insert_reduction,
+                freq=self.hparams.insert_freq,
+            )
         ]

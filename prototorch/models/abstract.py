@@ -43,7 +43,7 @@ class ProtoTorchBolt(pl.LightningModule):
             return optimizer
 
     def reconfigure_optimizers(self):
-        self.trainer.accelerator.setup_optimizers(self.trainer)
+        self.trainer.strategy.setup_optimizers(self.trainer)
 
     def __repr__(self):
         surep = super().__repr__()

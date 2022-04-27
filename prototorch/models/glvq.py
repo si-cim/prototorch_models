@@ -148,7 +148,7 @@ class SiameseGLVQ(GLVQ):
         x, protos = [arr.view(arr.size(0), -1) for arr in (x, protos)]
         latent_x = self.backbone(x)
 
-        bb_grad = self.backbone._weights.requires_grad
+        bb_grad = any([el.requires_grad for el in self.backbone.parameters()])
 
         self.backbone.requires_grad_(bb_grad and self.both_path_gradients)
         latent_protos = self.backbone(protos)
