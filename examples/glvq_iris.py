@@ -48,7 +48,6 @@ if __name__ == "__main__":
         args,
         callbacks=[vis],
         weights_summary="full",
-        accelerator="ddp",
     )
 
     # Training loop
