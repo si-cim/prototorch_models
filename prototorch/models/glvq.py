@@ -1,22 +1,22 @@
 """Models based on the GLVQ framework."""
 
 import torch
-from torch.nn.parameter import Parameter
-
-from ..core.competitions import wtac
-from ..core.distances import (
+from prototorch.core.competitions import wtac
+from prototorch.core.distances import (
     lomega_distance,
     omega_distance,
     squared_euclidean_distance,
 )
-from ..core.initializers import EyeLinearTransformInitializer
-from ..core.losses import (
+from prototorch.core.initializers import EyeLinearTransformInitializer
+from prototorch.core.losses import (
     GLVQLoss,
     lvq1_loss,
     lvq21_loss,
 )
-from ..core.transforms import LinearTransform
-from ..nn.wrappers import LambdaLayer, LossLayer
+from prototorch.core.transforms import LinearTransform
+from prototorch.nn.wrappers import LambdaLayer, LossLayer
+from torch.nn.parameter import Parameter
+
 from .abstract import ImagePrototypesMixin, SupervisedPrototypeModel
 from .extras import ltangent_distance, orthogonalization
 

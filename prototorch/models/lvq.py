@@ -1,8 +1,9 @@
 """LVQ models that are optimized using non-gradient methods."""
 
-from ..core.losses import _get_dp_dm
-from ..nn.activations import get_activation
-from ..nn.wrappers import LambdaLayer
+from prototorch.core.losses import _get_dp_dm
+from prototorch.nn.activations import get_activation
+from prototorch.nn.wrappers import LambdaLayer
+
 from .abstract import NonGradientMixin
 from .glvq import GLVQ
 

@@ -5,10 +5,9 @@ import pytorch_lightning as pl
 import torch
 import torchvision
 from matplotlib import pyplot as plt
+from prototorch.utils.colors import get_colors, get_legend_handles
+from prototorch.utils.utils import mesh2d
 from torch.utils.data import DataLoader, Dataset
-
-from ..utils.colors import get_colors, get_legend_handles
-from ..utils.utils import mesh2d
 
 
 class Vis2DAbstract(pl.Callback):

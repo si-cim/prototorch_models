@@ -1,10 +1,13 @@
 """Probabilistic GLVQ methods"""
 
 import torch
+from prototorch.core.losses import nllr_loss, rslvq_loss
+from prototorch.core.pooling import (
+    stratified_min_pooling,
+    stratified_sum_pooling,
+)
+from prototorch.nn.wrappers import LossLayer
 
-from ..core.losses import nllr_loss, rslvq_loss
-from ..core.pooling import stratified_min_pooling, stratified_sum_pooling
-from ..nn.wrappers import LambdaLayer, LossLayer
 from .extras import GaussianPrior, RankScaledGaussianPrior
 from .glvq import GLVQ, SiameseGMLVQ
 

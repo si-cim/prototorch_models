@@ -3,13 +3,15 @@
 import pytorch_lightning as pl
 import torch
 import torchmetrics
-
-from ..core.competitions import WTAC
-from ..core.components import Components, LabeledComponents
-from ..core.distances import euclidean_distance
-from ..core.initializers import LabelsInitializer, ZerosCompInitializer
-from ..core.pooling import stratified_min_pooling
-from ..nn.wrappers import LambdaLayer
+from prototorch.core.competitions import WTAC
+from prototorch.core.components import Components, LabeledComponents
+from prototorch.core.distances import euclidean_distance
+from prototorch.core.initializers import (
+    LabelsInitializer,
+    ZerosCompInitializer,
+)
+from prototorch.core.pooling import stratified_min_pooling
+from prototorch.nn.wrappers import LambdaLayer
 
 
 class ProtoTorchBolt(pl.LightningModule):
