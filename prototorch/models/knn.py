@@ -37,10 +37,7 @@ class KNN(SupervisedPrototypeModel):
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
         return 1  # skip training step
 
-    def on_train_batch_start(self,
-                             train_batch,
-                             batch_idx,
-                             dataloader_idx=None):
+    def on_train_batch_start(self, train_batch, batch_idx):
         warnings.warn("k-NN has no training, skipping!")
         return -1
 

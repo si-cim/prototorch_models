@@ -1,25 +1,30 @@
 """Lightning Callbacks."""
 
 import logging
+from typing import TYPE_CHECKING
 
 import pytorch_lightning as pl
 import torch
-from prototorch.core.components import Components
 from prototorch.core.initializers import LiteralCompInitializer
 
 from .extras import ConnectionTopology
 
+if TYPE_CHECKING:
+    from prototorch.models import GLVQ, GrowingNeuralGas
+
 
 class PruneLoserPrototypes(pl.Callback):
 
-    def __init__(self,
-                 threshold=0.01,
-                 idle_epochs=10,
-                 prune_quota_per_epoch=-1,
-                 frequency=1,
-                 replace=False,
-                 prototypes_initializer=None,
-                 verbose=False):
+    def __init__(
+        self,
+        threshold=0.01,
+        idle_epochs=10,
+        prune_quota_per_epoch=-1,
+        frequency=1,
+        replace=False,
+        prototypes_initializer=None,
+        verbose=False,
+    ):
         self.threshold = threshold  # minimum win ratio
         self.idle_epochs = idle_epochs  # epochs to wait before pruning
         self.prune_quota_per_epoch = prune_quota_per_epoch
@@ -28,7 +33,7 @@ class PruneLoserPrototypes(pl.Callback):
         self.verbose = verbose
         self.prototypes_initializer = prototypes_initializer
 
-    def on_epoch_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module: "GLVQ"):
         if (trainer.current_epoch + 1) < self.idle_epochs:
             return None
         if (trainer.current_epoch + 1) % self.frequency:
@@ -43,27 +48,29 @@ class PruneLoserPrototypes(pl.Callback):
             prune_labels = prune_labels[:self.prune_quota_per_epoch]
 
         if len(to_prune) > 0:
-            if self.verbose:
-                print(f"\nPrototype win ratios: {ratios}")
-                print(f"Pruning prototypes at: {to_prune}")
-                print(f"Corresponding labels are: {prune_labels.tolist()}")
+            logging.debug(f"\nPrototype win ratios: {ratios}")
+            logging.debug(f"Pruning prototypes at: {to_prune}")
+            logging.debug(f"Corresponding labels are: {prune_labels.tolist()}")
+
             cur_num_protos = pl_module.num_prototypes
             pl_module.remove_prototypes(indices=to_prune)
+
             if self.replace:
                 labels, counts = torch.unique(prune_labels,
                                               sorted=True,
                                               return_counts=True)
                 distribution = dict(zip(labels.tolist(), counts.tolist()))
-                if self.verbose:
-                    print(f"Re-adding pruned prototypes...")
-                    print(f"distribution={distribution}")
+
+                logging.info(f"Re-adding pruned prototypes...")
+                logging.debug(f"distribution={distribution}")
+
                 pl_module.add_prototypes(
                     distribution=distribution,
                     components_initializer=self.prototypes_initializer)
             new_num_protos = pl_module.num_prototypes
-            if self.verbose:
-                print(f"`num_prototypes` changed from {cur_num_protos} "
-                      f"to {new_num_protos}.")
+
+            logging.info(f"`num_prototypes` changed from {cur_num_protos} "
+                         f"to {new_num_protos}.")
         return True
 
 
@@ -74,11 +81,11 @@ class PrototypeConvergence(pl.Callback):
         self.idle_epochs = idle_epochs  # epochs to wait
         self.verbose = verbose
 
-    def on_epoch_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module):
         if (trainer.current_epoch + 1) < self.idle_epochs:
             return None
-        if self.verbose:
-            print("Stopping...")
+
+        logging.info("Stopping...")
         # TODO
         return True
 
@@ -96,12 +103,16 @@ class GNGCallback(pl.Callback):
         self.reduction = reduction
         self.freq = freq
 
-    def on_epoch_end(self, trainer: pl.Trainer, pl_module):
+    def on_train_epoch_end(
+        self,
+        trainer: pl.Trainer,
+        pl_module: "GrowingNeuralGas",
+    ):
         if (trainer.current_epoch + 1) % self.freq == 0:
             # Get information
             errors = pl_module.errors
             topology: ConnectionTopology = pl_module.topology_layer
-            components: Components = pl_module.proto_layer.components
+            components = pl_module.proto_layer.components
 
             # Insertion point
             worst = torch.argmax(errors)
@@ -121,8 +132,9 @@ class GNGCallback(pl.Callback):
 
             # Add component
             pl_module.proto_layer.add_components(
-                None,
-                initializer=LiteralCompInitializer(new_component.unsqueeze(0)))
+                1,
+                initializer=LiteralCompInitializer(new_component.unsqueeze(0)),
+            )
 
             # Adjust Topology
             topology.add_prototype()

@@ -1,10 +1,17 @@
 """Abstract classes to be inherited by prototorch models."""
 
+import logging
+
 import pytorch_lightning as pl
 import torch
+import torch.nn.functional as F
 import torchmetrics
 from prototorch.core.competitions import WTAC
-from prototorch.core.components import Components, LabeledComponents
+from prototorch.core.components import (
+    AbstractComponents,
+    Components,
+    LabeledComponents,
+)
 from prototorch.core.distances import euclidean_distance
 from prototorch.core.initializers import (
     LabelsInitializer,
@@ -32,7 +39,7 @@ class ProtoTorchBolt(pl.LightningModule):
         self.lr_scheduler_kwargs = kwargs.get("lr_scheduler_kwargs", dict())
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.parameters(), lr=self.hparams.lr)
+        optimizer = self.optimizer(self.parameters(), lr=self.hparams["lr"])
         if self.lr_scheduler is not None:
             scheduler = self.lr_scheduler(optimizer,
                                           **self.lr_scheduler_kwargs)
@@ -45,7 +52,10 @@ class ProtoTorchBolt(pl.LightningModule):
             return optimizer
 
     def reconfigure_optimizers(self):
-        self.trainer.strategy.setup_optimizers(self.trainer)
+        if self.trainer:
+            self.trainer.strategy.setup_optimizers(self.trainer)
+        else:
+            logging.warning("No trainer to reconfigure optimizers!")
 
     def __repr__(self):
         surep = super().__repr__()
@@ -55,6 +65,7 @@ class ProtoTorchBolt(pl.LightningModule):
 
 
 class PrototypeModel(ProtoTorchBolt):
+    proto_layer: AbstractComponents
 
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
@@ -77,16 +88,17 @@ class PrototypeModel(ProtoTorchBolt):
 
     def add_prototypes(self, *args, **kwargs):
         self.proto_layer.add_components(*args, **kwargs)
-        self.hparams.distribution = self.proto_layer.distribution
+        self.hparams["distribution"] = self.proto_layer.distribution
         self.reconfigure_optimizers()
 
     def remove_prototypes(self, indices):
         self.proto_layer.remove_components(indices)
-        self.hparams.distribution = self.proto_layer.distribution
+        self.hparams["distribution"] = self.proto_layer.distribution
         self.reconfigure_optimizers()
 
 
 class UnsupervisedPrototypeModel(PrototypeModel):
+    proto_layer: Components
 
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
@@ -95,7 +107,7 @@ class UnsupervisedPrototypeModel(PrototypeModel):
         prototypes_initializer = kwargs.get("prototypes_initializer", None)
         if prototypes_initializer is not None:
             self.proto_layer = Components(
-                self.hparams.num_prototypes,
+                self.hparams["num_prototypes"],
                 initializer=prototypes_initializer,
             )
 
@@ -110,6 +122,7 @@ class UnsupervisedPrototypeModel(PrototypeModel):
 
 
 class SupervisedPrototypeModel(PrototypeModel):
+    proto_layer: LabeledComponents
 
     def __init__(self, hparams, skip_proto_layer=False, **kwargs):
         super().__init__(hparams, **kwargs)
@@ -129,13 +142,13 @@ class SupervisedPrototypeModel(PrototypeModel):
                     labels_initializer=labels_initializer,
                 )
                 proto_shape = self.proto_layer.components.shape[1:]
-                self.hparams.initialized_proto_shape = proto_shape
+                self.hparams["initialized_proto_shape"] = proto_shape
             else:
                 # when restoring a checkpointed model
                 self.proto_layer = LabeledComponents(
                     distribution=distribution,
                     components_initializer=ZerosCompInitializer(
-                        self.hparams.initialized_proto_shape),
+                        self.hparams["initialized_proto_shape"]),
                 )
         self.competition_layer = WTAC()
 
@@ -156,7 +169,7 @@ class SupervisedPrototypeModel(PrototypeModel):
         distances = self.compute_distances(x)
         _, plabels = self.proto_layer()
         winning = stratified_min_pooling(distances, plabels)
-        y_pred = torch.nn.functional.softmin(winning, dim=1)
+        y_pred = F.softmin(winning, dim=1)
         return y_pred
 
     def predict_from_distances(self, distances):
@@ -209,8 +222,10 @@ class NonGradientMixin(ProtoTorchMixin):
 
 class ImagePrototypesMixin(ProtoTorchMixin):
     """Mixin for models with image prototypes."""
+    proto_layer: Components
+    components: torch.Tensor
 
-    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, outputs, batch, batch_idx):
         """Constrain the components to the range [0, 1] by clamping after updates."""
         self.proto_layer.components.data.clamp_(0.0, 1.0)
 

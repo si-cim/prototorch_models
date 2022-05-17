@@ -1,5 +1,7 @@
 """LVQ models that are optimized using non-gradient methods."""
 
+import logging
+
 from prototorch.core.losses import _get_dp_dm
 from prototorch.nn.activations import get_activation
 from prototorch.nn.wrappers import LambdaLayer
@@ -30,8 +32,8 @@ class LVQ1(NonGradientMixin, GLVQ):
             self.proto_layer.load_state_dict({"_components": updated_protos},
                                              strict=False)
 
-        print(f"dis={dis}")
-        print(f"y={y}")
+        logging.debug(f"dis={dis}")
+        logging.debug(f"y={y}")
         # Logging
         self.log_acc(dis, y, tag="train_acc")
 
@@ -74,8 +76,7 @@ class MedianLVQ(NonGradientMixin, GLVQ):
 
     """
 
-    def __init__(self, hparams, verbose=True, **kwargs):
-        self.verbose = verbose
+    def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
         self.transfer_layer = LambdaLayer(
@@ -116,8 +117,7 @@ class MedianLVQ(NonGradientMixin, GLVQ):
                 _protos[i] = xk
                 _lower_bound = self.lower_bound(x, y, _protos, plabels, gamma)
                 if _lower_bound > lower_bound:
-                    if self.verbose:
-                        print(f"Updating prototype {i} to data {k}...")
+                    logging.debug(f"Updating prototype {i} to data {k}...")
                     self.proto_layer.load_state_dict({"_components": _protos},
                                                      strict=False)
                     break

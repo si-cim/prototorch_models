@@ -17,6 +17,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
     TODO Allow non-2D grids
 
     """
+    _grid: torch.Tensor
 
     def __init__(self, hparams, **kwargs):
         h, w = hparams.get("shape")
@@ -92,10 +93,10 @@ class NeuralGas(UnsupervisedPrototypeModel):
         self.hparams.setdefault("age_limit", 10)
         self.hparams.setdefault("lm", 1)
 
-        self.energy_layer = NeuralGasEnergy(lm=self.hparams.lm)
+        self.energy_layer = NeuralGasEnergy(lm=self.hparams["lm"])
         self.topology_layer = ConnectionTopology(
-            agelimit=self.hparams.age_limit,
-            num_prototypes=self.hparams.num_prototypes,
+            agelimit=self.hparams["age_limit"],
+            num_prototypes=self.hparams["num_prototypes"],
         )
 
     def training_step(self, train_batch, batch_idx):
@@ -108,12 +109,9 @@ class NeuralGas(UnsupervisedPrototypeModel):
         self.log("loss", loss)
         return loss
 
-    # def training_epoch_end(self, training_step_outputs):
-    #     print(f"{self.trainer.lr_schedulers}")
-    #     print(f"{self.trainer.lr_schedulers[0]['scheduler'].optimizer}")
-
 
 class GrowingNeuralGas(NeuralGas):
+    errors: torch.Tensor
 
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
@@ -123,7 +121,10 @@ class GrowingNeuralGas(NeuralGas):
         self.hparams.setdefault("insert_reduction", 0.1)
         self.hparams.setdefault("insert_freq", 10)
 
-        errors = torch.zeros(self.hparams.num_prototypes, device=self.device)
+        errors = torch.zeros(
+            self.hparams["num_prototypes"],
+            device=self.device,
+        )
         self.register_buffer("errors", errors)
 
     def training_step(self, train_batch, _batch_idx):
@@ -138,7 +139,7 @@ class GrowingNeuralGas(NeuralGas):
         dp = d * mask
 
         self.errors += torch.sum(dp * dp)
-        self.errors *= self.hparams.step_reduction
+        self.errors *= self.hparams["step_reduction"]
 
         self.topology_layer(d)
         self.log("loss", loss)
@@ -147,7 +148,7 @@ class GrowingNeuralGas(NeuralGas):
     def configure_callbacks(self):
         return [
             GNGCallback(
-                reduction=self.hparams.insert_reduction,
-                freq=self.hparams.insert_freq,
+                reduction=self.hparams["insert_reduction"],
+                freq=self.hparams["insert_freq"],
             )
         ]

@@ -37,17 +37,24 @@ class ProbabilisticLVQ(GLVQ):
     def __init__(self, hparams, rejection_confidence=0.0, **kwargs):
         super().__init__(hparams, **kwargs)
 
-        self.conditional_distribution = None
         self.rejection_confidence = rejection_confidence
+        self._conditional_distribution = None
 
     def forward(self, x):
         distances = self.compute_distances(x)
+
         conditional = self.conditional_distribution(distances)
         prior = (1. / self.num_prototypes) * torch.ones(self.num_prototypes,
                                                         device=self.device)
         posterior = conditional * prior
+
         plabels = self.proto_layer._labels
-        y_pred = stratified_sum_pooling(posterior, plabels)
+        if isinstance(plabels, torch.LongTensor) or isinstance(
+                plabels, torch.cuda.LongTensor):  # type: ignore
+            y_pred = stratified_sum_pooling(posterior, plabels)  # type: ignore
+        else:
+            raise ValueError("Labels must be LongTensor.")
+
         return y_pred
 
     def predict(self, x):
@@ -64,6 +71,12 @@ class ProbabilisticLVQ(GLVQ):
         loss = batch_loss.sum()
         return loss
 
+    def conditional_distribution(self, distances):
+        """Conditional distribution of distances."""
+        if self._conditional_distribution is None:
+            raise ValueError("Conditional distribution is not set.")
+        return self._conditional_distribution(distances)
+
 
 class SLVQ(ProbabilisticLVQ):
     """Soft Learning Vector Quantization."""
@@ -75,7 +88,7 @@ class SLVQ(ProbabilisticLVQ):
         self.hparams.setdefault("variance", 1.0)
         variance = self.hparams.get("variance")
 
-        self.conditional_distribution = GaussianPrior(variance)
+        self._conditional_distribution = GaussianPrior(variance)
         self.loss = LossLayer(nllr_loss)
 
 
@@ -89,7 +102,7 @@ class RSLVQ(ProbabilisticLVQ):
         self.hparams.setdefault("variance", 1.0)
         variance = self.hparams.get("variance")
 
-        self.conditional_distribution = GaussianPrior(variance)
+        self._conditional_distribution = GaussianPrior(variance)
         self.loss = LossLayer(rslvq_loss)
 
 

@@ -1,5 +1,8 @@
 """Visualization Callbacks."""
 
+import warnings
+from typing import Sized
+
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -7,6 +10,7 @@ import torchvision
 from matplotlib import pyplot as plt
 from prototorch.utils.colors import get_colors, get_legend_handles
 from prototorch.utils.utils import mesh2d
+from pytorch_lightning.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader, Dataset
 
 
@@ -33,8 +37,13 @@ class Vis2DAbstract(pl.Callback):
 
         if data:
             if isinstance(data, Dataset):
-                x, y = next(iter(DataLoader(data, batch_size=len(data))))
-            elif isinstance(data, torch.utils.data.DataLoader):
+                if isinstance(data, Sized):
+                    x, y = next(iter(DataLoader(data, batch_size=len(data))))
+                else:
+                    # TODO: Add support for non-sized datasets
+                    raise NotImplementedError(
+                        "Data must be a dataset with a __len__ method.")
+            elif isinstance(data, DataLoader):
                 x = torch.tensor([])
                 y = torch.tensor([])
                 for x_b, y_b in data:
@@ -122,7 +131,7 @@ class Vis2DAbstract(pl.Callback):
             else:
                 plt.show(block=self.block)
 
-    def on_epoch_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module):
         if not self.precheck(trainer):
             return True
         self.visualize(pl_module)
@@ -130,6 +139,9 @@ class Vis2DAbstract(pl.Callback):
 
     def on_train_end(self, trainer, pl_module):
         plt.close()
+
+    def visualize(self, pl_module):
+        raise NotImplementedError
 
 
 class VisGLVQ2D(Vis2DAbstract):
@@ -291,30 +303,45 @@ class VisImgComp(Vis2DAbstract):
         self.add_embedding = add_embedding
         self.embedding_data = embedding_data
 
-    def on_train_start(self, trainer, pl_module):
-        tb = pl_module.logger.experiment
-        if self.add_embedding:
-            ind = np.random.choice(len(self.x_train),
-                                   size=self.embedding_data,
-                                   replace=False)
-            data = self.x_train[ind]
-            tb.add_embedding(data.view(len(ind), -1),
-                             label_img=data,
-                             global_step=None,
-                             tag="Data Embedding",
-                             metadata=self.y_train[ind],
-                             metadata_header=None)
+    def on_train_start(self, _, pl_module):
+        if isinstance(pl_module.logger, TensorBoardLogger):
+            tb = pl_module.logger.experiment
 
-        if self.random_data:
-            ind = np.random.choice(len(self.x_train),
-                                   size=self.random_data,
-                                   replace=False)
-            data = self.x_train[ind]
-            grid = torchvision.utils.make_grid(data, nrow=self.num_columns)
-            tb.add_image(tag="Data",
-                         img_tensor=grid,
-                         global_step=None,
-                         dataformats=self.dataformats)
+            # Add embedding
+            if self.add_embedding:
+                if self.x_train is not None and self.y_train is not None:
+                    ind = np.random.choice(len(self.x_train),
+                                           size=self.embedding_data,
+                                           replace=False)
+                    data = self.x_train[ind]
+                    tb.add_embedding(data.view(len(ind), -1),
+                                     label_img=data,
+                                     global_step=None,
+                                     tag="Data Embedding",
+                                     metadata=self.y_train[ind],
+                                     metadata_header=None)
+                else:
+                    raise ValueError("No data for add embedding flag")
+
+            # Random Data
+            if self.random_data:
+                if self.x_train is not None:
+                    ind = np.random.choice(len(self.x_train),
+                                           size=self.random_data,
+                                           replace=False)
+                    data = self.x_train[ind]
+                    grid = torchvision.utils.make_grid(data,
+                                                       nrow=self.num_columns)
+                    tb.add_image(tag="Data",
+                                 img_tensor=grid,
+                                 global_step=None,
+                                 dataformats=self.dataformats)
+                else:
+                    raise ValueError("No data for random data flag")
+
+        else:
+            warnings.warn(
+                f"TensorBoardLogger is required, got {type(pl_module.logger)}")
 
     def add_to_tensorboard(self, trainer, pl_module):
         tb = pl_module.logger.experiment

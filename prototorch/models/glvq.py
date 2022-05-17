@@ -34,9 +34,9 @@ class GLVQ(SupervisedPrototypeModel):
 
         # Loss
         self.loss = GLVQLoss(
-            margin=self.hparams.margin,
-            transfer_fn=self.hparams.transfer_fn,
-            beta=self.hparams.transfer_beta,
+            margin=self.hparams["margin"],
+            transfer_fn=self.hparams["transfer_fn"],
+            beta=self.hparams["transfer_beta"],
         )
 
     # def on_save_checkpoint(self, checkpoint):
@@ -48,7 +48,7 @@ class GLVQ(SupervisedPrototypeModel):
             "prototype_win_ratios",
             torch.zeros(self.num_prototypes, device=self.device))
 
-    def on_epoch_start(self):
+    def on_train_epoch_start(self):
         self.initialize_prototype_win_ratios()
 
     def log_prototype_win_ratios(self, distances):
@@ -125,11 +125,11 @@ class SiameseGLVQ(GLVQ):
 
     def configure_optimizers(self):
         proto_opt = self.optimizer(self.proto_layer.parameters(),
-                                   lr=self.hparams.proto_lr)
+                                   lr=self.hparams["proto_lr"])
         # Only add a backbone optimizer if backbone has trainable parameters
         bb_params = list(self.backbone.parameters())
         if (bb_params):
-            bb_opt = self.optimizer(bb_params, lr=self.hparams.bb_lr)
+            bb_opt = self.optimizer(bb_params, lr=self.hparams["bb_lr"])
             optimizers = [proto_opt, bb_opt]
         else:
             optimizers = [proto_opt]
@@ -199,12 +199,13 @@ class GRLVQ(SiameseGLVQ):
     TODO Make a RelevanceLayer. `bb_lr` is ignored otherwise.
 
     """
+    _relevances: torch.Tensor
 
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, **kwargs)
 
         # Additional parameters
-        relevances = torch.ones(self.hparams.input_dim, device=self.device)
+        relevances = torch.ones(self.hparams["input_dim"], device=self.device)
         self.register_parameter("_relevances", Parameter(relevances))
 
         # Override the backbone
@@ -233,8 +234,8 @@ class SiameseGMLVQ(SiameseGLVQ):
         omega_initializer = kwargs.get("omega_initializer",
                                        EyeLinearTransformInitializer())
         self.backbone = LinearTransform(
-            self.hparams.input_dim,
-            self.hparams.latent_dim,
+            self.hparams["input_dim"],
+            self.hparams["latent_dim"],
             initializer=omega_initializer,
         )
 
@@ -244,7 +245,7 @@ class SiameseGMLVQ(SiameseGLVQ):
 
     @property
     def lambda_matrix(self):
-        omega = self.backbone.weight  # (input_dim, latent_dim)
+        omega = self.backbone.weights  # (input_dim, latent_dim)
         lam = omega @ omega.T
         return lam.detach().cpu()
 
@@ -257,6 +258,9 @@ class GMLVQ(GLVQ):
 
     """
 
+    # Parameters
+    _omega: torch.Tensor
+
     def __init__(self, hparams, **kwargs):
         distance_fn = kwargs.pop("distance_fn", omega_distance)
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
@@ -264,8 +268,8 @@ class GMLVQ(GLVQ):
         # Additional parameters
         omega_initializer = kwargs.get("omega_initializer",
                                        EyeLinearTransformInitializer())
-        omega = omega_initializer.generate(self.hparams.input_dim,
-                                           self.hparams.latent_dim)
+        omega = omega_initializer.generate(self.hparams["input_dim"],
+                                           self.hparams["latent_dim"])
         self.register_parameter("_omega", Parameter(omega))
         self.backbone = LambdaLayer(lambda x: x @ self._omega,
                                     name="omega matrix")
@@ -299,8 +303,8 @@ class LGMLVQ(GMLVQ):
         # Re-register `_omega` to override the one from the super class.
         omega = torch.randn(
             self.num_prototypes,
-            self.hparams.input_dim,
-            self.hparams.latent_dim,
+            self.hparams["input_dim"],
+            self.hparams["latent_dim"],
             device=self.device,
         )
         self.register_parameter("_omega", Parameter(omega))
@@ -316,23 +320,27 @@ class GTLVQ(LGMLVQ):
         omega_initializer = kwargs.get("omega_initializer")
 
         if omega_initializer is not None:
-            subspace = omega_initializer.generate(self.hparams.input_dim,
-                                                  self.hparams.latent_dim)
-            omega = torch.repeat_interleave(subspace.unsqueeze(0),
-                                            self.num_prototypes,
-                                            dim=0)
+            subspace = omega_initializer.generate(
+                self.hparams["input_dim"],
+                self.hparams["latent_dim"],
+            )
+            omega = torch.repeat_interleave(
+                subspace.unsqueeze(0),
+                self.num_prototypes,
+                dim=0,
+            )
         else:
             omega = torch.rand(
                 self.num_prototypes,
-                self.hparams.input_dim,
-                self.hparams.latent_dim,
+                self.hparams["input_dim"],
+                self.hparams["latent_dim"],
                 device=self.device,
             )
 
         # Re-register `_omega` to override the one from the super class.
         self.register_parameter("_omega", Parameter(omega))
 
-    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, outputs, batch, batch_idx):
         with torch.no_grad():
             self._omega.copy_(orthogonalization(self._omega))
 
@@ -389,7 +397,7 @@ class ImageGTLVQ(ImagePrototypesMixin, GTLVQ):
 
     """
 
-    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+    def on_train_batch_end(self, outputs, batch, batch_idx):
         """Constrain the components to the range [0, 1] by clamping after updates."""
         self.proto_layer.components.data.clamp_(0.0, 1.0)
         with torch.no_grad():
