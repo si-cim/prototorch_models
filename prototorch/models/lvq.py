@@ -1,20 +1,21 @@
 """LVQ models that are optimized using non-gradient methods."""
 
 import logging
+from collections import OrderedDict
 
 from prototorch.core.losses import _get_dp_dm
 from prototorch.nn.activations import get_activation
 from prototorch.nn.wrappers import LambdaLayer
 
-from .abstract import NonGradientMixin
 from .glvq import GLVQ
+from .mixins import NonGradientMixin
 
 
 class LVQ1(NonGradientMixin, GLVQ):
     """Learning Vector Quantization 1."""
 
     def training_step(self, train_batch, batch_idx, optimizer_idx=None):
-        protos, plables = self.proto_layer()
+        protos, plabels = self.proto_layer()
         x, y = train_batch
         dis = self.compute_distances(x)
         # TODO Vectorized implementation
@@ -28,9 +29,11 @@ class LVQ1(NonGradientMixin, GLVQ):
             else:
                 shift = protos[w] - xi
             updated_protos = protos + 0.0
-            updated_protos[w] = protos[w] + (self.hparams.lr * shift)
-            self.proto_layer.load_state_dict({"_components": updated_protos},
-                                             strict=False)
+            updated_protos[w] = protos[w] + (self.hparams["lr"] * shift)
+            self.proto_layer.load_state_dict(
+                OrderedDict(_components=updated_protos),
+                strict=False,
+            )
 
         logging.debug(f"dis={dis}")
         logging.debug(f"y={y}")
@@ -58,10 +61,12 @@ class LVQ21(NonGradientMixin, GLVQ):
             shiftp = xi - protos[wp]
             shiftn = protos[wn] - xi
             updated_protos = protos + 0.0
-            updated_protos[wp] = protos[wp] + (self.hparams.lr * shiftp)
-            updated_protos[wn] = protos[wn] + (self.hparams.lr * shiftn)
-            self.proto_layer.load_state_dict({"_components": updated_protos},
-                                             strict=False)
+            updated_protos[wp] = protos[wp] + (self.hparams["lr"] * shiftp)
+            updated_protos[wn] = protos[wn] + (self.hparams["lr"] * shiftn)
+            self.proto_layer.load_state_dict(
+                OrderedDict(_components=updated_protos),
+                strict=False,
+            )
 
         # Logging
         self.log_acc(dis, y, tag="train_acc")
@@ -80,14 +85,17 @@ class MedianLVQ(NonGradientMixin, GLVQ):
         super().__init__(hparams, **kwargs)
 
         self.transfer_layer = LambdaLayer(
-            get_activation(self.hparams.transfer_fn))
+            get_activation(self.hparams["transfer_fn"]))
 
     def _f(self, x, y, protos, plabels):
         d = self.distance_layer(x, protos)
-        dp, dm = _get_dp_dm(d, y, plabels)
+        dp, dm = _get_dp_dm(d, y, plabels, with_indices=False)
         mu = (dp - dm) / (dp + dm)
-        invmu = -1.0 * mu
-        f = self.transfer_layer(invmu, beta=self.hparams.transfer_beta) + 1.0
+        negative_mu = -1.0 * mu
+        f = self.transfer_layer(
+            negative_mu,
+            beta=self.hparams["transfer_beta"],
+        ) + 1.0
         return f
 
     def expectation(self, x, y, protos, plabels):
@@ -118,8 +126,10 @@ class MedianLVQ(NonGradientMixin, GLVQ):
                 _lower_bound = self.lower_bound(x, y, _protos, plabels, gamma)
                 if _lower_bound > lower_bound:
                     logging.debug(f"Updating prototype {i} to data {k}...")
-                    self.proto_layer.load_state_dict({"_components": _protos},
-                                                     strict=False)
+                    self.proto_layer.load_state_dict(
+                        OrderedDict(_components=_protos),
+                        strict=False,
+                    )
                     break
 
         # Logging

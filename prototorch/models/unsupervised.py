@@ -6,9 +6,10 @@ from prototorch.core.competitions import wtac
 from prototorch.core.distances import squared_euclidean_distance
 from prototorch.core.losses import NeuralGasEnergy
 
-from .abstract import NonGradientMixin, UnsupervisedPrototypeModel
+from .abstract import UnsupervisedPrototypeModel
 from .callbacks import GNGCallback
 from .extras import ConnectionTopology
+from .mixins import NonGradientMixin
 
 
 class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):

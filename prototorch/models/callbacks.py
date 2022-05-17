@@ -40,8 +40,8 @@ class PruneLoserPrototypes(pl.Callback):
             return None
 
         ratios = pl_module.prototype_win_ratios.mean(dim=0)
-        to_prune = torch.arange(len(ratios))[ratios < self.threshold]
-        to_prune = to_prune.tolist()
+        to_prune_tensor = torch.arange(len(ratios))[ratios < self.threshold]
+        to_prune = to_prune_tensor.tolist()
         prune_labels = pl_module.prototype_labels[to_prune]
         if self.prune_quota_per_epoch > 0:
             to_prune = to_prune[:self.prune_quota_per_epoch]

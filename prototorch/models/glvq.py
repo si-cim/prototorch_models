@@ -17,8 +17,9 @@ from prototorch.core.transforms import LinearTransform
 from prototorch.nn.wrappers import LambdaLayer, LossLayer
 from torch.nn.parameter import Parameter
 
-from .abstract import ImagePrototypesMixin, SupervisedPrototypeModel
+from .abstract import SupervisedPrototypeModel
 from .extras import ltangent_distance, orthogonalization
+from .mixins import ImagePrototypesMixin
 
 
 class GLVQ(SupervisedPrototypeModel):
@@ -46,19 +47,24 @@ class GLVQ(SupervisedPrototypeModel):
     def initialize_prototype_win_ratios(self):
         self.register_buffer(
             "prototype_win_ratios",
-            torch.zeros(self.num_prototypes, device=self.device))
+            torch.zeros(self.num_prototypes, device=self.device),
+        )
 
     def on_train_epoch_start(self):
         self.initialize_prototype_win_ratios()
 
     def log_prototype_win_ratios(self, distances):
         batch_size = len(distances)
-        prototype_wc = torch.zeros(self.num_prototypes,
-                                   dtype=torch.long,
-                                   device=self.device)
-        wi, wc = torch.unique(distances.min(dim=-1).indices,
-                              sorted=True,
-                              return_counts=True)
+        prototype_wc = torch.zeros(
+            self.num_prototypes,
+            dtype=torch.long,
+            device=self.device,
+        )
+        wi, wc = torch.unique(
+            distances.min(dim=-1).indices,
+            sorted=True,
+            return_counts=True,
+        )
         prototype_wc[wi] = wc
         prototype_wr = prototype_wc / batch_size
         self.prototype_win_ratios = torch.vstack([
@@ -81,14 +87,12 @@ class GLVQ(SupervisedPrototypeModel):
         return train_loss
 
     def validation_step(self, batch, batch_idx):
-        # `model.eval()` and `torch.no_grad()` handled by pl
         out, val_loss = self.shared_step(batch, batch_idx)
         self.log("val_loss", val_loss)
         self.log_acc(out, batch[-1], tag="val_acc")
         return val_loss
 
     def test_step(self, batch, batch_idx):
-        # `model.eval()` and `torch.no_grad()` handled by pl
         out, test_loss = self.shared_step(batch, batch_idx)
         self.log_acc(out, batch[-1], tag="test_acc")
         return test_loss
@@ -98,10 +102,6 @@ class GLVQ(SupervisedPrototypeModel):
         for batch_loss in outputs:
             test_loss += batch_loss.item()
         self.log("test_loss", test_loss)
-
-    # TODO
-    # def predict_step(self, batch, batch_idx, dataloader_idx=None):
-    #     pass
 
 
 class SiameseGLVQ(GLVQ):
@@ -113,19 +113,23 @@ class SiameseGLVQ(GLVQ):
 
     """
 
-    def __init__(self,
-                 hparams,
-                 backbone=torch.nn.Identity(),
-                 both_path_gradients=False,
-                 **kwargs):
+    def __init__(
+            self,
+            hparams,
+            backbone=torch.nn.Identity(),
+            both_path_gradients=False,
+            **kwargs,
+    ):
         distance_fn = kwargs.pop("distance_fn", squared_euclidean_distance)
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
         self.backbone = backbone
         self.both_path_gradients = both_path_gradients
 
     def configure_optimizers(self):
-        proto_opt = self.optimizer(self.proto_layer.parameters(),
-                                   lr=self.hparams["proto_lr"])
+        proto_opt = self.optimizer(
+            self.proto_layer.parameters(),
+            lr=self.hparams["proto_lr"],
+        )
         # Only add a backbone optimizer if backbone has trainable parameters
         bb_params = list(self.backbone.parameters())
         if (bb_params):
@@ -266,13 +270,19 @@ class GMLVQ(GLVQ):
         super().__init__(hparams, distance_fn=distance_fn, **kwargs)
 
         # Additional parameters
-        omega_initializer = kwargs.get("omega_initializer",
-                                       EyeLinearTransformInitializer())
-        omega = omega_initializer.generate(self.hparams["input_dim"],
-                                           self.hparams["latent_dim"])
+        omega_initializer = kwargs.get(
+            "omega_initializer",
+            EyeLinearTransformInitializer(),
+        )
+        omega = omega_initializer.generate(
+            self.hparams["input_dim"],
+            self.hparams["latent_dim"],
+        )
         self.register_parameter("_omega", Parameter(omega))
-        self.backbone = LambdaLayer(lambda x: x @ self._omega,
-                                    name="omega matrix")
+        self.backbone = LambdaLayer(
+            lambda x: x @ self._omega,
+            name="omega matrix",
+        )
 
     @property
     def omega_matrix(self):

@@ -1,4 +1,5 @@
 import torch
+import torch.nn.functional as F
 import torchmetrics
 from prototorch.core.competitions import CBCC
 from prototorch.core.components import ReasoningComponents
@@ -7,12 +8,13 @@ from prototorch.core.losses import MarginLoss
 from prototorch.core.similarities import euclidean_similarity
 from prototorch.nn.wrappers import LambdaLayer
 
-from .abstract import ImagePrototypesMixin
 from .glvq import SiameseGLVQ
+from .mixins import ImagePrototypesMixin
 
 
 class CBC(SiameseGLVQ):
     """Classification-By-Components."""
+    proto_layer: ReasoningComponents
 
     def __init__(self, hparams, **kwargs):
         super().__init__(hparams, skip_proto_layer=True, **kwargs)
@@ -22,7 +24,7 @@ class CBC(SiameseGLVQ):
         reasonings_initializer = kwargs.get("reasonings_initializer",
                                             RandomReasoningsInitializer())
         self.components_layer = ReasoningComponents(
-            self.hparams.distribution,
+            self.hparams["distribution"],
             components_initializer=components_initializer,
             reasonings_initializer=reasonings_initializer,
         )
@@ -32,7 +34,7 @@ class CBC(SiameseGLVQ):
         # Namespace hook
         self.proto_layer = self.components_layer
 
-        self.loss = MarginLoss(self.hparams.margin)
+        self.loss = MarginLoss(self.hparams["margin"])
 
     def forward(self, x):
         components, reasonings = self.components_layer()
@@ -48,7 +50,7 @@ class CBC(SiameseGLVQ):
         x, y = batch
         y_pred = self(x)
         num_classes = self.num_classes
-        y_true = torch.nn.functional.one_hot(y.long(), num_classes=num_classes)
+        y_true = F.one_hot(y.long(), num_classes=num_classes)
         loss = self.loss(y_pred, y_true).mean()
         return y_pred, loss
 
