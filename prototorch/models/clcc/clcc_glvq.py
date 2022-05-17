@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, Type
 
 import torch
 from prototorch.core.competitions import WTAC
@@ -14,40 +14,48 @@ from prototorch.models.clcc.clcc_scheme import CLCCScheme
 from prototorch.nn.wrappers import LambdaLayer
 
 
-@dataclass
-class GLVQhparams:
-    distribution: dict
-    component_initializer: AbstractComponentsInitializer
-    distance_fn: Callable = euclidean_distance
-    lr: float = 0.01
-    margin: float = 0.0
-    # TODO: make nicer
-    transfer_fn: str = "identity"
-    transfer_beta: float = 10.0
-    optimizer: torch.optim.Optimizer = torch.optim.Adam
+class SupervisedScheme(CLCCScheme):
 
+    @dataclass
+    class HyperParameters:
+        distribution: dict[str, int]
+        component_initializer: AbstractComponentsInitializer
 
-class GLVQ(CLCCScheme):
-
-    def __init__(self, hparams: GLVQhparams) -> None:
-        super().__init__(hparams)
-        self.lr = hparams.lr
-        self.optimizer = hparams.optimizer
-
-    # Initializers
-    def init_components(self, hparams):
-        # initialize Component Layer
+    def init_components(self, hparams: HyperParameters):
         self.components_layer = LabeledComponents(
             distribution=hparams.distribution,
             components_initializer=hparams.component_initializer,
             labels_initializer=LabelsInitializer(),
         )
 
-    def init_comparison(self, hparams):
-        # initialize Distance Layer
+
+# ##############################################################################
+# GLVQ
+# ##############################################################################
+class GLVQ(
+        SupervisedScheme, ):
+    """GLVQ using the new Scheme
+    """
+
+    @dataclass
+    class HyperParameters(SupervisedScheme.HyperParameters):
+        distance_fn: Callable = euclidean_distance
+        lr: float = 0.01
+        margin: float = 0.0
+        # TODO: make nicer
+        transfer_fn: str = "identity"
+        transfer_beta: float = 10.0
+        optimizer: Type[torch.optim.Optimizer] = torch.optim.Adam
+
+    def __init__(self, hparams: HyperParameters) -> None:
+        super().__init__(hparams)
+        self.lr = hparams.lr
+        self.optimizer = hparams.optimizer
+
+    def init_comparison(self, hparams: HyperParameters):
         self.comparison_layer = LambdaLayer(hparams.distance_fn)
 
-    def init_inference(self, hparams):
+    def init_inference(self, hparams: HyperParameters):
         self.competition_layer = WTAC()
 
     def init_loss(self, hparams):
@@ -78,7 +86,7 @@ class GLVQ(CLCCScheme):
         return self.loss_layer(comparisonmeasures, target, comp_labels)
 
     def configure_optimizers(self):
-        return self.optimizer(self.parameters(), lr=self.lr)
+        return self.optimizer(self.parameters(), lr=self.lr)  # type: ignore
 
     # Properties
     @property

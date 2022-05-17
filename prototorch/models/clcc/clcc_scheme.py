@@ -8,6 +8,7 @@ CLCC is a LVQ scheme containing 4 steps
 - Competition
 
 """
+from dataclasses import dataclass
 from typing import (
     Dict,
     Set,
@@ -20,8 +21,15 @@ from torchmetrics import Accuracy, Metric
 
 
 class CLCCScheme(pl.LightningModule):
+
+    @dataclass
+    class HyperParameters:
+        ...
+
     registered_metrics: Dict[Type[Metric], Metric] = {}
     registered_metric_names: Dict[Type[Metric], Set[str]] = {}
+
+    components_layer: pl.LightningModule
 
     def __init__(self, hparams) -> None:
         super().__init__()
@@ -42,9 +50,14 @@ class CLCCScheme(pl.LightningModule):
         self.init_model_metrics()
 
     # internal API, called by models and callbacks
-    def register_torchmetric(self, name: str, metric: Metric, **metricargs):
+    def register_torchmetric(
+        self,
+        name: str,
+        metric: Type[Metric],
+        **metric_kwargs,
+    ):
         if metric not in self.registered_metrics:
-            self.registered_metrics[metric] = metric(**metricargs)
+            self.registered_metrics[metric] = metric(**metric_kwargs)
             self.registered_metric_names[metric] = {name}
         else:
             self.registered_metric_names[metric].add(name)
@@ -92,25 +105,25 @@ class CLCCScheme(pl.LightningModule):
     # Empty Initialization
     # TODO: Type hints
     # TODO: Docs
-    def init_components(self, hparams):
+    def init_components(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_latent(self, hparams):
+    def init_latent(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_comparison(self, hparams):
+    def init_comparison(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_competition(self, hparams):
+    def init_competition(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_loss(self, hparams):
+    def init_loss(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_inference(self, hparams):
+    def init_inference(self, hparams: HyperParameters) -> None:
         ...
 
-    def init_model_metrics(self):
+    def init_model_metrics(self) -> None:
         self.register_torchmetric('accuracy', Accuracy)
 
     # Empty Steps
