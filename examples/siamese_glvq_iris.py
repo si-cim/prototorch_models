@@ -1,10 +1,18 @@
 """Siamese GLVQ example using all four dimensions of the Iris dataset."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import SiameseGLVQ, VisSiameseGLVQ2D
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class Backbone(torch.nn.Module):
@@ -34,10 +42,10 @@ if __name__ == "__main__":
     train_ds = pt.datasets.Iris()
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=2)
+    seed_everything(seed=2)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=150)
+    train_loader = DataLoader(train_ds, batch_size=150)
 
     # Hyperparameters
     hparams = dict(
@@ -50,23 +58,25 @@ if __name__ == "__main__":
     backbone = Backbone()
 
     # Initialize the model
-    model = pt.models.SiameseGLVQ(
+    model = SiameseGLVQ(
         hparams,
         prototypes_initializer=pt.initializers.SMCI(train_ds),
         backbone=backbone,
         both_path_gradients=False,
     )
 
-    # Model summary
-    print(model)
-
     # Callbacks
-    vis = pt.models.VisSiameseGLVQ2D(data=train_ds, border=0.1)
+    vis = VisSiameseGLVQ2D(data=train_ds, border=0.1)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
         args,
-        callbacks=[vis],
+        callbacks=[
+            vis,
+        ],
+        max_epochs=1000,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop

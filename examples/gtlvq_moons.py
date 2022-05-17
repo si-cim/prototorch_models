@@ -1,10 +1,20 @@
 """Localized-GTLVQ example using the Moons dataset."""
 
 import argparse
+import logging
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import GTLVQ, VisGLVQ2D
+from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -13,33 +23,35 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=2)
+    seed_everything(seed=2)
 
     # Dataset
     train_ds = pt.datasets.Moons(num_samples=300, noise=0.2, seed=42)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds,
-                                               batch_size=256,
-                                               shuffle=True)
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=256,
+        shuffle=True,
+    )
 
     # Hyperparameters
     # Latent_dim should be lower than input dim.
     hparams = dict(distribution=[1, 3], input_dim=2, latent_dim=1)
 
     # Initialize the model
-    model = pt.models.GTLVQ(
-        hparams, prototypes_initializer=pt.initializers.SMCI(train_ds))
+    model = GTLVQ(hparams,
+                  prototypes_initializer=pt.initializers.SMCI(train_ds))
 
     # Compute intermediate input and output sizes
     model.example_input_array = torch.zeros(4, 2)
 
     # Summary
-    print(model)
+    logging.info(model)
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=train_ds)
-    es = pl.callbacks.EarlyStopping(
+    vis = VisGLVQ2D(data=train_ds)
+    es = EarlyStopping(
         monitor="train_acc",
         min_delta=0.001,
         patience=20,
@@ -55,8 +67,9 @@ if __name__ == "__main__":
             vis,
             es,
         ],
-        weights_summary="full",
-        accelerator="ddp",
+        max_epochs=1000,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop

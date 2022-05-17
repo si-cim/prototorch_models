@@ -1,13 +1,30 @@
 """Warm-starting GLVQ with prototypes from Growing Neural Gas."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import (
+    GLVQ,
+    KNN,
+    GrowingNeuralGas,
+    PruneLoserPrototypes,
+    VisGLVQ2D,
+)
+from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
 from torch.optim.lr_scheduler import ExponentialLR
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
 
 if __name__ == "__main__":
+
+    # Reproducibility
+    seed_everything(seed=4)
     # Command-line arguments
     parser = argparse.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
@@ -15,10 +32,10 @@ if __name__ == "__main__":
 
     # Prepare the data
     train_ds = pt.datasets.Iris(dims=[0, 2])
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
+    train_loader = DataLoader(train_ds, batch_size=64, num_workers=0)
 
     # Initialize the gng
-    gng = pt.models.GrowingNeuralGas(
+    gng = GrowingNeuralGas(
         hparams=dict(num_prototypes=5, insert_freq=2, lr=0.1),
         prototypes_initializer=pt.initializers.ZCI(2),
         lr_scheduler=ExponentialLR,
@@ -26,7 +43,7 @@ if __name__ == "__main__":
     )
 
     # Callbacks
-    es = pl.callbacks.EarlyStopping(
+    es = EarlyStopping(
         monitor="loss",
         min_delta=0.001,
         patience=20,
@@ -37,9 +54,12 @@ if __name__ == "__main__":
 
     # Setup trainer for GNG
     trainer = pl.Trainer(
-        max_epochs=100,
-        callbacks=[es],
-        weights_summary=None,
+        max_epochs=1000,
+        callbacks=[
+            es,
+        ],
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop
@@ -52,12 +72,12 @@ if __name__ == "__main__":
     )
 
     # Warm-start prototypes
-    knn = pt.models.KNN(dict(k=1), data=train_ds)
+    knn = KNN(dict(k=1), data=train_ds)
     prototypes = gng.prototypes
     plabels = knn.predict(prototypes)
 
     # Initialize the model
-    model = pt.models.GLVQ(
+    model = GLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.LCI(prototypes),
@@ -70,15 +90,15 @@ if __name__ == "__main__":
     model.example_input_array = torch.zeros(4, 2)
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=train_ds)
-    pruning = pt.models.PruneLoserPrototypes(
+    vis = VisGLVQ2D(data=train_ds)
+    pruning = PruneLoserPrototypes(
         threshold=0.02,
         idle_epochs=2,
         prune_quota_per_epoch=5,
         frequency=1,
         verbose=True,
     )
-    es = pl.callbacks.EarlyStopping(
+    es = EarlyStopping(
         monitor="train_loss",
         min_delta=0.001,
         patience=10,
@@ -95,8 +115,9 @@ if __name__ == "__main__":
             pruning,
             es,
         ],
-        weights_summary="full",
-        accelerator="ddp",
+        max_epochs=1000,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop

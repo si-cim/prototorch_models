@@ -1,13 +1,24 @@
 """GLVQ example using the Iris dataset."""
 
 import argparse
+import logging
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import GLVQ, VisGLVQ2D
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
 from torch.optim.lr_scheduler import ExponentialLR
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
 
 if __name__ == "__main__":
+    # Reproducibility
+    seed_everything(seed=4)
     # Command-line arguments
     parser = argparse.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
@@ -17,7 +28,7 @@ if __name__ == "__main__":
     train_ds = pt.datasets.Iris(dims=[0, 2])
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
+    train_loader = DataLoader(train_ds, batch_size=64, num_workers=4)
 
     # Hyperparameters
     hparams = dict(
@@ -29,7 +40,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.GLVQ(
+    model = GLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SMCI(train_ds),
@@ -41,13 +52,17 @@ if __name__ == "__main__":
     model.example_input_array = torch.zeros(4, 2)
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=train_ds)
+    vis = VisGLVQ2D(data=train_ds)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
         args,
-        callbacks=[vis],
-        weights_summary="full",
+        callbacks=[
+            vis,
+        ],
+        max_epochs=100,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop
@@ -57,8 +72,8 @@ if __name__ == "__main__":
     trainer.save_checkpoint("./glvq_iris.ckpt")
 
     # Load saved model
-    new_model = pt.models.GLVQ.load_from_checkpoint(
+    new_model = GLVQ.load_from_checkpoint(
         checkpoint_path="./glvq_iris.ckpt",
         strict=False,
     )
-    print(new_model)
+    logging.info(new_model)

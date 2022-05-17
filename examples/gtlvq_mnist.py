@@ -1,14 +1,30 @@
 """GTLVQ example using the MNIST dataset."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import (
+    ImageGTLVQ,
+    PruneLoserPrototypes,
+    VisImgComp,
+)
+from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+
 if __name__ == "__main__":
+    # Reproducibility
+    seed_everything(seed=4)
+
     # Command-line arguments
     parser = argparse.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
@@ -33,12 +49,8 @@ if __name__ == "__main__":
     )
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds,
-                                               num_workers=0,
-                                               batch_size=256)
-    test_loader = torch.utils.data.DataLoader(test_ds,
-                                              num_workers=0,
-                                              batch_size=256)
+    train_loader = DataLoader(train_ds, num_workers=0, batch_size=256)
+    test_loader = DataLoader(test_ds, num_workers=0, batch_size=256)
 
     # Hyperparameters
     num_classes = 10
@@ -52,7 +64,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.ImageGTLVQ(
+    model = ImageGTLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SMCI(train_ds),
@@ -61,7 +73,7 @@ if __name__ == "__main__":
             next(iter(train_loader))[0].reshape(256, 28 * 28)))
 
     # Callbacks
-    vis = pt.models.VisImgComp(
+    vis = VisImgComp(
         data=train_ds,
         num_columns=10,
         show=False,
@@ -71,14 +83,14 @@ if __name__ == "__main__":
         embedding_data=200,
         flatten_data=False,
     )
-    pruning = pt.models.PruneLoserPrototypes(
+    pruning = PruneLoserPrototypes(
         threshold=0.01,
         idle_epochs=1,
         prune_quota_per_epoch=10,
         frequency=1,
         verbose=True,
     )
-    es = pl.callbacks.EarlyStopping(
+    es = EarlyStopping(
         monitor="train_loss",
         min_delta=0.001,
         patience=15,
@@ -93,11 +105,11 @@ if __name__ == "__main__":
         callbacks=[
             vis,
             pruning,
-            # es,
+            es,
         ],
-        terminate_on_nan=True,
-        weights_summary=None,
-        accelerator="ddp",
+        max_epochs=1000,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop

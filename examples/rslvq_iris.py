@@ -1,10 +1,18 @@
 """RSLVQ example using the Iris dataset."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import RSLVQ, VisGLVQ2D
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 if __name__ == "__main__":
     # Command-line arguments
@@ -13,13 +21,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=42)
+    seed_everything(seed=42)
 
     # Dataset
     train_ds = pt.datasets.Iris(dims=[0, 2])
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=64)
+    train_loader = DataLoader(train_ds, batch_size=64)
 
     # Hyperparameters
     hparams = dict(
@@ -33,7 +41,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.RSLVQ(
+    model = RSLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SSCI(train_ds, noise=0.2),
@@ -42,19 +50,18 @@ if __name__ == "__main__":
     # Compute intermediate input and output sizes
     model.example_input_array = torch.zeros(4, 2)
 
-    # Summary
-    print(model)
-
     # Callbacks
-    vis = pt.models.VisGLVQ2D(data=train_ds)
+    vis = VisGLVQ2D(data=train_ds)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
         args,
-        callbacks=[vis],
-        terminate_on_nan=True,
-        weights_summary="full",
-        accelerator="ddp",
+        callbacks=[
+            vis,
+        ],
+        detect_anomaly=True,
+        max_epochs=100,
+        log_every_n_steps=1,
     )
 
     # Training loop

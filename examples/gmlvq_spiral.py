@@ -1,12 +1,28 @@
 """GMLVQ example using the spiral dataset."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import (
+    GMLVQ,
+    PruneLoserPrototypes,
+    VisGLVQ2D,
+)
+from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 if __name__ == "__main__":
+    # Reproducibility
+    seed_everything(seed=4)
+
     # Command-line arguments
     parser = argparse.ArgumentParser()
     parser = pl.Trainer.add_argparse_args(parser)
@@ -16,7 +32,7 @@ if __name__ == "__main__":
     train_ds = pt.datasets.Spiral(num_samples=500, noise=0.5)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=256)
+    train_loader = DataLoader(train_ds, batch_size=256)
 
     # Hyperparameters
     num_classes = 2
@@ -32,19 +48,19 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.GMLVQ(
+    model = GMLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SSCI(train_ds, noise=1e-2),
     )
 
     # Callbacks
-    vis = pt.models.VisGLVQ2D(
+    vis = VisGLVQ2D(
         train_ds,
         show_last_only=False,
         block=False,
     )
-    pruning = pt.models.PruneLoserPrototypes(
+    pruning = PruneLoserPrototypes(
         threshold=0.01,
         idle_epochs=10,
         prune_quota_per_epoch=5,
@@ -53,7 +69,7 @@ if __name__ == "__main__":
         prototypes_initializer=pt.initializers.SSCI(train_ds, noise=1e-1),
         verbose=True,
     )
-    es = pl.callbacks.EarlyStopping(
+    es = EarlyStopping(
         monitor="train_loss",
         min_delta=1.0,
         patience=5,
@@ -69,7 +85,9 @@ if __name__ == "__main__":
             es,
             pruning,
         ],
-        terminate_on_nan=True,
+        max_epochs=1000,
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop

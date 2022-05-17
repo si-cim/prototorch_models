@@ -1,10 +1,22 @@
 """LVQMLN example using all four dimensions of the Iris dataset."""
 
 import argparse
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from prototorch.models import (
+    LVQMLN,
+    PruneLoserPrototypes,
+    VisSiameseGLVQ2D,
+)
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class Backbone(torch.nn.Module):
@@ -34,10 +46,10 @@ if __name__ == "__main__":
     train_ds = pt.datasets.Iris()
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=42)
+    seed_everything(seed=42)
 
     # Dataloaders
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=150)
+    train_loader = DataLoader(train_ds, batch_size=150)
 
     # Hyperparameters
     hparams = dict(
@@ -50,7 +62,7 @@ if __name__ == "__main__":
     backbone = Backbone()
 
     # Initialize the model
-    model = pt.models.LVQMLN(
+    model = LVQMLN(
         hparams,
         prototypes_initializer=pt.initializers.SSCI(
             train_ds,
@@ -59,18 +71,15 @@ if __name__ == "__main__":
         backbone=backbone,
     )
 
-    # Model summary
-    print(model)
-
     # Callbacks
-    vis = pt.models.VisSiameseGLVQ2D(
+    vis = VisSiameseGLVQ2D(
         data=train_ds,
         map_protos=False,
         border=0.1,
         resolution=500,
         axis_off=True,
     )
-    pruning = pt.models.PruneLoserPrototypes(
+    pruning = PruneLoserPrototypes(
         threshold=0.01,
         idle_epochs=20,
         prune_quota_per_epoch=2,
@@ -85,6 +94,9 @@ if __name__ == "__main__":
             vis,
             pruning,
         ],
+        log_every_n_steps=1,
+        max_epochs=1000,
+        detect_anomaly=True,
     )
 
     # Training loop

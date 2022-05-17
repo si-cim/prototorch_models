@@ -1,12 +1,21 @@
 """Kohonen Self Organizing Map."""
 
 import argparse
+import logging
+import warnings
 
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
 from matplotlib import pyplot as plt
+from prototorch.models import KohonenSOM
 from prototorch.utils.colors import hex_to_rgb
+from pytorch_lightning.utilities.seed import seed_everything
+from pytorch_lightning.utilities.warnings import PossibleUserWarning
+from torch.utils.data import DataLoader, TensorDataset
+
+warnings.filterwarnings("ignore", category=PossibleUserWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class Vis2DColorSOM(pl.Callback):
@@ -18,7 +27,7 @@ class Vis2DColorSOM(pl.Callback):
         self.data = data
         self.pause_time = pause_time
 
-    def on_epoch_end(self, trainer, pl_module):
+    def on_train_epoch_end(self, trainer, pl_module: KohonenSOM):
         ax = self.fig.gca()
         ax.cla()
         ax.set_title(self.title)
@@ -31,12 +40,14 @@ class Vis2DColorSOM(pl.Callback):
         d = pl_module.compute_distances(self.data)
         wp = pl_module.predict_from_distances(d)
         for i, iloc in enumerate(wp):
-            plt.text(iloc[1],
-                     iloc[0],
-                     cnames[i],
-                     ha="center",
-                     va="center",
-                     bbox=dict(facecolor="white", alpha=0.5, lw=0))
+            plt.text(
+                iloc[1],
+                iloc[0],
+                color_names[i],
+                ha="center",
+                va="center",
+                bbox=dict(facecolor="white", alpha=0.5, lw=0),
+            )
 
         if trainer.current_epoch != trainer.max_epochs - 1:
             plt.pause(self.pause_time)
@@ -51,7 +62,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Reproducibility
-    pl.utilities.seed.seed_everything(seed=42)
+    seed_everything(seed=42)
 
     # Prepare the data
     hex_colors = [
@@ -59,15 +70,15 @@ if __name__ == "__main__":
         "#00ff00", "#ff0000", "#00ffff", "#ff00ff", "#ffff00", "#ffffff",
         "#545454", "#7f7f7f", "#a8a8a8", "#808000", "#800080", "#ffa500"
     ]
-    cnames = [
+    color_names = [
         "black", "blue", "darkblue", "skyblue", "greyblue", "lilac", "green",
         "red", "cyan", "magenta", "yellow", "white", "darkgrey", "mediumgrey",
         "lightgrey", "olive", "purple", "orange"
     ]
     colors = list(hex_to_rgb(hex_colors))
     data = torch.Tensor(colors) / 255.0
-    train_ds = torch.utils.data.TensorDataset(data)
-    train_loader = torch.utils.data.DataLoader(train_ds, batch_size=8)
+    train_ds = TensorDataset(data)
+    train_loader = DataLoader(train_ds, batch_size=8)
 
     # Hyperparameters
     hparams = dict(
@@ -78,7 +89,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = pt.models.KohonenSOM(
+    model = KohonenSOM(
         hparams,
         prototypes_initializer=pt.initializers.RNCI(3),
     )
@@ -87,7 +98,7 @@ if __name__ == "__main__":
     model.example_input_array = torch.zeros(4, 3)
 
     # Model summary
-    print(model)
+    logging.info(model)
 
     # Callbacks
     vis = Vis2DColorSOM(data=data)
@@ -96,8 +107,11 @@ if __name__ == "__main__":
     trainer = pl.Trainer.from_argparse_args(
         args,
         max_epochs=500,
-        callbacks=[vis],
-        weights_summary="full",
+        callbacks=[
+            vis,
+        ],
+        log_every_n_steps=1,
+        detect_anomaly=True,
     )
 
     # Training loop
