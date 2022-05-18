@@ -20,7 +20,7 @@ import torch
 from torchmetrics import Accuracy, Metric
 
 
-class CLCCScheme(pl.LightningModule):
+class BaseYArchitecture(pl.LightningModule):
 
     @dataclass
     class HyperParameters:

@@ -10,11 +10,11 @@ from prototorch.core.initializers import (
     LabelsInitializer,
 )
 from prototorch.core.losses import GLVQLoss
-from prototorch.models.clcc.clcc_scheme import CLCCScheme
+from prototorch.models.proto_y_architecture.base import BaseYArchitecture
 from prototorch.nn.wrappers import LambdaLayer
 
 
-class SupervisedScheme(CLCCScheme):
+class SupervisedScheme(BaseYArchitecture):
 
     @dataclass
     class HyperParameters:
