@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # Dataloader
     train_loader = DataLoader(
         train_ds,
-        batch_size=64,
+        batch_size=32,
         num_workers=0,
         shuffle=True,
     )
@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
     # Define Hyperparameters
     hyperparameters = GLVQ.HyperParameters(
-        lr=0.5,
+        lr=0.1,
         distribution=dict(
             num_classes=2,
             per_class=1,
@@ -49,6 +49,7 @@ if __name__ == "__main__":
 
     # Create Model
     model = GLVQ(hyperparameters)
+
     print(model)
 
     # ------------------------------------------------------------

@@ -17,7 +17,8 @@ from typing import (
 
 import pytorch_lightning as pl
 import torch
-from torchmetrics import Accuracy, Metric
+from torchmetrics import Metric
+from torchmetrics.classification.accuracy import Accuracy
 
 
 class BaseYArchitecture(pl.LightningModule):
@@ -29,7 +30,7 @@ class BaseYArchitecture(pl.LightningModule):
     registered_metrics: Dict[Type[Metric], Metric] = {}
     registered_metric_names: Dict[Type[Metric], Set[str]] = {}
 
-    components_layer: pl.LightningModule
+    components_layer: torch.nn.Module
 
     def __init__(self, hparams) -> None:
         super().__init__()
@@ -63,7 +64,7 @@ class BaseYArchitecture(pl.LightningModule):
             self.registered_metric_names[metric].add(name)
 
     # external API
-    def get_competion(self, batch, components):
+    def get_competition(self, batch, components):
         latent_batch, latent_components = self.latent(batch, components)
         # TODO: => Latent Hook
         comparison_tensor = self.comparison(latent_batch, latent_components)
@@ -76,7 +77,7 @@ class BaseYArchitecture(pl.LightningModule):
         # TODO: manage different datatypes?
         components = self.components_layer()
         # TODO: => Component Hook
-        comparison_tensor = self.get_competion(batch, components)
+        comparison_tensor = self.get_competition(batch, components)
         # TODO: => Competition Hook
         return self.inference(comparison_tensor, components)
 
@@ -92,13 +93,13 @@ class BaseYArchitecture(pl.LightningModule):
         # TODO: manage different datatypes?
         components = self.components_layer()
         # TODO: => Component Hook
-        return self.get_competion(batch, components)
+        return self.get_competition(batch, components)
 
     def loss_forward(self, batch):
         # TODO: manage different datatypes?
         components = self.components_layer()
         # TODO: => Component Hook
-        comparison_tensor = self.get_competion(batch, components)
+        comparison_tensor = self.get_competition(batch, components)
         # TODO: => Competition Hook
         return self.loss(comparison_tensor, batch, components)
 
@@ -148,14 +149,14 @@ class BaseYArchitecture(pl.LightningModule):
 
     def comparison(self, batch, components):
         """
-        Takes a batch of size N and the componentsset of size M.
+        Takes a batch of size N and the component set of size M.
 
         It returns an NxMxD tensor containing D (usually 1) pairwise comparison measures.
         """
         raise NotImplementedError(
             "The comparison step has no reasonable default.")
 
-    def competition(self, comparisonmeasures, components):
+    def competition(self, comparison_measures, components):
         """
         Takes the tensor of comparison measures.
 
@@ -164,7 +165,7 @@ class BaseYArchitecture(pl.LightningModule):
         raise NotImplementedError(
             "The competition step has no reasonable default.")
 
-    def loss(self, comparisonmeasures, batch, components):
+    def loss(self, comparison_measures, batch, components):
         """
         Takes the tensor of competition measures.
 
@@ -172,7 +173,7 @@ class BaseYArchitecture(pl.LightningModule):
         """
         raise NotImplementedError("The loss step has no reasonable default.")
 
-    def inference(self, comparisonmeasures, components):
+    def inference(self, comparison_measures, components):
         """
         Takes the tensor of competition measures.
 
