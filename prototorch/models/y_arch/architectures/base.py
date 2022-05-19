@@ -1,12 +1,7 @@
 """
-CLCC Scheme
+Proto Y Architecture
 
-CLCC is a LVQ scheme containing 4 steps
-- Components
-- Latent Space
-- Comparison
-- Competition
-
+Network architecture for Component based Learning.
 """
 from dataclasses import dataclass
 from typing import (

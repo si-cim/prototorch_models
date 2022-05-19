@@ -2,11 +2,12 @@ import prototorch as pt
 import pytorch_lightning as pl
 import torchmetrics
 from prototorch.core import SMCI
-from prototorch.models.proto_y_architecture.callbacks import (
+from prototorch.models.y_arch.callbacks import (
     LogTorchmetricCallback,
-    VisGLVQ2D,
+    PlotLambdaMatrixToTensorboard,
+    VisGMLVQ2D,
 )
-from prototorch.models.proto_y_architecture.glvq import GLVQ
+from prototorch.models.y_arch.library.gmlvq import GMLVQ
 from pytorch_lightning.callbacks import EarlyStopping
 from torch.utils.data import DataLoader
 
@@ -19,8 +20,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------
 
     # Dataset
-    train_ds = pt.datasets.Iris(dims=[0, 2])
-    train_ds.targets[train_ds.targets == 2.0] = 1.0
+    train_ds = pt.datasets.Iris()
 
     # Dataloader
     train_loader = DataLoader(
@@ -38,17 +38,19 @@ if __name__ == "__main__":
     components_initializer = SMCI(train_ds)
 
     # Define Hyperparameters
-    hyperparameters = GLVQ.HyperParameters(
+    hyperparameters = GMLVQ.HyperParameters(
         lr=0.1,
+        backbone_lr=5,
+        input_dim=4,
         distribution=dict(
-            num_classes=2,
+            num_classes=3,
             per_class=1,
         ),
         component_initializer=components_initializer,
     )
 
     # Create Model
-    model = GLVQ(hyperparameters)
+    model = GMLVQ(hyperparameters)
 
     print(model)
 
@@ -60,19 +62,17 @@ if __name__ == "__main__":
     stopping_criterion = LogTorchmetricCallback(
         'recall',
         torchmetrics.Recall,
-        num_classes=2,
+        num_classes=3,
     )
 
     es = EarlyStopping(
         monitor=stopping_criterion.name,
-        min_delta=0.001,
-        patience=15,
         mode="max",
-        check_on_train_epoch_end=True,
+        patience=10,
     )
 
     # Visualization Callback
-    vis = VisGLVQ2D(data=train_ds)
+    vis = VisGMLVQ2D(data=train_ds)
 
     # Define trainer
     trainer = pl.Trainer(
@@ -80,10 +80,9 @@ if __name__ == "__main__":
             vis,
             stopping_criterion,
             es,
+            PlotLambdaMatrixToTensorboard(),
         ],
-        gpus=0,
-        max_epochs=200,
-        log_every_n_steps=1,
+        max_epochs=1000,
     )
 
     # Train
