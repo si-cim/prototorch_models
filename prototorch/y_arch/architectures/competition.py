@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from prototorch.core.competitions import WTAC
-from prototorch.models.y_arch.architectures.base import BaseYArchitecture
+from prototorch.y_arch.architectures.base import BaseYArchitecture
 
 
 class WTACompetitionMixin(BaseYArchitecture):
