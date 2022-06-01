@@ -25,6 +25,7 @@ INSTALL_REQUIRES = [
     "prototorch>=0.7.3",
     "pytorch_lightning>=1.6.0",
     "torchmetrics",
+    "protobuf<3.20.0",
 ]
 CLI = [
     "jsonargparse",
