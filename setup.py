@@ -25,6 +25,7 @@ INSTALL_REQUIRES = [
     "prototorch>=0.7.3",
     "pytorch_lightning>=1.6.0",
     "torchmetrics",
+    "protobuf<3.20.0",
 ]
 CLI = [
     "jsonargparse",
@@ -54,7 +55,7 @@ ALL = CLI + DEV + DOCS + EXAMPLES + TESTS
 
 setup(
     name=safe_name("prototorch_" + PLUGIN_NAME),
-    version="0.5.1",
+    version="0.5.2",
     description="Pre-packaged prototype-based "
     "machine learning models using ProtoTorch and PyTorch-Lightning.",
     long_description=long_description,
