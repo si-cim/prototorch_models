@@ -36,4 +36,4 @@ from .unsupervised import (
 )
 from .vis import *
 
-__version__ = "1.0.0-a1"
+__version__ = "1.0.0-a2"
