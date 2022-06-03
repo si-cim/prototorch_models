@@ -10,7 +10,7 @@ from prototorch.core.initializers import (
     EyeLinearTransformInitializer,
 )
 from prototorch.nn.wrappers import LambdaLayer
-from prototorch.y_arch.architectures.base import BaseYArchitecture
+from prototorch.y.architectures.base import BaseYArchitecture
 from torch import Tensor
 from torch.nn.parameter import Parameter
 

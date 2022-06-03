@@ -5,7 +5,7 @@ from typing import Callable
 
 import torch
 from prototorch.core.distances import omega_distance
-from prototorch.y_arch import (
+from prototorch.y import (
     GLVQLossMixin,
     MultipleLearningRateMixin,
     OmegaComparisonMixin,

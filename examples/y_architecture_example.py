@@ -2,12 +2,12 @@ import prototorch as pt
 import pytorch_lightning as pl
 import torchmetrics
 from prototorch.core import SMCI
-from prototorch.y_arch.callbacks import (
+from prototorch.y.callbacks import (
     LogTorchmetricCallback,
     PlotLambdaMatrixToTensorboard,
     VisGMLVQ2D,
 )
-from prototorch.y_arch.library.gmlvq import GMLVQ
+from prototorch.y.library.gmlvq import GMLVQ
 from pytorch_lightning.callbacks import EarlyStopping
 from torch.utils.data import DataLoader
 

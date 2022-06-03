@@ -8,8 +8,8 @@ import torchmetrics
 from matplotlib import pyplot as plt
 from prototorch.models.vis import Vis2DAbstract
 from prototorch.utils.utils import mesh2d
-from prototorch.y_arch.architectures.base import BaseYArchitecture
-from prototorch.y_arch.library.gmlvq import GMLVQ
+from prototorch.y.architectures.base import BaseYArchitecture
+from prototorch.y.library.gmlvq import GMLVQ
 from pytorch_lightning.loggers import TensorBoardLogger
 
 DIVERGING_COLOR_MAPS = [
