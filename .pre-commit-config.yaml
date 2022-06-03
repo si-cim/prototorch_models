@@ -6,6 +6,7 @@ repos:
   rev: v4.2.0
   hooks:
   - id: trailing-whitespace
+    exclude: (^\.bumpversion\.cfg$|cli_messages\.py)
   - id: end-of-file-fixer
   - id: check-yaml
   - id: check-added-large-files
