@@ -13,8 +13,18 @@ from prototorch.y.library.gmlvq import GMLVQ
 from pytorch_lightning.loggers import TensorBoardLogger
 
 DIVERGING_COLOR_MAPS = [
-    'PiYG', 'PRGn', 'BrBG', 'PuOr', 'RdGy', 'RdBu', 'RdYlBu', 'RdYlGn',
-    'Spectral', 'coolwarm', 'bwr', 'seismic'
+    'PiYG',
+    'PRGn',
+    'BrBG',
+    'PuOr',
+    'RdGy',
+    'RdBu',
+    'RdYlBu',
+    'RdYlGn',
+    'Spectral',
+    'coolwarm',
+    'bwr',
+    'seismic',
 ]
 
 
@@ -40,12 +50,71 @@ class LogTorchmetricCallback(pl.Callback):
     ) -> None:
         if self.on == "prediction":
             pl_module.register_torchmetric(
-                self.name,
+                self,
                 self.metric,
                 **self.metric_kwargs,
             )
         else:
             raise ValueError(f"{self.on} is no valid metric hook")
+
+    def __call__(self, value, pl_module: BaseYArchitecture):
+        pl_module.log(self.name, value)
+
+
+class LogConfusionMatrix(LogTorchmetricCallback):
+
+    def __init__(
+        self,
+        num_classes,
+        name="confusion",
+        on='prediction',
+        **kwargs,
+    ):
+        super().__init__(
+            name,
+            torchmetrics.ConfusionMatrix,
+            on=on,
+            num_classes=num_classes,
+            **kwargs,
+        )
+
+    def __call__(self, value, pl_module: BaseYArchitecture):
+        fig, ax = plt.subplots()
+        ax.imshow(value.detach().cpu().numpy())
+
+        # Show all ticks and label them with the respective list entries
+        # ax.set_xticks(np.arange(len(farmers)), labels=farmers)
+        # ax.set_yticks(np.arange(len(vegetables)), labels=vegetables)
+
+        # Rotate the tick labels and set their alignment.
+        plt.setp(
+            ax.get_xticklabels(),
+            rotation=45,
+            ha="right",
+            rotation_mode="anchor",
+        )
+
+        # Loop over data dimensions and create text annotations.
+        for i in range(len(value)):
+            for j in range(len(value)):
+                text = ax.text(
+                    j,
+                    i,
+                    value[i, j].item(),
+                    ha="center",
+                    va="center",
+                    color="w",
+                )
+
+        ax.set_title(self.name)
+        fig.tight_layout()
+
+        pl_module.logger.experiment.add_figure(
+            tag=self.name,
+            figure=fig,
+            close=True,
+            global_step=pl_module.global_step,
+        )
 
 
 class VisGLVQ2D(Vis2DAbstract):
