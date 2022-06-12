@@ -4,6 +4,7 @@ from prototorch.core.components import LabeledComponents
 from prototorch.core.initializers import (
     AbstractComponentsInitializer,
     LabelsInitializer,
+    ZerosCompInitializer,
 )
 from prototorch.y import BaseYArchitecture
 
@@ -30,11 +31,21 @@ class SupervisedArchitecture(BaseYArchitecture):
     # Steps
     # ----------------------------------------------------------------------------------------------------
     def init_components(self, hparams: HyperParameters):
-        self.components_layer = LabeledComponents(
-            distribution=hparams.distribution,
-            components_initializer=hparams.component_initializer,
-            labels_initializer=LabelsInitializer(),
-        )
+        if hparams.component_initializer is not None:
+            self.components_layer = LabeledComponents(
+                distribution=hparams.distribution,
+                components_initializer=hparams.component_initializer,
+                labels_initializer=LabelsInitializer(),
+            )
+            proto_shape = self.components_layer.components.shape[1:]
+            self.hparams["initialized_proto_shape"] = proto_shape
+        else:
+            # when restoring a checkpointed model
+            self.components_layer = LabeledComponents(
+                distribution=hparams.distribution,
+                components_initializer=ZerosCompInitializer(
+                    self.hparams["initialized_proto_shape"]),
+            )
 
     # Properties
     # ----------------------------------------------------------------------------------------------------

@@ -6,13 +6,7 @@ Network architecture for Component based Learning.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Set,
-    Type,
-)
+from typing import Any, Callable
 
 import pytorch_lightning as pl
 import torch
@@ -34,11 +28,14 @@ class BaseYArchitecture(pl.LightningModule):
 
     def __init__(self, hparams) -> None:
         if type(hparams) is dict:
+            self.save_hyperparameters(hparams)
+            # TODO: => Move into Component Child
+            del hparams["initialized_proto_shape"]
             hparams = self.HyperParameters(**hparams)
+        else:
+            self.save_hyperparameters(hparams.__dict__)
 
         super().__init__()
-
-        self.save_hyperparameters(hparams.__dict__)
 
         # Common Steps
         self.init_components(hparams)
@@ -220,6 +217,7 @@ class BaseYArchitecture(pl.LightningModule):
         self.update_metrics_epoch()
 
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        checkpoint["hyper_parameters"]["component_initializer"] = None
         checkpoint["hyper_parameters"] = {
             'hparams': checkpoint["hyper_parameters"]
         }
