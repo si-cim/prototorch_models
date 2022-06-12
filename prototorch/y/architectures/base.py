@@ -5,7 +5,7 @@ Network architecture for Component based Learning.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Any, Callable
 
 import pytorch_lightning as pl
@@ -33,10 +33,9 @@ class BaseYArchitecture(pl.LightningModule):
             del hparams["initialized_proto_shape"]
             hparams = self.HyperParameters(**hparams)
         else:
-            self.save_hyperparameters(
-                hparams.__dict__,
-                ignore=["component_initializer"],
-            )
+            hparam_dict = asdict(hparams)
+            hparam_dict["component_initializer"] = None
+            self.save_hyperparameters(hparam_dict, )
 
         super().__init__()
 
