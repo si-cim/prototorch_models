@@ -24,17 +24,11 @@ class SingleLearningRateMixin(BaseYArchitecture):
         lr: float = 0.1
         optimizer: Type[torch.optim.Optimizer] = torch.optim.Adam
 
-    # Steps
-    # ----------------------------------------------------------------------------------------------------
-    def __init__(self, hparams: HyperParameters) -> None:
-        super().__init__(hparams)
-        self.lr = hparams.lr
-        self.optimizer = hparams.optimizer
-
     # Hooks
     # ----------------------------------------------------------------------------------------------------
     def configure_optimizers(self):
-        return self.optimizer(self.parameters(), lr=self.lr)  # type: ignore
+        return self.hparams.optimizer(self.parameters(),
+                                      lr=self.hparams.lr)  # type: ignore
 
 
 class MultipleLearningRateMixin(BaseYArchitecture):
@@ -55,31 +49,24 @@ class MultipleLearningRateMixin(BaseYArchitecture):
         lr: dict = field(default_factory=lambda: dict())
         optimizer: Type[torch.optim.Optimizer] = torch.optim.Adam
 
-    # Steps
-    # ----------------------------------------------------------------------------------------------------
-    def __init__(self, hparams: HyperParameters) -> None:
-        super().__init__(hparams)
-        self.lr = hparams.lr
-        self.optimizer = hparams.optimizer
-
     # Hooks
     # ----------------------------------------------------------------------------------------------------
     def configure_optimizers(self):
         optimizers = []
-        for name, lr in self.lr.items():
+        for name, lr in self.hparams.lr.items():
             if not hasattr(self, name):
                 raise ValueError(f"{name} is not a parameter of {self}")
             else:
                 model_part = getattr(self, name)
                 if isinstance(model_part, Parameter):
                     optimizers.append(
-                        self.optimizer(
+                        self.hparams.optimizer(
                             [model_part],
                             lr=lr,  # type: ignore
                         ))
                 elif hasattr(model_part, "parameters"):
                     optimizers.append(
-                        self.optimizer(
+                        self.hparams.optimizer(
                             model_part.parameters(),
                             lr=lr,  # type: ignore
                         ))

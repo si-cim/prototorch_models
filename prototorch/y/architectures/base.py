@@ -3,8 +3,11 @@ Proto Y Architecture
 
 Network architecture for Component based Learning.
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import (
+    Any,
     Callable,
     Dict,
     Set,
@@ -23,14 +26,19 @@ class BaseYArchitecture(pl.LightningModule):
         ...
 
     # Fields
-    registered_metrics: Dict[Type[Metric], Metric] = {}
-    registered_metric_callbacks: Dict[Type[Metric], Set[Callable]] = {}
+    registered_metrics: dict[type[Metric], Metric] = {}
+    registered_metric_callbacks: dict[type[Metric], set[Callable]] = {}
 
     # Type Hints for Necessary Fields
     components_layer: torch.nn.Module
 
     def __init__(self, hparams) -> None:
+        if type(hparams) is dict:
+            hparams = self.HyperParameters(**hparams)
+
         super().__init__()
+
+        self.save_hyperparameters(hparams.__dict__)
 
         # Common Steps
         self.init_components(hparams)
@@ -165,7 +173,7 @@ class BaseYArchitecture(pl.LightningModule):
     def register_torchmetric(
         self,
         name: Callable,
-        metric: Type[Metric],
+        metric: type[Metric],
         **metric_kwargs,
     ):
         if metric not in self.registered_metrics:
@@ -210,3 +218,9 @@ class BaseYArchitecture(pl.LightningModule):
     # Other Hooks
     def training_epoch_end(self, outs) -> None:
         self.update_metrics_epoch()
+
+    def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
+        checkpoint["hyper_parameters"] = {
+            'hparams': checkpoint["hyper_parameters"]
+        }
+        return super().on_save_checkpoint(checkpoint)
