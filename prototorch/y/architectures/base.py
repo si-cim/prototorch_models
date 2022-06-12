@@ -33,7 +33,10 @@ class BaseYArchitecture(pl.LightningModule):
             del hparams["initialized_proto_shape"]
             hparams = self.HyperParameters(**hparams)
         else:
-            self.save_hyperparameters(hparams.__dict__)
+            self.save_hyperparameters(
+                hparams.__dict__,
+                ignore=["component_initializer"],
+            )
 
         super().__init__()
 
@@ -217,7 +220,6 @@ class BaseYArchitecture(pl.LightningModule):
         self.update_metrics_epoch()
 
     def on_save_checkpoint(self, checkpoint: dict[str, Any]) -> None:
-        checkpoint["hyper_parameters"]["component_initializer"] = None
         checkpoint["hyper_parameters"] = {
             'hparams': checkpoint["hyper_parameters"]
         }
