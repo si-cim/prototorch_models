@@ -1,3 +1,4 @@
+import logging
 import warnings
 from typing import Optional, Type
 
@@ -8,7 +9,7 @@ import torchmetrics
 from matplotlib import pyplot as plt
 from prototorch.models.vis import Vis2DAbstract
 from prototorch.utils.utils import mesh2d
-from prototorch.y.architectures.base import BaseYArchitecture
+from prototorch.y.architectures.base import BaseYArchitecture, Steps
 from prototorch.y.library.gmlvq import GMLVQ
 from pytorch_lightning.loggers import TensorBoardLogger
 
@@ -34,13 +35,13 @@ class LogTorchmetricCallback(pl.Callback):
         self,
         name,
         metric: Type[torchmetrics.Metric],
-        on="prediction",
+        step: str = Steps.TRAINING,
         **metric_kwargs,
     ) -> None:
         self.name = name
         self.metric = metric
         self.metric_kwargs = metric_kwargs
-        self.on = on
+        self.step = step
 
     def setup(
         self,
@@ -48,14 +49,12 @@ class LogTorchmetricCallback(pl.Callback):
         pl_module: BaseYArchitecture,
         stage: Optional[str] = None,
     ) -> None:
-        if self.on == "prediction":
-            pl_module.register_torchmetric(
-                self,
-                self.metric,
-                **self.metric_kwargs,
-            )
-        else:
-            raise ValueError(f"{self.on} is no valid metric hook")
+        pl_module.register_torchmetric(
+            self,
+            self.metric,
+            step=self.step,
+            **self.metric_kwargs,
+        )
 
     def __call__(self, value, pl_module: BaseYArchitecture):
         pl_module.log(self.name, value)

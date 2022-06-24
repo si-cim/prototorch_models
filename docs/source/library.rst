@@ -71,7 +71,7 @@ Probabilistic Models
 Probabilistic variants assume, that the prototypes generate a probability distribution over the classes.
 For a test sample they return a distribution instead of a class assignment.
 
-The following two algorihms were presented by :cite:t:`seo2003` .
+The following two algorithms were presented by :cite:t:`seo2003` .
 Every prototypes is a center of a gaussian distribution of its class, generating a mixture model.
 
 .. autoclass:: prototorch.models.probabilistic.SLVQ
@@ -80,7 +80,7 @@ Every prototypes is a center of a gaussian distribution of its class, generating
 .. autoclass:: prototorch.models.probabilistic.RSLVQ
    :members:
 
-:cite:t:`villmann2018` proposed two changes to RSLVQ: First incooperate the winning rank into the prior probability calculation.
+:cite:t:`villmann2018` proposed two changes to RSLVQ: First incorporate the winning rank into the prior probability calculation.
 And second use divergence as loss function.
 
 .. autoclass:: prototorch.models.probabilistic.PLVQ
@@ -106,7 +106,7 @@ Visualization
 Visualization is very specific to its application.
 PrototorchModels delivers visualization for two dimensional data and image data.
 
-The visulizations can be shown in a seperate window and inside a tensorboard.
+The visualizations can be shown in a separate window and inside a tensorboard.
 
 .. automodule:: prototorch.models.vis
    :members:

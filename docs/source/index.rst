@@ -23,6 +23,13 @@ ProtoTorch Models Plugins
 
    custom
 
+.. toctree::
+   :hidden:
+   :maxdepth: 3
+   :caption: Proto Y Architecture
+
+   y-architecture
+
 About
 -----------------------------------------
 `Prototorch Models <https://github.com/si-cim/prototorch_models>`_ is a Plugin
@@ -33,8 +40,10 @@ prototype-based Machine Learning algorithms using `PyTorch-Lightning
 Library
 -----------------------------------------
 Prototorch Models delivers many application ready models.
-These models have been published in the past and have been adapted to the Prototorch library.
+These models have been published in the past and have been adapted to the
+Prototorch library.
 
 Customizable
 -----------------------------------------
-Prototorch Models also contains the building blocks to build own models with PyTorch-Lightning and Prototorch.
+Prototorch Models also contains the building blocks to build own models with
+PyTorch-Lightning and Prototorch.
