@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from prototorch.core.losses import GLVQLoss
-from prototorch.y.architectures.base import BaseYArchitecture
+from prototorch.models.architectures.base import BaseYArchitecture
 
 
 class GLVQLossMixin(BaseYArchitecture):

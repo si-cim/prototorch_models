@@ -1,39 +1,25 @@
-"""`models` plugin for the `prototorch` package."""
+from .architectures.base import BaseYArchitecture
+from .architectures.comparison import (
+    OmegaComparisonMixin,
+    SimpleComparisonMixin,
+)
+from .architectures.competition import WTACompetitionMixin
+from .architectures.components import SupervisedArchitecture
+from .architectures.loss import GLVQLossMixin
+from .architectures.optimization import (
+    MultipleLearningRateMixin,
+    SingleLearningRateMixin,
+)
 
-from .callbacks import PrototypeConvergence, PruneLoserPrototypes
-from .cbc import CBC, ImageCBC
-from .glvq import (
-    GLVQ,
-    GLVQ1,
-    GLVQ21,
-    GMLVQ,
-    GRLVQ,
-    GTLVQ,
-    LGMLVQ,
-    LVQMLN,
-    ImageGLVQ,
-    ImageGMLVQ,
-    ImageGTLVQ,
-    SiameseGLVQ,
-    SiameseGMLVQ,
-    SiameseGTLVQ,
-)
-from .knn import KNN
-from .lvq import (
-    LVQ1,
-    LVQ21,
-    MedianLVQ,
-)
-from .probabilistic import (
-    CELVQ,
-    RSLVQ,
-    SLVQ,
-)
-from .unsupervised import (
-    GrowingNeuralGas,
-    KohonenSOM,
-    NeuralGas,
-)
-from .vis import *
+__all__ = [
+    'BaseYArchitecture',
+    "OmegaComparisonMixin",
+    "SimpleComparisonMixin",
+    "SingleLearningRateMixin",
+    "MultipleLearningRateMixin",
+    "SupervisedArchitecture",
+    "WTACompetitionMixin",
+    "GLVQLossMixin",
+]
 
-__version__ = "1.0.0-a5"
+__version__ = "1.0.0"

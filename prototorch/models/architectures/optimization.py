@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Type
 
 import torch
-from prototorch.y import BaseYArchitecture
+from prototorch.models import BaseYArchitecture
 from torch.nn.parameter import Parameter
 
 

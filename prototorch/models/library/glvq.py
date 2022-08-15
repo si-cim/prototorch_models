@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from prototorch.y import (
+from prototorch.models import (
     SimpleComparisonMixin,
     SingleLearningRateMixin,
     SupervisedArchitecture,
     WTACompetitionMixin,
 )
-from prototorch.y.architectures.loss import GLVQLossMixin
+from prototorch.models.architectures.loss import GLVQLossMixin
 
 
 class GLVQ(

@@ -1,6 +1,5 @@
 """Visualization Callbacks."""
 
-import os
 import warnings
 from typing import Sized
 
@@ -33,10 +32,6 @@ class Vis2DAbstract(pl.Callback):
                  tensorboard=False,
                  show_last_only=False,
                  pause_time=0.1,
-                 save=False,
-                 save_dir="./img",
-                 fig_size=(5, 4),
-                 dpi=500,
                  block=False):
         super().__init__()
 
@@ -80,15 +75,7 @@ class Vis2DAbstract(pl.Callback):
         self.tensorboard = tensorboard
         self.show_last_only = show_last_only
         self.pause_time = pause_time
-        self.save = save
-        self.save_dir = save_dir
-        self.fig_size = fig_size
-        self.dpi = dpi
         self.block = block
-
-        if save:
-            if not os.path.exists(save_dir):
-                os.makedirs(save_dir)
 
     def precheck(self, trainer):
         if self.show_last_only:
@@ -138,11 +125,6 @@ class Vis2DAbstract(pl.Callback):
     def log_and_display(self, trainer, pl_module):
         if self.tensorboard:
             self.add_to_tensorboard(trainer, pl_module)
-        if self.save:
-            plt.tight_layout()
-            self.fig.set_size_inches(*self.fig_size, forward=False)
-            plt.savefig(f"{self.save_dir}/{trainer.current_epoch}.png",
-                        dpi=self.dpi)
         if self.show:
             if not self.block:
                 plt.pause(self.pause_time)
@@ -169,13 +151,13 @@ class VisGLVQ2D(Vis2DAbstract):
         plabels = pl_module.prototype_labels
         x_train, y_train = self.x_train, self.y_train
         ax = self.setup_ax()
+        self.plot_protos(ax, protos, plabels)
         if x_train is not None:
             self.plot_data(ax, x_train, y_train)
             mesh_input, xx, yy = mesh2d(np.vstack([x_train, protos]),
                                         self.border, self.resolution)
         else:
             mesh_input, xx, yy = mesh2d(protos, self.border, self.resolution)
-        self.plot_protos(ax, protos, plabels)
         _components = pl_module.proto_layer._components
         mesh_input = torch.from_numpy(mesh_input).type_as(_components)
         y_pred = pl_module.predict(mesh_input)

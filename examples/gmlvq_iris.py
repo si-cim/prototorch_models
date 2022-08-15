@@ -1,73 +1,134 @@
-"""GMLVQ example using the Iris dataset."""
+import logging
 
-import argparse
-import warnings
-
-import prototorch as pt
 import pytorch_lightning as pl
-import torch
-from prototorch.models import GMLVQ, VisGMLVQ2D
-from pytorch_lightning.utilities.seed import seed_everything
-from pytorch_lightning.utilities.warnings import PossibleUserWarning
-from torch.optim.lr_scheduler import ExponentialLR
-from torch.utils.data import DataLoader
+import torchmetrics
+from prototorch.core import SMCI
+from prototorch.datasets import Iris
+from prototorch.models.architectures.base import Steps
+from prototorch.models.callbacks import (
+    LogTorchmetricCallback,
+    PlotLambdaMatrixToTensorboard,
+    VisGMLVQ2D,
+)
+from prototorch.models.library.gmlvq import GMLVQ
+from pytorch_lightning.callbacks import EarlyStopping
+from torch.utils.data import DataLoader, random_split
 
-warnings.filterwarnings("ignore", category=PossibleUserWarning)
-warnings.filterwarnings("ignore", category=UserWarning)
+logging.basicConfig(level=logging.INFO)
 
-if __name__ == "__main__":
+# ##############################################################################
 
-    # Reproducibility
-    seed_everything(seed=4)
 
-    # Command-line arguments
-    parser = argparse.ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
-    args = parser.parse_args()
+def main():
+    # ------------------------------------------------------------
+    # DATA
+    # ------------------------------------------------------------
 
     # Dataset
-    train_ds = pt.datasets.Iris()
+    full_dataset = Iris()
+    full_count = len(full_dataset)
 
-    # Dataloaders
-    train_loader = DataLoader(train_ds, batch_size=64)
+    train_count = int(full_count * 0.5)
+    val_count = int(full_count * 0.4)
+    test_count = int(full_count * 0.1)
 
-    # Hyperparameters
-    hparams = dict(
+    train_dataset, val_dataset, test_dataset = random_split(
+        full_dataset, (train_count, val_count, test_count))
+
+    # Dataloader
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=1,
+        num_workers=4,
+        shuffle=True,
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=1,
+        num_workers=4,
+        shuffle=False,
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=1,
+        num_workers=0,
+        shuffle=False,
+    )
+
+    # ------------------------------------------------------------
+    # HYPERPARAMETERS
+    # ------------------------------------------------------------
+
+    # Select Initializer
+    components_initializer = SMCI(full_dataset)
+
+    # Define Hyperparameters
+    hyperparameters = GMLVQ.HyperParameters(
+        lr=dict(components_layer=0.1, _omega=0),
         input_dim=4,
-        latent_dim=4,
-        distribution={
-            "num_classes": 3,
-            "per_class": 2
-        },
-        proto_lr=0.01,
-        bb_lr=0.01,
+        distribution=dict(
+            num_classes=3,
+            per_class=1,
+        ),
+        component_initializer=components_initializer,
     )
 
-    # Initialize the model
-    model = GMLVQ(
-        hparams,
-        optimizer=torch.optim.Adam,
-        prototypes_initializer=pt.initializers.SMCI(train_ds),
-        lr_scheduler=ExponentialLR,
-        lr_scheduler_kwargs=dict(gamma=0.99, verbose=False),
+    # Create Model
+    model = GMLVQ(hyperparameters)
+
+    # ------------------------------------------------------------
+    # TRAINING
+    # ------------------------------------------------------------
+
+    # Controlling Callbacks
+    recall = LogTorchmetricCallback(
+        'training_recall',
+        torchmetrics.Recall,
+        num_classes=3,
+        step=Steps.TRAINING,
     )
 
-    # Compute intermediate input and output sizes
-    model.example_input_array = torch.zeros(4, 4)
+    stopping_criterion = LogTorchmetricCallback(
+        'validation_recall',
+        torchmetrics.Recall,
+        num_classes=3,
+        step=Steps.VALIDATION,
+    )
 
-    # Callbacks
-    vis = VisGMLVQ2D(data=train_ds)
+    es = EarlyStopping(
+        monitor=stopping_criterion.name,
+        mode="max",
+        patience=10,
+    )
 
-    # Setup trainer
-    trainer = pl.Trainer.from_argparse_args(
-        args,
+    # Visualization Callback
+    vis = VisGMLVQ2D(data=full_dataset)
+
+    # Define trainer
+    trainer = pl.Trainer(
         callbacks=[
             vis,
+            recall,
+            stopping_criterion,
+            es,
+            PlotLambdaMatrixToTensorboard(),
         ],
         max_epochs=100,
-        log_every_n_steps=1,
-        detect_anomaly=True,
     )
 
-    # Training loop
-    trainer.fit(model, train_loader)
+    # Train
+    trainer.fit(model, train_loader, val_loader)
+    trainer.test(model, test_loader)
+
+    # Manual save
+    trainer.save_checkpoint("./y_arch.ckpt")
+
+    # Load saved model
+    new_model = GMLVQ.load_from_checkpoint(
+        checkpoint_path="./y_arch.ckpt",
+        strict=True,
+    )
+
+
+if __name__ == "__main__":
+    main()

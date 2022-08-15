@@ -6,7 +6,7 @@ from prototorch.core.initializers import (
     LabelsInitializer,
     ZerosCompInitializer,
 )
-from prototorch.y import BaseYArchitecture
+from prototorch.models import BaseYArchitecture
 
 
 class SupervisedArchitecture(BaseYArchitecture):
