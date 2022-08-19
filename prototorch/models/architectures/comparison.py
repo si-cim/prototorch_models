@@ -137,3 +137,12 @@ class OmegaComparisonMixin(SimpleComparisonMixin):
         '''
         lam = self.lambda_matrix
         return lam.abs().sum(0)
+
+    @property
+    def parameter_omega(self):
+        return self._omega
+
+    @parameter_omega.setter
+    def parameter_omega(self, new_omega):
+        with torch.no_grad():
+            self._omega.data.copy_(new_omega)
