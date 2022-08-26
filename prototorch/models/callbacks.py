@@ -1,4 +1,3 @@
-import logging
 import warnings
 from typing import Optional, Type
 
@@ -36,12 +35,14 @@ class LogTorchmetricCallback(pl.Callback):
         name,
         metric: Type[torchmetrics.Metric],
         step: str = Steps.TRAINING,
+        on_epoch=True,
         **metric_kwargs,
     ) -> None:
         self.name = name
         self.metric = metric
         self.metric_kwargs = metric_kwargs
         self.step = step
+        self.on_epoch = on_epoch
 
     def setup(
         self,
@@ -57,7 +58,12 @@ class LogTorchmetricCallback(pl.Callback):
         )
 
     def __call__(self, value, pl_module: BaseYArchitecture):
-        pl_module.log(self.name, value)
+        pl_module.log(
+            self.name,
+            value,
+            on_epoch=self.on_epoch,
+            on_step=(not self.on_epoch),
+        )
 
 
 class LogConfusionMatrix(LogTorchmetricCallback):
