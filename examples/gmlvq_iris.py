@@ -97,6 +97,13 @@ def main():
         step=Steps.VALIDATION,
     )
 
+    accuracy = LogTorchmetricCallback(
+        'validation_accuracy',
+        torchmetrics.Accuracy,
+        num_classes=3,
+        step=Steps.VALIDATION,
+    )
+
     es = EarlyStopping(
         monitor=stopping_criterion.name,
         mode="max",
@@ -111,6 +118,7 @@ def main():
         callbacks=[
             vis,
             recall,
+            accuracy,
             stopping_criterion,
             es,
             PlotLambdaMatrixToTensorboard(),

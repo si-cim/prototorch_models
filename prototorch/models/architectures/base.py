@@ -237,7 +237,7 @@ class BaseYArchitecture(pl.LightningModule):
         _, y = batch
         for metric in self.registered_metrics[step]:
             instance = self.registered_metrics[step][metric].to(self.device)
-            instance(y, preds)
+            instance(y, preds.reshape(y.shape))
 
     def update_metrics_epoch(self, step):
         for metric in self.registered_metrics[step]:
