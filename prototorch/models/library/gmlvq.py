@@ -41,7 +41,7 @@ class GMLVQ(
         comparison_args: Keyword arguments for the comparison function. Override Default: {}.
         """
         comparison_fn: Callable = omega_distance
-        comparison_args: dict = field(default_factory=lambda: dict())
+        comparison_args: dict = field(default_factory=dict)
         optimizer: type[torch.optim.Optimizer] = torch.optim.Adam
 
         lr: dict = field(default_factory=lambda: dict(

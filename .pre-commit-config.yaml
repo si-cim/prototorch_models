@@ -52,3 +52,8 @@ repos:
   hooks:
   - id: gitlint
     args: [--contrib=CT1, --ignore=B6, --msg-filename]
+
+- repo: https://github.com/dosisod/refurb
+  rev: v1.4.0
+  hooks:
+    - id: refurb

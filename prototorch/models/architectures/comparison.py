@@ -32,9 +32,9 @@ class SimpleComparisonMixin(BaseYArchitecture):
         comparison_args: Keyword arguments for the comparison function. Default: {}.
         """
         comparison_fn: Callable = euclidean_distance
-        comparison_args: dict = field(default_factory=lambda: dict())
+        comparison_args: dict = field(default_factory=dict)
 
-        comparison_parameters: dict = field(default_factory=lambda: dict())
+        comparison_parameters: dict = field(default_factory=dict)
 
     # Steps
     # ----------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ class SimpleComparisonMixin(BaseYArchitecture):
             **hparams.comparison_args,
         )
 
-        self.comparison_kwargs: dict[str, Tensor] = dict()
+        self.comparison_kwargs: dict[str, Tensor] = {}
 
     def comparison(self, batch, components):
         comp_tensor, _ = components
@@ -86,7 +86,7 @@ class OmegaComparisonMixin(SimpleComparisonMixin):
         latent_dim: int = 2
         omega_initializer: type[
             AbstractLinearTransformInitializer] = EyeLinearTransformInitializer
-        omega_initializer_kwargs: dict = field(default_factory=lambda: dict())
+        omega_initializer_kwargs: dict = field(default_factory=dict)
 
     # Steps
     # ----------------------------------------------------------------------------------------------

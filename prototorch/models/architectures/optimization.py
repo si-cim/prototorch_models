@@ -46,7 +46,7 @@ class MultipleLearningRateMixin(BaseYArchitecture):
         lr: The learning rate. Default: 0.1.
         optimizer: The optimizer to use. Default: torch.optim.Adam.
         """
-        lr: dict = field(default_factory=lambda: dict())
+        lr: dict = field(default_factory=dict)
         optimizer: Type[torch.optim.Optimizer] = torch.optim.Adam
 
     # Hooks

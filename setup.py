@@ -10,6 +10,8 @@
 
 ProtoTorch models Plugin Package
 """
+from pathlib import Path
+
 from pkg_resources import safe_name
 from setuptools import find_namespace_packages, setup
 
@@ -18,8 +20,7 @@ PLUGIN_NAME = "models"
 PROJECT_URL = "https://github.com/si-cim/prototorch_models"
 DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+long_description = Path("README.md").read_text(encoding='utf8')
 
 INSTALL_REQUIRES = [
     "prototorch>=0.7.3",
