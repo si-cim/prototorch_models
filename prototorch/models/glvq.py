@@ -145,7 +145,7 @@ class SiameseGLVQ(GLVQ):
 
     def compute_distances(self, x):
         protos, _ = self.proto_layer()
-        x, protos = [arr.view(arr.size(0), -1) for arr in (x, protos)]
+        x, protos = (arr.view(arr.size(0), -1) for arr in (x, protos))
         latent_x = self.backbone(x)
 
         bb_grad = any([el.requires_grad for el in self.backbone.parameters()])

@@ -205,7 +205,7 @@ class SupervisedPrototypeModel(PrototypeModel):
         self.log("test_acc", accuracy)
 
 
-class ProtoTorchMixin(object):
+class ProtoTorchMixin:
     """All mixins are ProtoTorchMixins."""
 
 

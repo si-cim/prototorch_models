@@ -91,9 +91,9 @@ setup(
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    entry_points={
-        "prototorch.plugins": f"{PLUGIN_NAME} = prototorch.{PLUGIN_NAME}"
-    },
+    #entry_points={
+    #    "prototorch.plugins": f"{PLUGIN_NAME} = prototorch.{PLUGIN_NAME}"
+    #},
     packages=find_namespace_packages(include=["prototorch.*"]),
     zip_safe=False,
 )

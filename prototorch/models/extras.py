@@ -39,7 +39,7 @@ def ltangent_distance(x, y, omegas):
     :param `torch.tensor` omegas: Three dimensional matrix
     :rtype: `torch.tensor`
     """
-    x, y = [arr.view(arr.size(0), -1) for arr in (x, y)]
+    x, y = (arr.view(arr.size(0), -1) for arr in (x, y))
     p = torch.eye(omegas.shape[-2], device=omegas.device) - torch.bmm(
         omegas, omegas.permute([0, 2, 1]))
     projected_x = x @ p
