@@ -18,13 +18,13 @@ PLUGIN_NAME = "models"
 PROJECT_URL = "https://github.com/si-cim/prototorch_models"
 DOWNLOAD_URL = "https://github.com/si-cim/prototorch_models.git"
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 INSTALL_REQUIRES = [
     "prototorch>=0.7.3",
     "pytorch_lightning>=1.6.0",
-    "torchmetrics",
+    "torchmetrics<0.10.0",
     "protobuf<3.20.0",
 ]
 CLI = [
