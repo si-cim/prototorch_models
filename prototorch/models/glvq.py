@@ -274,7 +274,7 @@ class GMLVQ(GLVQ):
         omega = omega_initializer.generate(self.hparams["input_dim"],
                                            self.hparams["latent_dim"])
         self.register_parameter("_omega", Parameter(omega))
-    
+
     @property
     def omega_matrix(self):
         return self._omega.detach().cpu()
