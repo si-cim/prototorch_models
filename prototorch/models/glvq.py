@@ -209,8 +209,11 @@ class GRLVQ(SiameseGLVQ):
         self.register_parameter("_relevances", Parameter(relevances))
 
         # Override the backbone
-        self.backbone = LambdaLayer(lambda x: x @ torch.diag(self._relevances),
+        self.backbone = LambdaLayer(self._apply_relevances,
                                     name="relevance scaling")
+
+    def _apply_relevances(self, x):
+        return x @ torch.diag(self._relevances)
 
     @property
     def relevance_profile(self):
@@ -271,9 +274,7 @@ class GMLVQ(GLVQ):
         omega = omega_initializer.generate(self.hparams["input_dim"],
                                            self.hparams["latent_dim"])
         self.register_parameter("_omega", Parameter(omega))
-        self.backbone = LambdaLayer(lambda x: x @ self._omega,
-                                    name="omega matrix")
-
+    
     @property
     def omega_matrix(self):
         return self._omega.detach().cpu()

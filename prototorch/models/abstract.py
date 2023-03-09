@@ -71,7 +71,7 @@ class PrototypeModel(ProtoTorchBolt):
         super().__init__(hparams, **kwargs)
 
         distance_fn = kwargs.get("distance_fn", euclidean_distance)
-        self.distance_layer = LambdaLayer(distance_fn)
+        self.distance_layer = LambdaLayer(distance_fn, name="distance_fn")
 
     @property
     def num_prototypes(self):

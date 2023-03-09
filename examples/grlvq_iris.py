@@ -6,7 +6,7 @@ import warnings
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
-from prototorch.models import GMLVQ, VisGMLVQ2D
+from prototorch.models import GRLVQ, VisSiameseGLVQ2D
 from pytorch_lightning.utilities.seed import seed_everything
 from pytorch_lightning.utilities.warnings import PossibleUserWarning
 from torch.optim.lr_scheduler import ExponentialLR
@@ -26,15 +26,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Dataset
-    train_ds = pt.datasets.Iris()
+    train_ds = pt.datasets.Iris([0, 1])
 
     # Dataloaders
     train_loader = DataLoader(train_ds, batch_size=64)
 
     # Hyperparameters
     hparams = dict(
-        input_dim=4,
-        latent_dim=4,
+        input_dim=2,
         distribution={
             "num_classes": 3,
             "per_class": 2
@@ -44,7 +43,7 @@ if __name__ == "__main__":
     )
 
     # Initialize the model
-    model = GMLVQ(
+    model = GRLVQ(
         hparams,
         optimizer=torch.optim.Adam,
         prototypes_initializer=pt.initializers.SMCI(train_ds),
@@ -53,10 +52,10 @@ if __name__ == "__main__":
     )
 
     # Compute intermediate input and output sizes
-    model.example_input_array = torch.zeros(4, 4)
+    model.example_input_array = torch.zeros(4, 2)
 
     # Callbacks
-    vis = VisGMLVQ2D(data=train_ds)
+    vis = VisSiameseGLVQ2D(data=train_ds)
 
     # Setup trainer
     trainer = pl.Trainer.from_argparse_args(
@@ -64,7 +63,7 @@ if __name__ == "__main__":
         callbacks=[
             vis,
         ],
-        max_epochs=100,
+        max_epochs=5,
         log_every_n_steps=1,
         detect_anomaly=True,
     )
