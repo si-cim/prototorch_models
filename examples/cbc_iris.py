@@ -1,5 +1,4 @@
 """CBC example using the Iris dataset."""
-
 import argparse
 import warnings
 
