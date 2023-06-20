@@ -18,7 +18,8 @@ warnings.filterwarnings("ignore", category=PossibleUserWarning)
 if __name__ == "__main__":
     # Command-line arguments
     parser = argparse.ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
+    parser.add_argument("--gpus", type=int, default=0)
+    parser.add_argument("--fast_dev_run", type=bool, default=False)
     args = parser.parse_args()
 
     # Dataset
@@ -59,8 +60,10 @@ if __name__ == "__main__":
     )
 
     # Setup trainer
-    trainer = pl.Trainer.from_argparse_args(
-        args,
+    trainer = pl.Trainer(
+        accelerator="cuda" if args.gpus else "cpu",
+        devices=args.gpus if args.gpus else "auto",
+        fast_dev_run=args.fast_dev_run,
         max_epochs=1,
         callbacks=[
             vis,

@@ -6,8 +6,8 @@ import warnings
 import prototorch as pt
 import pytorch_lightning as pl
 import torch
+from lightning_fabric.utilities.seed import seed_everything
 from prototorch.models import RSLVQ, VisGLVQ2D
-from pytorch_lightning.utilities.seed import seed_everything
 from pytorch_lightning.utilities.warnings import PossibleUserWarning
 from torch.utils.data import DataLoader
 
@@ -17,7 +17,8 @@ warnings.filterwarnings("ignore", category=UserWarning)
 if __name__ == "__main__":
     # Command-line arguments
     parser = argparse.ArgumentParser()
-    parser = pl.Trainer.add_argparse_args(parser)
+    parser.add_argument("--gpus", type=int, default=0)
+    parser.add_argument("--fast_dev_run", type=bool, default=False)
     args = parser.parse_args()
 
     # Reproducibility
@@ -54,8 +55,10 @@ if __name__ == "__main__":
     vis = VisGLVQ2D(data=train_ds)
 
     # Setup trainer
-    trainer = pl.Trainer.from_argparse_args(
-        args,
+    trainer = pl.Trainer(
+        accelerator="cuda" if args.gpus else "cpu",
+        devices=args.gpus if args.gpus else "auto",
+        fast_dev_run=args.fast_dev_run,
         callbacks=[
             vis,
         ],
