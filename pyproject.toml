@@ -1,0 +1,88 @@
+
+[project]
+name = "prototorch-models"
+version = "0.5.4"
+description = "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning."
+authors = [
+    { name = "Alexander Engelsberger", email = "engelsbe@hs-mittweida.de" },
+]
+dependencies = ["lightning>=2.0.0", "prototorch>=0.7.5", "torchmetrics"]
+requires-python = ">=3.8"
+readme = "README.md"
+license = { text = "MIT" }
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Plugins",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/si-cim/prototorch_models"
+Downloads = "https://github.com/si-cim/prototorch_models.git"
+
+[project.optional-dependencies]
+dev = ["bumpversion", "pre-commit", "yapf", "toml"]
+examples = ["matplotlib", "scikit-learn"]
+tests = ["codecov", "pytest"]
+all = [
+    "bumpversion",
+    "codecov",
+    "ipykernel",
+    "jsonargparse",
+    "matplotlib",
+    "nbsphinx",
+    "pre-commit",
+    "yapf",
+    "toml",
+    "pytest",
+    "recommonmark",
+    "scikit-learn",
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-bibtex",
+    "sphinxcontrib-katex",
+]
+
+[project.entry-points."prototorch.plugins"]
+models = "prototorch.models"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.yapf]
+based_on_style = "pep8"
+spaces_before_comment = 2
+split_before_logical_operator = true
+
+[tool.pylint]
+disable = ["too-many-arguments", "too-few-public-methods", "fixme"]
+
+[tool.isort]
+profile = "hug"
+src_paths = ["isort", "test"]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 3
+use_parentheses = true
+line_length = 79
+
+[tool.mypy]
+explicit_package_bases = true
+namespace_packages = true
+
+[tool.setuptools]
+py-modules = ["prototorch"]
