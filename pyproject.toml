@@ -4,9 +4,10 @@ name = "prototorch-models"
 version = "0.5.4"
 description = "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning."
 authors = [
+    { name = "Jensun Ravichandran", email = "jjensun@gmail.com" },
     { name = "Alexander Engelsberger", email = "engelsbe@hs-mittweida.de" },
 ]
-dependencies = ["lightning>=2.0.0", "prototorch>=0.7.5", "torchmetrics"]
+dependencies = ["lightning>=2.0.0", "prototorch>=0.7.5"]
 requires-python = ">=3.8"
 readme = "README.md"
 license = { text = "MIT" }
@@ -36,24 +37,31 @@ Downloads = "https://github.com/si-cim/prototorch_models.git"
 [project.optional-dependencies]
 dev = ["bumpversion", "pre-commit", "yapf", "toml"]
 examples = ["matplotlib", "scikit-learn"]
-tests = ["codecov", "pytest"]
-all = [
-    "bumpversion",
-    "codecov",
-    "ipykernel",
-    "jsonargparse",
-    "matplotlib",
-    "nbsphinx",
-    "pre-commit",
-    "yapf",
-    "toml",
-    "pytest",
+ci = ["pytest", "pre-commit"]
+docs = [
     "recommonmark",
-    "scikit-learn",
+    "nbsphinx",
     "sphinx",
     "sphinx_rtd_theme",
     "sphinxcontrib-bibtex",
     "sphinxcontrib-katex",
+    "ipykernel",
+]
+all = [
+    "bumpversion",
+    "pre-commit",
+    "yapf",
+    "toml",
+    "pytest",
+    "matplotlib",
+    "scikit-learn",
+    "recommonmark",
+    "nbsphinx",
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinxcontrib-bibtex",
+    "sphinxcontrib-katex",
+    "ipykernel",
 ]
 
 [project.entry-points."prototorch.plugins"]
