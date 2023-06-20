@@ -51,8 +51,7 @@ if __name__ == "__main__":
     # Hyperparameters
     hparams = dict(
         distribution=[1, 2, 3],
-        proto_lr=0.01,
-        bb_lr=0.01,
+        lr=0.01,
         input_dim=2,
         latent_dim=1,
     )

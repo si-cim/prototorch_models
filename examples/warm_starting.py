@@ -55,7 +55,9 @@ if __name__ == "__main__":
 
     # Setup trainer for GNG
     trainer = pl.Trainer(
-        max_epochs=1000,
+        accelerator="cpu",
+        max_epochs=50 if args.fast_dev_run else
+        1000,  # 10 epochs fast dev run reproducible DIV error.
         callbacks=[
             es,
         ],

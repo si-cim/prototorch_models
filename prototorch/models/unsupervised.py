@@ -63,7 +63,7 @@ class KohonenSOM(NonGradientMixin, UnsupervisedPrototypeModel):
             strict=False,
         )
 
-    def training_epoch_end(self, training_step_outputs):
+    def on_training_epoch_end(self, training_step_outputs):
         self._sigma = self.hparams.sigma * np.exp(
             -self.current_epoch / self.trainer.max_epochs)
 
