@@ -1,7 +1,7 @@
 
 [project]
 name = "prototorch-models"
-version = "0.5.4"
+version = "0.6.0"
 description = "Pre-packaged prototype-based machine learning models using ProtoTorch and PyTorch-Lightning."
 authors = [
     { name = "Jensun Ravichandran", email = "jjensun@gmail.com" },
