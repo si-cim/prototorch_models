@@ -2,7 +2,6 @@
 
 import logging
 
-import prototorch
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
@@ -228,7 +227,7 @@ class NonGradientMixin(ProtoTorchMixin):
         super().__init__(*args, **kwargs)
         self.automatic_optimization = False
 
-    def training_step(self, train_batch, batch_idx, optimizer_idx=None):
+    def training_step(self, train_batch, batch_idx):
         raise NotImplementedError
 
 

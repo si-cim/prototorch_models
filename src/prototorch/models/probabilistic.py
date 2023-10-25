@@ -21,7 +21,7 @@ class CELVQ(GLVQ):
         # Loss
         self.loss = torch.nn.CrossEntropyLoss()
 
-    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+    def shared_step(self, batch, batch_idx):
         x, y = batch
         out = self.compute_distances(x)  # [None, num_protos]
         _, plabels = self.proto_layer()
@@ -63,7 +63,7 @@ class ProbabilisticLVQ(GLVQ):
         prediction[confidence < self.rejection_confidence] = -1
         return prediction
 
-    def training_step(self, batch, batch_idx, optimizer_idx=None):
+    def training_step(self, batch, batch_idx):
         x, y = batch
         out = self.forward(x)
         _, plabels = self.proto_layer()
@@ -123,7 +123,7 @@ class PLVQ(ProbabilisticLVQ, SiameseGMLVQ):
         self.loss = torch.nn.KLDivLoss()
 
     # FIXME
-    # def training_step(self, batch, batch_idx, optimizer_idx=None):
+    # def training_step(self, batch, batch_idx):
     #     x, y = batch
     #     y_pred = self(x)
     #     batch_loss = self.loss(y_pred, y)

@@ -66,15 +66,15 @@ class GLVQ(SupervisedPrototypeModel):
             prototype_wr,
         ])
 
-    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+    def shared_step(self, batch, batch_idx):
         x, y = batch
         out = self.compute_distances(x)
         _, plabels = self.proto_layer()
         loss = self.loss(out, y, plabels)
         return out, loss
 
-    def training_step(self, batch, batch_idx, optimizer_idx=None):
-        out, train_loss = self.shared_step(batch, batch_idx, optimizer_idx)
+    def training_step(self, batch, batch_idx):
+        out, train_loss = self.shared_step(batch, batch_idx)
         self.log_prototype_win_ratios(out)
         self.log("train_loss", train_loss)
         self.log_acc(out, batch[-1], tag="train_acc")
@@ -98,10 +98,6 @@ class GLVQ(SupervisedPrototypeModel):
         for batch_loss in outputs:
             test_loss += batch_loss.item()
         self.log("test_loss", test_loss)
-
-    # TODO
-    # def predict_step(self, batch, batch_idx, dataloader_idx=None):
-    #     pass
 
 
 class SiameseGLVQ(GLVQ):

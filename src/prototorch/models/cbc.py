@@ -44,7 +44,7 @@ class CBC(SiameseGLVQ):
         probs = self.competition_layer(detections, reasonings)
         return probs
 
-    def shared_step(self, batch, batch_idx, optimizer_idx=None):
+    def shared_step(self, batch, batch_idx):
         x, y = batch
         y_pred = self(x)
         num_classes = self.num_classes
@@ -52,8 +52,8 @@ class CBC(SiameseGLVQ):
         loss = self.loss(y_pred, y_true).mean()
         return y_pred, loss
 
-    def training_step(self, batch, batch_idx, optimizer_idx=None):
-        y_pred, train_loss = self.shared_step(batch, batch_idx, optimizer_idx)
+    def training_step(self, batch, batch_idx):
+        y_pred, train_loss = self.shared_step(batch, batch_idx)
         preds = torch.argmax(y_pred, dim=1)
         accuracy = torchmetrics.functional.accuracy(
             preds.int(),

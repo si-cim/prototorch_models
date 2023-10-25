@@ -34,7 +34,7 @@ class KNN(SupervisedPrototypeModel):
             labels_initializer=LiteralLabelsInitializer(targets))
         self.competition_layer = KNNC(k=self.hparams.k)
 
-    def training_step(self, train_batch, batch_idx, optimizer_idx=None):
+    def training_step(self, train_batch, batch_idx):
         return 1  # skip training step
 
     def on_train_batch_start(self, train_batch, batch_idx):
